@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>APEX — redirecting…</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>html, body { background: #080808; color: #888; font: 14px/1.5 system-ui; padding: 24px; }</style>
+    <script>
+      // GitHub Pages returns 404 for unknown paths. Send the user to the
+      // SPA entry — HashRouter takes over from there.
+      var base = '/hd-workout/';
+      var target = base + (location.hash || '');
+      location.replace(target);
+    </script>
+  </head>
+  <body>
+    Redirecting to APEX…
+  </body>
+</html>
