@@ -56,18 +56,12 @@ const ICONS = {
       <line x1="12" y1="4"  x2="12" y2="20" />
     </>
   ),
-  // Settings: small gear — center circle + 8 spokes at compass points.
-  settings: (
+  // Profile: a stylised portrait — round head, shoulders below. Reads as
+  // "you" without looking like the sun glyph used by the theme toggle.
+  profile: (
     <>
-      <circle cx="12" cy="12" r="3" />
-      <line x1="12" y1="3"  x2="12" y2="5.5" />
-      <line x1="12" y1="18.5" x2="12" y2="21" />
-      <line x1="3"  y1="12" x2="5.5"  y2="12" />
-      <line x1="18.5" y1="12" x2="21" y2="12" />
-      <line x1="5.6"  y1="5.6"  x2="7.4" y2="7.4" />
-      <line x1="16.6" y1="16.6" x2="18.4" y2="18.4" />
-      <line x1="5.6"  y1="18.4" x2="7.4" y2="16.6" />
-      <line x1="16.6" y1="7.4"  x2="18.4" y2="5.6" />
+      <circle cx="12" cy="9" r="3.5" />
+      <path d="M5 20 C5 15.5 8.5 13.5 12 13.5 C15.5 13.5 19 15.5 19 20" />
     </>
   ),
 };

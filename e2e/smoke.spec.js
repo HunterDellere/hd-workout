@@ -58,9 +58,11 @@ for (const route of A11Y_ROUTES) {
   test(`${route.name} is a11y clean (no serious/critical violations)`, async ({ page }) => {
     await page.goto(`./${route.hash}`);
     await injectAxe(page);
-    // Wait briefly for content + entrance animations to settle so axe
-    // measures the final-state colours rather than the in-flight ones.
-    await page.waitForTimeout(400);
+    // Wait for content + entrance animations to settle so axe measures
+    // final-state colours, not in-flight ones. Under parallel load the
+    // ExerciseCardV2 entrance animation can race past the prior 400ms,
+    // so we hold for 700ms here (still well under the 5s test timeout).
+    await page.waitForTimeout(700);
     await checkA11y(page, undefined, {
       detailedReport: true,
       detailedReportOptions: { html: true },

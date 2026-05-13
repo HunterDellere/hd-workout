@@ -57,8 +57,8 @@ export function Page({
         >
           <Link
             to="/me"
-            aria-label="Open settings"
-            data-testid="chrome-settings"
+            aria-label="Open your profile"
+            data-testid="chrome-profile"
             style={{
               width: 36,
               height: 36,
@@ -72,7 +72,7 @@ export function Page({
               transition: 'color 160ms ease, border-color 160ms ease',
             }}
           >
-            <NavIcon name="settings" size={16} />
+            <NavIcon name="profile" size={16} />
           </Link>
           <ThemeToggle />
         </div>

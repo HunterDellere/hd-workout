@@ -7,7 +7,7 @@
 // so a bump is the single switch that evicts the previous install's
 // cached shell + manifest + icons.
 
-const CACHE_VERSION = 'hdw-v2-session11';
+const CACHE_VERSION = 'hdw-v3-library-hub';
 const ASSET_CACHE = `${CACHE_VERSION}-assets`;
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icon.svg'];
 

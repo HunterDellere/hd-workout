@@ -1,20 +1,100 @@
-// /library — pattern-first browse, typographic index.
-//
-// Display-led: a serif title carries the page, hairline rows list the ten
-// movement patterns. Each row leads with a bespoke 1.5px-stroke glyph in
-// the pattern's accent ink — semantic colour, not decoration.
+// /library — hub. Two expandable groups: By day, By movement pattern.
+// Days regain their titled, browsable shape but live inside Library, not
+// as BottomNav tabs. Pattern list (the original Library content) is the
+// second group, collapsed by default.
 
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Page,
-  Block,
   Stack,
   Text,
   PatternGlyph,
   BrushDivider,
 } from '../design-system/components';
-import { patternAccent, space as spaceScale } from '../design-system/tokens';
+import { patternAccent, dayLineageAccent, space as spaceScale } from '../design-system/tokens';
 import { PATTERNS } from '../data/patterns';
+import { dayList } from '../data';
+
+function GroupHeader({ label, count, open, onToggle }) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-expanded={open}
+      data-testid={`library-group-${label.toLowerCase().replace(/\s+/g, '-')}`}
+      style={{
+        all: 'unset',
+        cursor: 'pointer',
+        width: '100%',
+        display: 'flex',
+        alignItems: 'baseline',
+        justifyContent: 'space-between',
+        gap: 12,
+        padding: '20px 0',
+      }}
+    >
+      <Stack direction="row" align="baseline" gap={3}>
+        <Text
+          as="span"
+          variant="mono-sm"
+          tone="tertiary"
+          style={{ textTransform: 'uppercase', width: 16 }}
+        >
+          {open ? '−' : '+'}
+        </Text>
+        <Text as="span" variant="title-lg">
+          {label}
+        </Text>
+      </Stack>
+      <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
+        {count}
+      </Text>
+    </button>
+  );
+}
+
+function DayRow({ day, isFirst }) {
+  const accent = dayLineageAccent[day.key] ?? 'stone';
+  const total = day.sections.reduce((n, s) => n + s.exercises.length, 0);
+  return (
+    <li>
+      <Link
+        to={`/${day.key}`}
+        data-day-key={day.key}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: spaceScale[4],
+          padding: `${spaceScale[4]}px 0 ${spaceScale[4]}px ${spaceScale[4]}px`,
+          borderTop: isFirst ? 'none' : '1px solid var(--border-hairline)',
+          textDecoration: 'none',
+          color: 'var(--text-primary)',
+        }}
+      >
+        <span
+          aria-hidden
+          style={{
+            width: 8,
+            height: 8,
+            background: `var(--accent-${accent}-solid)`,
+            borderRadius: 1,
+            flexShrink: 0,
+          }}
+        />
+        <Stack direction="column" gap={1} style={{ flex: 1, minWidth: 0 }}>
+          <Text as="span" variant="title-md">{day.name}</Text>
+          {day.subtitle && (
+            <Text as="span" variant="body-sm" tone="secondary">{day.subtitle}</Text>
+          )}
+        </Stack>
+        <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
+          {total} {total === 1 ? 'exercise' : 'exercises'}
+        </Text>
+      </Link>
+    </li>
+  );
+}
 
 function PatternRow({ pattern, isFirst }) {
   const accent = patternAccent[pattern.key];
@@ -27,7 +107,7 @@ function PatternRow({ pattern, isFirst }) {
           display: 'flex',
           alignItems: 'center',
           gap: spaceScale[4],
-          padding: `${spaceScale[4]}px 0`,
+          padding: `${spaceScale[4]}px 0 ${spaceScale[4]}px ${spaceScale[4]}px`,
           borderTop: isFirst ? 'none' : '1px solid var(--border-hairline)',
           textDecoration: 'none',
           color: 'var(--text-primary)',
@@ -41,12 +121,17 @@ function PatternRow({ pattern, isFirst }) {
             flexShrink: 0,
           }}
         >
-          <PatternGlyph name={pattern.key} size={28} />
+          <PatternGlyph name={pattern.key} size={24} />
         </span>
-        <Stack direction="column" gap={1} style={{ flex: 1, minWidth: 0 }}>
-          <Text as="span" variant="title-md">{pattern.label}</Text>
-        </Stack>
-        <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
+        <Text as="span" variant="title-md" style={{ flex: 1, minWidth: 0 }}>
+          {pattern.label}
+        </Text>
+        <Text
+          as="span"
+          variant="mono-sm"
+          tone="tertiary"
+          style={{ textTransform: 'uppercase' }}
+        >
           {pattern.key}
         </Text>
       </Link>
@@ -55,6 +140,9 @@ function PatternRow({ pattern, isFirst }) {
 }
 
 export function Library() {
+  const [daysOpen, setDaysOpen] = useState(true);
+  const [patternsOpen, setPatternsOpen] = useState(false);
+
   return (
     <Page>
       <Text as="div" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
@@ -65,7 +153,7 @@ export function Library() {
         variant="display-lg"
         style={{ marginTop: 8, fontStyle: 'italic' }}
       >
-        Movements
+        Reference
       </Text>
       <Text
         as="p"
@@ -73,22 +161,51 @@ export function Library() {
         tone="secondary"
         style={{ marginTop: 16, maxWidth: 56 * 9 }}
       >
-        Every exercise lives under the movement it trains. Start with the pattern,
-        find the variation that fits the day.
+        Browse the program by training day, or jump straight to a movement
+        pattern and pick from every variation that trains it.
       </Text>
 
       <BrushDivider style={{ marginTop: 40 }} />
 
-      <Block gapTop={24}>
-        <ul
-          data-testid="library-patterns"
-          style={{ listStyle: 'none', margin: 0, padding: 0 }}
-        >
-          {PATTERNS.map((p, i) => (
-            <PatternRow key={p.key} pattern={p} isFirst={i === 0} />
-          ))}
-        </ul>
-      </Block>
+      {/* By day */}
+      <section style={{ borderBottom: '1px solid var(--border-hairline)' }}>
+        <GroupHeader
+          label="By day"
+          count={`${dayList.length} days`}
+          open={daysOpen}
+          onToggle={() => setDaysOpen((v) => !v)}
+        />
+        {daysOpen && (
+          <ul
+            data-testid="library-days"
+            style={{ listStyle: 'none', margin: '0 0 8px', padding: 0 }}
+          >
+            {dayList.map((d, i) => (
+              <DayRow key={d.key} day={d} isFirst={i === 0} />
+            ))}
+          </ul>
+        )}
+      </section>
+
+      {/* By movement pattern */}
+      <section>
+        <GroupHeader
+          label="By movement"
+          count={`${PATTERNS.length} patterns`}
+          open={patternsOpen}
+          onToggle={() => setPatternsOpen((v) => !v)}
+        />
+        {patternsOpen && (
+          <ul
+            data-testid="library-patterns"
+            style={{ listStyle: 'none', margin: '0 0 8px', padding: 0 }}
+          >
+            {PATTERNS.map((p, i) => (
+              <PatternRow key={p.key} pattern={p} isFirst={i === 0} />
+            ))}
+          </ul>
+        )}
+      </section>
     </Page>
   );
 }

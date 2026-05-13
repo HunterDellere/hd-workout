@@ -24,6 +24,7 @@ test.beforeEach(async ({ page }) => {
 
 test('every library row renders its pattern glyph', async ({ page }) => {
   await page.goto('./#/library');
+  await page.getByTestId('library-group-by-movement').click();
   for (const key of PATTERNS) {
     const row = page.locator(`[data-pattern-key="${key}"]`);
     await expect(row).toBeVisible();
@@ -40,6 +41,7 @@ test('pattern detail renders the pattern glyph', async ({ page }) => {
 
 test('Library visual — index', async ({ page }) => {
   await page.goto('./#/library');
+  await page.getByTestId('library-group-by-movement').click();
   const list = page.getByTestId('library-patterns');
   await list.waitFor({ state: 'visible' });
   await page.waitForTimeout(200);
