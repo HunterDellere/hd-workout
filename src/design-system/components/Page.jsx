@@ -15,7 +15,7 @@ export function Page({
   as: As = 'main',
   width = 'reading', // 'reading' | 'dashboard' | 'full'
   topPad = 32,
-  bottomPad = 120, // room for the BottomNav + SessionBar
+  bottomPad = 168, // room for the BottomNav (~60) + SessionBar (~52) + breathing
   chrome = true,
   style,
   children,

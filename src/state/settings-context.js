@@ -27,6 +27,7 @@ export const DEFAULT_SETTINGS = {
   },
   restTimerMode: 'count-up',
   units: 'kg',
+  haptics: 'standard', // off | standard | strong
 };
 
 export const DAY_OPTIONS = ['push', 'pull', 'legs', 'core', 'rest'];

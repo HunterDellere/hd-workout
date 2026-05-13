@@ -5,8 +5,8 @@ import { Link } from 'react-router-dom';
 import { Page, Text, BrushDivider, Button } from '../design-system/components';
 
 const ITEMS = [
-  { to: '/me/settings', label: 'Settings', hint: 'Split, rest timer, units' },
-  { to: '/me/about',    label: 'About',    hint: 'What HDW is, install instructions' },
+  { to: '/me/settings', label: 'Settings', hint: 'Split, rest timer, units, haptics' },
+  { to: '/me/about',    label: 'About',    hint: 'Install instructions' },
 ];
 
 export function Me() {

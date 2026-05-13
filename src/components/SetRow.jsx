@@ -193,7 +193,7 @@ export function SetRow({ performance, prescription, accent, unit, onLogSet, onDi
       rpe,
       unit,
     });
-    haptic('select');
+    haptic('doubleTap');
     setRpe(null);
     // Keep weight; reset rpe; nudge reps to prescription default for next set.
   }

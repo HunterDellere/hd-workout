@@ -25,7 +25,7 @@ export function Home() {
           tone="tertiary"
           style={{ textTransform: 'uppercase', marginBottom: 18 }}
         >
-          HDW · A daily practice
+          HDW
         </Text>
 
         <Text
@@ -34,7 +34,7 @@ export function Home() {
           tone="primary"
           style={{ fontStyle: 'italic', maxWidth: 18 * 16 }}
         >
-          A reference for the four rooms of the body.
+          Your training, written down.
         </Text>
 
         <Text
@@ -43,13 +43,12 @@ export function Home() {
           tone="secondary"
           style={{ marginTop: 24, maxWidth: 30 * 16 }}
         >
-          Push, pull, legs, core. Every movement pattern, every cue, every
-          variant. Kept like a notebook. Read on the couch; used on the gym
-          floor.
+          Push, pull, legs, core. A notebook for what you lift, how you lift
+          it, and what worked last time.
         </Text>
       </motion.header>
 
-      <Block eyebrow="The rooms" gapTop={56}>
+      <Block eyebrow="Days" gapTop={56}>
         <Stack as="ul" gap={0} style={{ listStyle: 'none', padding: 0, margin: 0 }}>
           {dayList.map((d, i) => (
             <DayRow
@@ -69,7 +68,7 @@ export function Home() {
 
       <Block eyebrow="Or" gapTop={56}>
         <Text as="p" variant="body-md" tone="secondary" style={{ marginBottom: 16 }}>
-          Browse by movement pattern instead.
+          Browse by movement.
         </Text>
         <LibraryLink onClick={() => { haptic('select'); navigate('/library'); }} />
       </Block>
@@ -78,7 +77,7 @@ export function Home() {
         <BrushDivider />
         <Stack direction="row" justify="space-between" align="baseline" style={{ marginTop: 24 }}>
           <Text as="div" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
-            HDW · A daily practice
+            HDW
           </Text>
           <Text
             as={Link}

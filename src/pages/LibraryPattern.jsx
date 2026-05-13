@@ -89,8 +89,7 @@ export function LibraryPattern() {
           Unknown pattern
         </Text>
         <Text as="p" variant="body-lg" tone="secondary" style={{ marginTop: 16 }}>
-          No movement called <code style={{ fontFamily: 'var(--font-mono)' }}>{movementKey}</code> exists.
-          The library lists the ten patterns the catalog supports.
+          Nothing here for <code style={{ fontFamily: 'var(--font-mono)' }}>{movementKey}</code>.
         </Text>
         <BrushDivider style={{ marginTop: 32 }} />
         <Block gapTop={24}>
@@ -150,8 +149,7 @@ export function LibraryPattern() {
           ) : (
             <Stack direction="column" gap={4}>
               <Text as="p" variant="body-lg" tone="secondary">
-                Nothing in the current catalog trains this pattern yet. As the
-                program expands, the variants that fit will surface here.
+                Nothing for this one yet.
               </Text>
               <div>
                 <Button as={Link} to="/library" variant="soft" accent={accent} size="md">

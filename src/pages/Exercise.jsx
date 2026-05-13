@@ -32,8 +32,7 @@ export function ExercisePage() {
           Exercise not found
         </Text>
         <Text as="p" variant="body-lg" tone="secondary" style={{ marginTop: 16 }}>
-          No exercise with the id <code style={{ fontFamily: 'var(--font-mono)' }}>{exerciseId}</code> exists.
-          It may have been renamed when the catalog last updated.
+          No exercise with the id <code style={{ fontFamily: 'var(--font-mono)' }}>{exerciseId}</code>.
         </Text>
         <BrushDivider style={{ marginTop: 32 }} />
         <div style={{ marginTop: 24 }}>

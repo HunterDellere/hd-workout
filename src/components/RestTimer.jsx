@@ -42,7 +42,7 @@ export function RestTimer({ startedAt, restRaw, mode = 'count-up', accent = 'sto
   useEffect(() => {
     if (reachedTarget && buzzedForRef.current !== startedAt) {
       buzzedForRef.current = startedAt;
-      haptic('medium');
+      haptic('ready');
     }
   }, [reachedTarget, startedAt, haptic]);
 

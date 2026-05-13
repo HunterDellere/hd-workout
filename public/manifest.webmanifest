@@ -1,7 +1,7 @@
 {
   "name": "HDW",
   "short_name": "HDW",
-  "description": "A reference and logbook for the four rooms of the body — push, pull, legs, core. Every movement pattern, every cue, every variant.",
+  "description": "A training notebook. Push, pull, legs, core — written down.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

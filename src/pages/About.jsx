@@ -63,9 +63,8 @@ export function About() {
         HDW
       </Text>
       <Text as="p" variant="body-lg" tone="secondary" style={{ marginTop: 16, maxWidth: 60 * 9 }}>
-        A daily training notebook. A reference for the four rooms of the body —
-        push, pull, legs, core. Read on the couch; used on the gym floor. No
-        accounts, no subscription, no analytics looking over your shoulder.
+        A training notebook. Push, pull, legs, core — written down. No
+        account, no subscription, no analytics watching over your shoulder.
       </Text>
 
       <BrushDivider style={{ marginTop: 40 }} />
@@ -91,21 +90,18 @@ export function About() {
       <Block gapTop={24} eyebrow="Your data">
         <Stack direction="column" gap={3}>
           <Text as="p" variant="body-lg" tone="primary">
-            Everything you log stays on your device. There is no server. No
-            account, no email, no opt-in to anything.
+            Everything stays on your device. No server, no account, no email.
           </Text>
           <Text as="p" variant="body-md" tone="secondary">
-            When tracking lands, you will be able to export the whole log as a
-            single file and re-import it on a new device. If you delete the app,
-            the data goes with it.
+            Export the log as one file; re-import on a new phone. Delete the
+            app and the data goes with it.
           </Text>
         </Stack>
       </Block>
 
       <Block gapTop={32} eyebrow="Colophon">
         <Text as="p" variant="body-md" tone="secondary" style={{ maxWidth: 60 * 9 }}>
-          Set in Newsreader, Inter, and JetBrains Mono. Built as a progressive
-          web app. Built deliberately small.
+          Newsreader, Inter, JetBrains Mono. A small PWA.
         </Text>
       </Block>
     </Page>

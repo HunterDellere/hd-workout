@@ -13,6 +13,7 @@ import {
   BrushDivider,
 } from '../design-system/components';
 import { useSettings, DAY_OPTIONS, WEEKDAYS } from '../state/settings-context.js';
+import { useHaptics, HAPTIC_MODES } from '../hooks/useHaptics';
 
 function Radio({ value, current, onSelect, label, hint }) {
   const checked = current === value;
@@ -63,7 +64,8 @@ function Radio({ value, current, onSelect, label, hint }) {
 const DAY_LABEL = { push: 'Push', pull: 'Pull', legs: 'Legs', core: 'Core', rest: 'Rest' };
 
 export function Settings() {
-  const { settings, setSplit, setRestTimerMode, setUnits, resetSplit } = useSettings();
+  const { settings, setSplit, setRestTimerMode, setUnits, setHaptics, resetSplit } = useSettings();
+  const haptic = useHaptics();
 
   return (
     <Page>
@@ -77,14 +79,14 @@ export function Settings() {
         Settings
       </Text>
       <Text as="p" variant="body-lg" tone="secondary" style={{ marginTop: 16, maxWidth: 60 * 9 }}>
-        Stays on this device. No account, no sync, no nag.
+        Stays on this device.
       </Text>
 
       <BrushDivider style={{ marginTop: 40 }} />
 
-      <Block gapTop={24} eyebrow="Weekly split">
+      <Block gapTop={24} eyebrow="Split">
         <Text as="p" variant="body-md" tone="secondary" style={{ marginBottom: 12 }}>
-          What day shows on <code style={{ fontFamily: 'var(--font-mono)' }}>/today</code> for each weekday.
+          What appears on <code style={{ fontFamily: 'var(--font-mono)' }}>/today</code> each weekday.
         </Text>
         <div data-testid="split-editor">
           {WEEKDAYS.map((wd) => (
@@ -132,14 +134,14 @@ export function Settings() {
             current={settings.restTimerMode}
             onSelect={setRestTimerMode}
             label="Count up"
-            hint="0:00 → target. Pulses at the rest target. Calm."
+            hint="0:00 → target. Pulses when ready."
           />
           <Radio
             value="countdown"
             current={settings.restTimerMode}
             onSelect={setRestTimerMode}
             label="Countdown"
-            hint="Target → 0:00. Pulses at zero. More obvious."
+            hint="Target → 0:00. Pulses at zero."
           />
         </div>
       </Block>
@@ -162,6 +164,31 @@ export function Settings() {
             label="Pounds"
             hint="5 lb minimum increment."
           />
+        </div>
+      </Block>
+
+      <BrushDivider style={{ marginTop: 40 }} />
+
+      <Block gapTop={24} eyebrow="Haptics">
+        <Text as="p" variant="body-md" tone="secondary" style={{ marginBottom: 12 }}>
+          Tap an option to feel it.
+        </Text>
+        <div role="radiogroup" aria-label="Haptics">
+          {HAPTIC_MODES.map((m) => (
+            <Radio
+              key={m.value}
+              value={m.value}
+              current={settings.haptics}
+              onSelect={(v) => {
+                setHaptics(v);
+                // Fire after the state-set so the new intensity is in effect.
+                // useHaptics reads settings, so we wait a tick.
+                setTimeout(() => haptic('doubleTap'), 0);
+              }}
+              label={m.label}
+              hint={m.hint}
+            />
+          ))}
         </div>
       </Block>
     </Page>

@@ -1,9 +1,6 @@
-// /library — hub. Two expandable groups: By day, By movement pattern.
-// Days regain their titled, browsable shape but live inside Library, not
-// as BottomNav tabs. Pattern list (the original Library content) is the
-// second group, collapsed by default.
+// /library — hub. Two groups: by day, by movement pattern. Both always
+// expanded; the page reads as a single browsable index.
 
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Page,
@@ -16,41 +13,20 @@ import { patternAccent, dayLineageAccent, space as spaceScale } from '../design-
 import { PATTERNS } from '../data/patterns';
 import { dayList } from '../data';
 
-function GroupHeader({ label, count, open, onToggle }) {
+function GroupHeader({ label, count }) {
   return (
-    <button
-      type="button"
-      onClick={onToggle}
-      aria-expanded={open}
-      data-testid={`library-group-${label.toLowerCase().replace(/\s+/g, '-')}`}
-      style={{
-        all: 'unset',
-        cursor: 'pointer',
-        width: '100%',
-        display: 'flex',
-        alignItems: 'baseline',
-        justifyContent: 'space-between',
-        gap: 12,
-        padding: '20px 0',
-      }}
+    <Stack
+      direction="row"
+      align="baseline"
+      justify="space-between"
+      gap={3}
+      style={{ padding: '20px 0 12px' }}
     >
-      <Stack direction="row" align="baseline" gap={3}>
-        <Text
-          as="span"
-          variant="mono-sm"
-          tone="tertiary"
-          style={{ textTransform: 'uppercase', width: 16 }}
-        >
-          {open ? '−' : '+'}
-        </Text>
-        <Text as="span" variant="title-lg">
-          {label}
-        </Text>
-      </Stack>
+      <Text as="h2" variant="title-lg">{label}</Text>
       <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
         {count}
       </Text>
-    </button>
+    </Stack>
   );
 }
 
@@ -66,7 +42,7 @@ function DayRow({ day, isFirst }) {
           display: 'flex',
           alignItems: 'center',
           gap: spaceScale[4],
-          padding: `${spaceScale[4]}px 0 ${spaceScale[4]}px ${spaceScale[4]}px`,
+          padding: `${spaceScale[4]}px 0`,
           borderTop: isFirst ? 'none' : '1px solid var(--border-hairline)',
           textDecoration: 'none',
           color: 'var(--text-primary)',
@@ -89,7 +65,7 @@ function DayRow({ day, isFirst }) {
           )}
         </Stack>
         <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
-          {total} {total === 1 ? 'exercise' : 'exercises'}
+          {total}
         </Text>
       </Link>
     </li>
@@ -107,7 +83,7 @@ function PatternRow({ pattern, isFirst }) {
           display: 'flex',
           alignItems: 'center',
           gap: spaceScale[4],
-          padding: `${spaceScale[4]}px 0 ${spaceScale[4]}px ${spaceScale[4]}px`,
+          padding: `${spaceScale[4]}px 0`,
           borderTop: isFirst ? 'none' : '1px solid var(--border-hairline)',
           textDecoration: 'none',
           color: 'var(--text-primary)',
@@ -140,9 +116,6 @@ function PatternRow({ pattern, isFirst }) {
 }
 
 export function Library() {
-  const [daysOpen, setDaysOpen] = useState(true);
-  const [patternsOpen, setPatternsOpen] = useState(false);
-
   return (
     <Page>
       <Text as="div" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
@@ -161,50 +134,35 @@ export function Library() {
         tone="secondary"
         style={{ marginTop: 16, maxWidth: 56 * 9 }}
       >
-        Browse the program by training day, or jump straight to a movement
-        pattern and pick from every variation that trains it.
+        Browse by day, or by movement.
       </Text>
 
       <BrushDivider style={{ marginTop: 40 }} />
 
-      {/* By day */}
-      <section style={{ borderBottom: '1px solid var(--border-hairline)' }}>
-        <GroupHeader
-          label="By day"
-          count={`${dayList.length} days`}
-          open={daysOpen}
-          onToggle={() => setDaysOpen((v) => !v)}
-        />
-        {daysOpen && (
-          <ul
-            data-testid="library-days"
-            style={{ listStyle: 'none', margin: '0 0 8px', padding: 0 }}
-          >
-            {dayList.map((d, i) => (
-              <DayRow key={d.key} day={d} isFirst={i === 0} />
-            ))}
-          </ul>
-        )}
+      <section>
+        <GroupHeader label="Days" count={`${dayList.length}`} />
+        <ul
+          data-testid="library-days"
+          style={{ listStyle: 'none', margin: 0, padding: 0 }}
+        >
+          {dayList.map((d, i) => (
+            <DayRow key={d.key} day={d} isFirst={i === 0} />
+          ))}
+        </ul>
       </section>
 
-      {/* By movement pattern */}
+      <BrushDivider style={{ marginTop: 40 }} />
+
       <section>
-        <GroupHeader
-          label="By movement"
-          count={`${PATTERNS.length} patterns`}
-          open={patternsOpen}
-          onToggle={() => setPatternsOpen((v) => !v)}
-        />
-        {patternsOpen && (
-          <ul
-            data-testid="library-patterns"
-            style={{ listStyle: 'none', margin: '0 0 8px', padding: 0 }}
-          >
-            {PATTERNS.map((p, i) => (
-              <PatternRow key={p.key} pattern={p} isFirst={i === 0} />
-            ))}
-          </ul>
-        )}
+        <GroupHeader label="Movements" count={`${PATTERNS.length}`} />
+        <ul
+          data-testid="library-patterns"
+          style={{ listStyle: 'none', margin: 0, padding: 0 }}
+        >
+          {PATTERNS.map((p, i) => (
+            <PatternRow key={p.key} pattern={p} isFirst={i === 0} />
+          ))}
+        </ul>
       </section>
     </Page>
   );

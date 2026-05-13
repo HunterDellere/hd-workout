@@ -157,7 +157,7 @@ export function Today() {
 
         <Block gapTop={24} eyebrow="Active rest" headingVariant="title-lg">
           <Text as="p" variant="body-md" tone="secondary" style={{ marginBottom: 16, maxWidth: 60 * 9 }}>
-            Suggestions, not prescriptions. Pick one if your body asks for movement.
+            If you want to move. None of this is required.
           </Text>
           <ul
             data-testid="active-rest-list"
@@ -191,7 +191,7 @@ export function Today() {
         <Block gapTop={48}>
           <BrushDivider />
           <Text as="p" variant="body-sm" tone="tertiary" style={{ marginTop: 24 }}>
-            Override today by editing your weekly split in <Link to="/me/settings" style={{ color: 'inherit', textDecoration: 'underline' }}>settings</Link>.
+            Edit your week in <Link to="/me/settings" style={{ color: 'inherit', textDecoration: 'underline' }}>settings</Link>.
           </Text>
         </Block>
       </Page>
@@ -249,8 +249,7 @@ export function Today() {
         <Block gapTop={24}>
           <Stack direction="column" gap={4}>
             <Text as="p" variant="body-lg" tone="secondary">
-              {day.sections.reduce((n, s) => n + s.exercises.length, 0)} exercises across {day.sections.length} sections.
-              Tap start to begin logging.
+              {day.sections.reduce((n, s) => n + s.exercises.length, 0)} exercises, {day.sections.length} sections.
             </Text>
             <div>
               <Button

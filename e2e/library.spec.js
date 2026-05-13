@@ -33,15 +33,8 @@ test.afterEach(async ({}, testInfo) => {
   expect(errors, `console errors:\n${errors.join('\n')}`).toEqual([]);
 });
 
-// Library hub puts patterns inside the "By movement" disclosure, collapsed
-// by default. Tests that touch the pattern list must open it first.
-async function openPatterns(page) {
-  await page.getByTestId('library-group-by-movement').click();
-}
-
 test('library lists all ten movement patterns', async ({ page }) => {
   await page.goto('./#/library');
-  await openPatterns(page);
   const list = page.getByTestId('library-patterns');
   await expect(list).toBeVisible();
   for (const key of PATTERNS) {
@@ -52,7 +45,6 @@ test('library lists all ten movement patterns', async ({ page }) => {
 
 test('tapping a pattern navigates to its detail route', async ({ page }) => {
   await page.goto('./#/library');
-  await openPatterns(page);
   await page.locator('[data-pattern-key="horizontal-press"]').click();
   await expect(page).toHaveURL(/#\/library\/movements\/horizontal-press$/);
   const detail = page.getByTestId('pattern-detail');
