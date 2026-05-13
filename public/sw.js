@@ -1,8 +1,13 @@
 // HDW :: minimal offline service worker.
 // Cache-first for navigations, stale-while-revalidate for everything else.
 // Bumping CACHE_VERSION on each deploy is enough to invalidate old caches.
+//
+// IMPORTANT: bump this on every meaningful release. The activate handler
+// deletes every cache whose key doesn't start with the current version,
+// so a bump is the single switch that evicts the previous install's
+// cached shell + manifest + icons.
 
-const CACHE_VERSION = 'apex-v1';
+const CACHE_VERSION = 'hdw-v2-session11';
 const ASSET_CACHE = `${CACHE_VERSION}-assets`;
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icon.svg'];
 

@@ -1,13 +1,13 @@
 {
-  "name": "HDW — A daily practice",
+  "name": "HDW",
   "short_name": "HDW",
   "description": "A reference and logbook for the four rooms of the body — push, pull, legs, core. Every movement pattern, every cue, every variant.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#FAF7F2",
-  "theme_color": "#FAF7F2",
+  "background_color": "#F6F4EF",
+  "theme_color": "#F6F4EF",
   "categories": ["fitness", "health", "lifestyle"],
   "icons": [
     {
