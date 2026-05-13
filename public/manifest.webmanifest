@@ -1,13 +1,13 @@
 {
-  "name": "APEX — Full Spectrum Training",
-  "short_name": "APEX",
-  "description": "Push, Pull, Legs and Core training reference. Built for the gym floor.",
+  "name": "HDW — A daily practice",
+  "short_name": "HDW",
+  "description": "A reference and logbook for the four rooms of the body — push, pull, legs, core. Every movement pattern, every cue, every variant.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#080808",
-  "theme_color": "#080808",
+  "background_color": "#FAF7F2",
+  "theme_color": "#FAF7F2",
   "categories": ["fitness", "health", "lifestyle"],
   "icons": [
     {

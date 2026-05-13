@@ -1,16 +1,20 @@
+// Canonical route: /library/exercises/:exerciseId
+// The legacy /:dayKey/exercise/:exerciseId path now redirects here, so this
+// page always closes back to the library.
+
 import { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useExercise } from '../hooks/useExercise';
 import { ExerciseSheet } from '../components/ExerciseSheet';
-import { accentFor, color } from '../design-system';
+import { Page, Text, Button, BrushDivider } from '../design-system/components';
+import { dayLineageAccent } from '../design-system/tokens';
 
-// Deep-link route: /:dayKey/:exerciseId — opens the same sheet as in-place taps.
 export function ExercisePage() {
-  const { dayKey, exerciseId } = useParams();
+  const { exerciseId } = useParams();
   const navigate = useNavigate();
-  const found = useExercise(dayKey, exerciseId);
-  // Reopen the sheet whenever the route id changes (React-recommended
-  // pattern: derive state by comparing prev to current inside render).
+  const found = useExercise(null, exerciseId);
+
+  // Reopen the sheet whenever the route id changes.
   const [open, setOpen] = useState(true);
   const [prevId, setPrevId] = useState(exerciseId);
   if (exerciseId !== prevId) {
@@ -20,21 +24,41 @@ export function ExercisePage() {
 
   if (!found) {
     return (
-      <main style={{ padding: 24, color: color.text, maxWidth: 720, margin: '0 auto' }}>
-        <p style={{ fontFamily: 'var(--font-body)' }}>Exercise not found.</p>
-        <button onClick={() => navigate(`/${dayKey || ''}`)}>Back</button>
-      </main>
+      <Page>
+        <Text as="div" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
+          Not found
+        </Text>
+        <Text as="h1" variant="display-lg" style={{ marginTop: 8, fontStyle: 'italic' }}>
+          Exercise not found
+        </Text>
+        <Text as="p" variant="body-lg" tone="secondary" style={{ marginTop: 16 }}>
+          No exercise with the id <code style={{ fontFamily: 'var(--font-mono)' }}>{exerciseId}</code> exists.
+          It may have been renamed when the catalog last updated.
+        </Text>
+        <BrushDivider style={{ marginTop: 32 }} />
+        <div style={{ marginTop: 24 }}>
+          <Button as={Link} to="/library" variant="soft" accent="slate" size="md">
+            Back to the library
+          </Button>
+        </div>
+      </Page>
     );
   }
-  const accent = accentFor(found.day.key);
+
+  const dayKey = found.day.key;
+  const accent = dayLineageAccent[dayKey] ?? 'stone';
+  // Attach _day so the sheet's accent derivation works regardless of the
+  // lookup path the catalog took (some callers don't carry the day).
+  const exercise = { ...found.exercise, _day: dayKey };
+
   return (
     <ExerciseSheet
       open={open}
       onClose={() => {
         setOpen(false);
-        navigate(`/${found.day.key}`);
+        navigate('/library');
       }}
-      exercise={found.exercise}
+      exercise={exercise}
       accent={accent}
     />
   );

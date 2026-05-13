@@ -1,10 +1,18 @@
-import { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { motion } from 'framer-motion';
+// /:dayKey/section/:sectionKey — a single section in isolation.
+// Rewritten Session 10 on Page/Block, off the legacy bridge.
+
+import { useNavigate, useParams, Link } from 'react-router-dom';
 import { getSection, getDay } from '../data';
-import { color, accentFor, motion as M, Icon, Badge } from '../design-system';
-import { ExerciseCard } from '../components/ExerciseCard';
-import { ExerciseSheet } from '../components/ExerciseSheet';
+import {
+  Page,
+  Block,
+  Stack,
+  Text,
+  Button,
+  BrushDivider,
+} from '../design-system/components';
+import { dayLineageAccent, space as spaceScale } from '../design-system/tokens';
+import { ExerciseCardV2 } from '../components/ExerciseCardV2';
 import { useHaptics } from '../hooks/useHaptics';
 
 export function Section() {
@@ -13,107 +21,100 @@ export function Section() {
   const haptic = useHaptics();
   const section = getSection(dayKey, sectionKey);
   const day = getDay(dayKey);
-  const [open, setOpen] = useState(null);
 
   if (!section || !day) {
     return (
-      <main style={{ padding: 24, color: color.text, maxWidth: 720, margin: '0 auto' }}>
-        <p style={{ fontFamily: 'var(--font-body)' }}>Unknown section.</p>
-        <button onClick={() => navigate(`/${dayKey || ''}`)}>Back</button>
-      </main>
+      <Page>
+        <Button as={Link} to={`/${dayKey || ''}`} variant="bare" size="sm" style={{ padding: 0 }}>
+          ← Back
+        </Button>
+        <Text as="div" variant="mono-sm" tone="tertiary" style={{ marginTop: 24, textTransform: 'uppercase' }}>
+          Not found
+        </Text>
+        <Text as="h1" variant="display-lg" style={{ marginTop: 8, fontStyle: 'italic' }}>
+          Unknown section
+        </Text>
+        <Text as="p" variant="body-lg" tone="secondary" style={{ marginTop: 16 }}>
+          No section called <code style={{ fontFamily: 'var(--font-mono)' }}>{sectionKey}</code> exists
+          under that day.
+        </Text>
+        <BrushDivider style={{ marginTop: 32 }} />
+        <div style={{ marginTop: 24 }}>
+          <Button as={Link} to="/" variant="soft" accent="stone" size="md">
+            Back home
+          </Button>
+        </div>
+      </Page>
     );
   }
-  const accent = accentFor(day.key);
+
+  const accent = dayLineageAccent[day.key] ?? 'stone';
+  const sectionTitle = (section.title.split(' — ')[1] || section.title).trim();
 
   return (
-    <main style={{
-      maxWidth: 720,
-      margin: '0 auto',
-      padding: '20px 16px 120px',
-      color: color.text,
-    }}>
-      <motion.header
-        initial={{ opacity: 0, y: -6 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={M.smooth}
-        style={{ marginBottom: 18 }}
-      >
-        <button
-          type="button"
-          onClick={() => navigate(`/${day.key}`)}
+    <Page>
+      <Button as={Link} to={`/${day.key}`} variant="bare" size="sm" style={{ padding: 0 }}>
+        ← {day.name}
+      </Button>
+
+      <Stack direction="row" align="center" gap={2} style={{ marginTop: 24 }}>
+        <span
+          aria-hidden
           style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 6,
-            background: 'transparent',
-            border: 'none',
-            color: color.muted,
-            cursor: 'pointer',
-            padding: 0,
-            fontFamily: 'var(--font-mono)',
-            fontSize: 11,
-            letterSpacing: '0.18em',
-            textTransform: 'uppercase',
+            width: 8,
+            height: 8,
+            background: `var(--accent-${accent}-solid)`,
+            borderRadius: 1,
           }}
-        >
-          <Icon name="ChevronLeft" size={14} /> {day.name}
-        </button>
-        <div style={{
-          marginTop: 10,
-          fontFamily: 'var(--font-mono)',
-          fontSize: 11,
-          letterSpacing: '0.28em',
-          color: accent,
-          textTransform: 'uppercase',
-        }}>
+        />
+        <Text as="div" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
           {day.name} · Section
-        </div>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 10,
-          marginTop: 6,
-        }}>
-          <h1 style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: 40,
-            lineHeight: 1,
-            margin: 0,
-            color: color.text,
-          }}>
-            {section.title.toUpperCase()}
-          </h1>
-          {section.mandatory && <Badge tone="warn">Mandatory</Badge>}
-        </div>
-        {section.blurb && (
-          <p style={{
-            margin: '10px 0 0',
-            fontFamily: 'var(--font-body)',
-            fontSize: 14,
-            color: color.muted,
-            lineHeight: 1.55,
-          }}>
-            {section.blurb}
-          </p>
-        )}
-      </motion.header>
+        </Text>
+      </Stack>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {section.exercises.map((ex, i) => (
-          <ExerciseCard
-            key={ex.id}
-            exercise={ex}
-            accent={accent}
-            index={i}
-            onOpen={() => {
-              haptic('select');
-              setOpen(ex);
+      <Stack direction="row" align="baseline" justify="space-between" gap={3} style={{ marginTop: 8 }}>
+        <Text as="h1" variant="display-lg" style={{ fontStyle: 'italic' }}>
+          {sectionTitle}
+        </Text>
+        {section.mandatory && (
+          <Text
+            as="span"
+            variant="mono-sm"
+            style={{
+              textTransform: 'uppercase',
+              color: 'var(--state-warn-ink)',
+              whiteSpace: 'nowrap',
             }}
-          />
-        ))}
-      </div>
+          >
+            Mandatory
+          </Text>
+        )}
+      </Stack>
 
-      <ExerciseSheet open={!!open} onClose={() => setOpen(null)} exercise={open} accent={accent} />
-    </main>
+      {section.blurb && (
+        <Text as="p" variant="body-lg" tone="secondary" style={{ marginTop: 16, maxWidth: 60 * 9 }}>
+          {section.blurb}
+        </Text>
+      )}
+
+      <BrushDivider style={{ marginTop: 32 }} />
+
+      <Block gapTop={24}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: spaceScale[2] }}>
+          {section.exercises.map((ex, i) => (
+            <ExerciseCardV2
+              key={ex.id}
+              exercise={ex}
+              dayKey={day.key}
+              index={i}
+              onOpen={() => {
+                haptic('select');
+                navigate(`/library/exercises/${ex.id}`);
+              }}
+            />
+          ))}
+        </div>
+      </Block>
+    </Page>
   );
 }

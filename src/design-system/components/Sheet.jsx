@@ -1,6 +1,10 @@
+// Sheet — full-bleed bottom sheet shell.
+// Theme-reactive frame on CSS vars (Session 10). Drag-to-dismiss + escape +
+// scrim-tap-to-close + body-scroll-lock mechanics preserved.
+
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect } from 'react';
-import { color, radius, shadow, motion as M, z } from '../tokens';
+import { motion as M, radius, z } from '../tokens';
 
 export function Sheet({ open, onClose, children, ariaLabel = 'Detail' }) {
   useEffect(() => {
@@ -29,7 +33,7 @@ export function Sheet({ open, onClose, children, ariaLabel = 'Detail' }) {
             style={{
               position: 'fixed',
               inset: 0,
-              background: 'rgba(0,0,0,0.62)',
+              background: 'var(--surface-scrim)',
               backdropFilter: 'blur(6px)',
               WebkitBackdropFilter: 'blur(6px)',
               zIndex: z.sheet,
@@ -56,11 +60,11 @@ export function Sheet({ open, onClose, children, ariaLabel = 'Detail' }) {
               right: 0,
               bottom: 0,
               maxHeight: '92vh',
-              background: color.s1,
-              borderTop: `1px solid ${color.border}`,
+              background: 'var(--surface-page)',
+              borderTop: '1px solid var(--border-hairline)',
               borderTopLeftRadius: radius.xl,
               borderTopRightRadius: radius.xl,
-              boxShadow: shadow.s4,
+              boxShadow: 'var(--shadow-2)',
               zIndex: z.sheet + 1,
               overflow: 'hidden',
               display: 'flex',
@@ -82,7 +86,7 @@ export function Sheet({ open, onClose, children, ariaLabel = 'Detail' }) {
                   width: 44,
                   height: 4,
                   borderRadius: 99,
-                  background: color.border2,
+                  background: 'var(--border-strong)',
                 }}
               />
             </div>

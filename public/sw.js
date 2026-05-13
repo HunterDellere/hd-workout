@@ -1,4 +1,4 @@
-// APEX :: minimal offline service worker.
+// HDW :: minimal offline service worker.
 // Cache-first for navigations, stale-while-revalidate for everything else.
 // Bumping CACHE_VERSION on each deploy is enough to invalidate old caches.
 

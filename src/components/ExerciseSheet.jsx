@@ -1,78 +1,116 @@
-import { Sheet, Badge, Divider, Icon, color, withAlpha, tierMeta } from '../design-system';
+// ExerciseSheet — full-bleed bottom sheet showing one exercise.
+// Content is theme-reactive (v2 primitives + CSS vars only); the outer
+// Sheet shell still uses the legacy bridge and is queued for rewrite in
+// Session 10 along with the bridge teardown.
+//
+// Structure, top to bottom:
+//   eyebrow (tier label, accent ink)
+//   serif name (display-lg, italic)
+//   mono close button (top right)
+//   sets / rest — two stacked rows of mono-sm eyebrow + mono-lg value
+//   brush divider
+//   equipment / muscles — body-md with mono-sm eyebrow
+//   brush divider
+//   cues — numbered, mono index hanging in the gutter, body-lg copy
+//   brush divider
+//   safety — vermilion-ink eyebrow, body-md, no chrome
+//   brush divider
+//   variants — VariantList
+//   brush divider
+//   tags — mono row
+
+import { Sheet } from '../design-system';
+import { Stack, Text, BrushDivider } from '../design-system/components';
 import { VariantList } from './VariantList';
 
-function Stat({ label, value, accent }) {
+const TIER_LABEL = {
+  S: 'Foundational',
+  A: 'Primary alt',
+  B: 'Accessory',
+  C: 'Accessory',
+};
+
+function StatRow({ label, value, accent }) {
   return (
-    <div style={{
-      padding: '10px 12px',
-      background: color.s2,
-      border: `1px solid ${color.border}`,
-      borderRadius: 10,
-      minWidth: 0,
-    }}>
-      <div style={{
-        fontFamily: 'var(--font-mono)',
-        fontSize: 10,
-        color: color.muted,
-        letterSpacing: '0.18em',
-        textTransform: 'uppercase',
-      }}>
+    <Stack direction="column" gap={1} style={{ flex: 1, minWidth: 0 }}>
+      <Text
+        as="div"
+        variant="mono-sm"
+        tone="tertiary"
+        style={{ textTransform: 'uppercase' }}
+      >
         {label}
-      </div>
-      <div style={{
-        marginTop: 4,
-        fontFamily: 'var(--font-body)',
-        fontSize: 15,
-        color: accent || color.text,
-        letterSpacing: '-0.005em',
-      }}>
+      </Text>
+      <Text
+        as="div"
+        variant="mono-lg"
+        style={{ color: `var(--accent-${accent}-ink)` }}
+      >
         {value}
-      </div>
-    </div>
+      </Text>
+    </Stack>
   );
 }
 
-function Section({ title, accent, children }) {
+function Eyebrow({ children, accent, color }) {
   return (
-    <div style={{ marginTop: 22 }}>
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 8,
-        marginBottom: 10,
-      }}>
-        <span
-          aria-hidden
-          style={{
-            width: 4, height: 14, borderRadius: 2, background: accent,
-          }}
-        />
-        <h3 style={{
-          fontFamily: 'var(--font-mono)',
-          fontSize: 11,
-          letterSpacing: '0.18em',
-          textTransform: 'uppercase',
-          color: color.text,
-          margin: 0,
-        }}>
-          {title}
-        </h3>
-      </div>
+    <Text
+      as="div"
+      variant="mono-sm"
+      style={{
+        textTransform: 'uppercase',
+        color: color ?? (accent ? `var(--accent-${accent}-ink)` : 'var(--text-tertiary)'),
+      }}
+    >
       {children}
-    </div>
+    </Text>
   );
 }
 
-function BulletList({ items, tone = 'muted', accent }) {
-  const dotColor = tone === 'warn' ? color.warn : accent || color.muted;
+function SectionBlock({ children, style }) {
+  return <div style={{ marginTop: 28, ...style }}>{children}</div>;
+}
+
+function CuesList({ items }) {
+  return (
+    <ol style={{
+      listStyle: 'none',
+      padding: 0,
+      margin: 0,
+      counterReset: 'cue',
+    }}>
+      {items.map((item, i) => (
+        <li
+          key={i}
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '24px 1fr',
+            gap: 12,
+            padding: '8px 0',
+            borderTop: i === 0 ? 'none' : '1px solid var(--border-hairline)',
+          }}
+        >
+          <Text
+            as="span"
+            variant="mono-sm"
+            tone="tertiary"
+            style={{ textTransform: 'uppercase', paddingTop: 4 }}
+          >
+            {String(i + 1).padStart(2, '0')}
+          </Text>
+          <Text as="span" variant="body-lg" tone="primary">{item}</Text>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+function BulletList({ items, tone = 'secondary' }) {
   return (
     <ul style={{
       listStyle: 'none',
       padding: 0,
       margin: 0,
-      display: 'flex',
-      flexDirection: 'column',
-      gap: 8,
     }}>
       {items.map((item, i) => (
         <li
@@ -80,82 +118,64 @@ function BulletList({ items, tone = 'muted', accent }) {
           style={{
             display: 'flex',
             gap: 10,
-            fontFamily: 'var(--font-body)',
-            fontSize: 14,
-            lineHeight: 1.5,
-            color: color.text,
+            padding: '8px 0',
+            borderTop: i === 0 ? 'none' : '1px solid var(--border-hairline)',
           }}
         >
           <span
             aria-hidden
             style={{
               flexShrink: 0,
-              marginTop: 7,
-              width: 5,
-              height: 5,
-              borderRadius: 999,
-              background: dotColor,
+              marginTop: 10,
+              width: 4,
+              height: 4,
+              borderRadius: 1,
+              background: 'var(--state-warn)',
             }}
           />
-          <span>{item}</span>
+          <Text as="span" variant="body-md" tone={tone}>{item}</Text>
         </li>
       ))}
     </ul>
   );
 }
 
-export function ExerciseSheet({ open, onClose, exercise, accent }) {
+export function ExerciseSheet({ open, onClose, exercise }) {
   if (!exercise) {
     return <Sheet open={open} onClose={onClose} ariaLabel="Exercise detail" />;
   }
-  const tm = tierMeta[exercise.tier];
+
+  // The legacy callsite passes `accent` as a hex from `accentFor(dayKey)`.
+  // The rewritten content takes an accent *token name* — derive it from the
+  // exercise's day so theme-reactive CSS vars resolve correctly. Fallback to
+  // slate if the day is unknown.
+  const DAY_TO_ACCENT = { push: 'rust', pull: 'sea', legs: 'sand', core: 'sky' };
+  const accent = DAY_TO_ACCENT[exercise._day] ?? 'stone';
+  const tierLabel = TIER_LABEL[exercise.tier] ?? exercise.tier;
+
   return (
     <Sheet open={open} onClose={onClose} ariaLabel={exercise.name}>
-      <div style={{ padding: '8px 20px 96px' }}>
-        <div style={{
-          display: 'flex',
-          alignItems: 'flex-start',
-          gap: 14,
-          paddingBottom: 4,
-        }}>
-          <span style={{
-            flexShrink: 0,
-            width: 44,
-            height: 44,
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: exercise.tier === 'S' ? accent : withAlpha(accent, 0.18),
-            color: exercise.tier === 'S' ? color.bg : accent,
-            borderRadius: 10,
-            fontFamily: 'var(--font-display)',
-            fontSize: 24,
-            letterSpacing: '0.04em',
-            lineHeight: 1,
-          }}>
-            {tm?.glyph ?? exercise.tier}
-          </span>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: 10,
-              letterSpacing: '0.22em',
-              color: accent,
-              textTransform: 'uppercase',
-            }}>
-              Tier · {tm?.label}
-            </div>
-            <h2 style={{
-              fontFamily: 'var(--font-display)',
-              fontSize: 38,
-              lineHeight: 1.02,
-              color: color.text,
-              margin: '6px 0 0',
-              letterSpacing: '0.005em',
-            }}>
-              {exercise.name.toUpperCase()}
-            </h2>
-          </div>
+      <div
+        style={{
+          padding: '20px 24px 96px',
+          background: 'var(--surface-page)',
+          color: 'var(--text-primary)',
+          minHeight: '100%',
+        }}
+      >
+        <Stack direction="row" align="flex-start" justify="space-between" gap={3}>
+          <Stack direction="column" gap={1} style={{ flex: 1, minWidth: 0 }}>
+            <Eyebrow accent={accent}>
+              Tier {exercise.tier}  ·  {tierLabel}
+            </Eyebrow>
+            <Text
+              as="h2"
+              variant="display-lg"
+              style={{ marginTop: 8, fontStyle: 'italic' }}
+            >
+              {exercise.name}
+            </Text>
+          </Stack>
           <button
             type="button"
             onClick={onClose}
@@ -167,78 +187,139 @@ export function ExerciseSheet({ open, onClose, exercise, accent }) {
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
-              background: color.s2,
-              border: `1px solid ${color.border}`,
-              color: color.text,
+              background: 'transparent',
+              border: '1px solid var(--border-hairline)',
+              color: 'var(--text-secondary)',
               borderRadius: 999,
               cursor: 'pointer',
+              fontFamily: 'var(--font-mono)',
+              fontSize: 14,
+              lineHeight: 1,
             }}
           >
-            <Icon name="X" size={16} />
+            ✕
           </button>
-        </div>
+        </Stack>
 
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-          gap: 8,
-          marginTop: 16,
-        }}>
-          <Stat label="Sets" value={exercise.sets} accent={accent} />
-          <Stat label="Rest" value={exercise.rest} accent={accent} />
-        </div>
+        <SectionBlock>
+          <Stack direction="row" gap={5}>
+            <StatRow label="Sets" value={exercise.sets ?? '—'} accent={accent} />
+            <StatRow label="Rest" value={exercise.rest ?? '—'} accent={accent} />
+          </Stack>
+        </SectionBlock>
 
-        {exercise.equipment?.length > 0 && (
-          <Section title="Equipment" accent={accent}>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-              {exercise.equipment.map((e) => (
-                <Badge key={e} tone="outline" accent={accent}>{e}</Badge>
-              ))}
-            </div>
-          </Section>
-        )}
-
-        {(exercise.primaryMuscles?.length > 0 || exercise.secondaryMuscles?.length > 0) && (
-          <Section title="Muscles Worked" accent={accent}>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-              {exercise.primaryMuscles?.map((m) => (
-                <Badge key={`p-${m}`} tone="soft" accent={accent}>{m}</Badge>
-              ))}
-              {exercise.secondaryMuscles?.map((m) => (
-                <Badge key={`s-${m}`} tone="muted">{m}</Badge>
-              ))}
-            </div>
-          </Section>
+        {(exercise.equipment?.length > 0
+          || exercise.primaryMuscles?.length > 0
+          || exercise.secondaryMuscles?.length > 0) && (
+          <>
+            <BrushDivider style={{ marginTop: 32 }} />
+            <SectionBlock style={{ marginTop: 20 }}>
+              <Stack direction="column" gap={4}>
+                {exercise.equipment?.length > 0 && (
+                  <Stack direction="column" gap={2}>
+                    <Eyebrow>Equipment</Eyebrow>
+                    <Text as="p" variant="body-md" tone="primary">
+                      {exercise.equipment.join(' · ')}
+                    </Text>
+                  </Stack>
+                )}
+                {(exercise.primaryMuscles?.length > 0 || exercise.secondaryMuscles?.length > 0) && (
+                  <Stack direction="column" gap={2}>
+                    <Eyebrow>Muscles worked</Eyebrow>
+                    {exercise.primaryMuscles?.length > 0 && (
+                      <Text as="p" variant="body-md" tone="primary">
+                        {exercise.primaryMuscles.join(' · ')}
+                      </Text>
+                    )}
+                    {exercise.secondaryMuscles?.length > 0 && (
+                      <Text as="p" variant="body-sm" tone="tertiary">
+                        Secondary: {exercise.secondaryMuscles.join(' · ')}
+                      </Text>
+                    )}
+                  </Stack>
+                )}
+              </Stack>
+            </SectionBlock>
+          </>
         )}
 
         {exercise.cues?.length > 0 && (
-          <Section title="Technique Cues" accent={accent}>
-            <BulletList items={exercise.cues} accent={accent} />
-          </Section>
-        )}
-
-        {exercise.safetyNotes?.length > 0 && (
-          <Section title="Safety" accent={color.warn}>
-            <BulletList items={exercise.safetyNotes} tone="warn" />
-          </Section>
+          <>
+            <BrushDivider style={{ marginTop: 32 }} />
+            <SectionBlock style={{ marginTop: 20 }}>
+              <Eyebrow>Technique</Eyebrow>
+              <div style={{ marginTop: 12 }}>
+                <CuesList items={exercise.cues} />
+              </div>
+            </SectionBlock>
+          </>
         )}
 
         {exercise.variants?.length > 0 && (
-          <Section title="Variants" accent={accent}>
-            <VariantList variants={exercise.variants} accent={accent} />
-          </Section>
+          <>
+            <BrushDivider style={{ marginTop: 32 }} />
+            <SectionBlock style={{ marginTop: 20 }}>
+              <Eyebrow>Variants</Eyebrow>
+              <div style={{ marginTop: 8 }}>
+                <VariantList variants={exercise.variants} accent={accent} />
+              </div>
+            </SectionBlock>
+          </>
         )}
 
         {exercise.tags?.length > 0 && (
-          <Section title="Tags" accent={accent}>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-              {exercise.tags.map((t) => (
-                <Badge key={t} tone="muted">{t}</Badge>
-              ))}
-            </div>
-          </Section>
+          <>
+            <BrushDivider style={{ marginTop: 32 }} />
+            <SectionBlock style={{ marginTop: 20 }}>
+              <Eyebrow>Tags</Eyebrow>
+              <Text
+                as="p"
+                variant="mono-sm"
+                tone="secondary"
+                style={{ marginTop: 8, textTransform: 'uppercase' }}
+              >
+                {exercise.tags.join('  ·  ')}
+              </Text>
+            </SectionBlock>
+          </>
         )}
-        <Divider />
+
+        {exercise.safetyNotes?.length > 0 && (
+          <>
+            <BrushDivider style={{ marginTop: 32 }} />
+            <SectionBlock style={{ marginTop: 20 }}>
+              <details data-testid="safety-disclosure">
+                <summary
+                  style={{
+                    cursor: 'pointer',
+                    listStyle: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 10,
+                    padding: '4px 0',
+                    color: 'var(--state-warn-ink)',
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: 11,
+                    letterSpacing: '0.08em',
+                    fontWeight: 600,
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  <span aria-hidden="true" style={{ display: 'inline-block', width: 10, textAlign: 'center' }}>
+                    +
+                  </span>
+                  Safety notes
+                  <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
+                    ({exercise.safetyNotes.length})
+                  </Text>
+                </summary>
+                <div style={{ marginTop: 12 }}>
+                  <BulletList items={exercise.safetyNotes} tone="primary" />
+                </div>
+              </details>
+            </SectionBlock>
+          </>
+        )}
       </div>
     </Sheet>
   );

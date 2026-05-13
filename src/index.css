@@ -1,44 +1,24 @@
-/* APEX — Full Spectrum Training :: global styles. */
+/* HDW — global styles.
+   Tokens (CSS vars) come from src/design-system/applyTheme.js, injected at
+   boot. This file is reset + boundary styles only. */
 
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; }
 
 :root {
-  --bg:       #080808;
-  --s1:       #101010;
-  --s2:       #161616;
-  --s3:       #1E1E1E;
-  --s4:       #252525;
-  --border:   #242424;
-  --border2:  #303030;
-  --text:     #F2F2F2;
-  --muted:    #888888;
-  --muted2:   #555555;
-  --push:     #D4F53C;
-  --pull:     #3CD4F5;
-  --legs:     #F5833C;
-  --core:     #C43CF5;
-  --warn:     #F5503C;
-  --success:  #3CF5A0;
-
-  --font-display: "Bebas Neue", "Impact", system-ui, sans-serif;
-  --font-mono:    "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-  --font-body:    "DM Sans", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
-
-  color-scheme: dark;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-*, *::before, *::after { box-sizing: border-box; }
-
 html, body, #root {
   margin: 0;
   padding: 0;
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--font-body);
+  background: var(--surface-page);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -46,10 +26,6 @@ body {
   min-height: 100vh;
   min-height: 100dvh;
   overscroll-behavior-y: contain;
-  background:
-    radial-gradient(1200px 600px at 80% -10%, rgba(212, 245, 60, 0.03), transparent 60%),
-    radial-gradient(900px 500px at -10% 110%, rgba(60, 212, 245, 0.025), transparent 60%),
-    var(--bg);
 }
 
 #root {
@@ -61,22 +37,21 @@ a { color: inherit; text-decoration: none; }
 button { font-family: inherit; }
 
 :focus-visible {
-  outline: 2px solid var(--push);
+  outline: 1.5px solid var(--text-primary);
   outline-offset: 2px;
-  border-radius: 4px;
+  border-radius: 2px;
 }
 
 /* Hide scrollbars on horizontally scrolling pill rows. */
 nav [role="tablist"]::-webkit-scrollbar,
 [role="tablist"]::-webkit-scrollbar { display: none; }
 
-/* Selection color. */
+/* Selection: ink wash, never neon. */
 ::selection {
-  background: rgba(212, 245, 60, 0.35);
-  color: var(--text);
+  background: var(--accent-rust-wash);
+  color: var(--text-primary);
 }
 
-/* Reduce motion preference. */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.001ms !important;
@@ -85,6 +60,5 @@ nav [role="tablist"]::-webkit-scrollbar,
   }
 }
 
-/* Safe-area padding helpers. */
 .safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
 .safe-top    { padding-top:    env(safe-area-inset-top, 0px); }
