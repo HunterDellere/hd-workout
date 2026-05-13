@@ -12,6 +12,17 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   workers: process.env.CI ? 1 : undefined,
   reporter: [['list'], ['html', { open: 'never' }]],
+  // Visual snapshots are a structural sanity check, not a per-pixel gate.
+  // Drop {platform} from the snapshot path so a single baseline is reused
+  // across darwin (local dev) and linux (CI). Font + sub-pixel rendering
+  // differences are absorbed by per-test maxDiffPixelRatio.
+  snapshotPathTemplate: '{testDir}/{testFileDir}/{testFileName}-snapshots/{arg}-{projectName}{ext}',
+  expect: {
+    // Cross-OS font hinting accounts for ~3–5% of pixels diffing on
+    // type-heavy snapshots. Lift the global ratio to 8% so structural
+    // regressions still fail but font rendering noise doesn't.
+    toHaveScreenshot: { maxDiffPixelRatio: 0.08 },
+  },
   use: {
     baseURL: `http://localhost:${PORT}${BASE_PATH}`,
     trace: 'on-first-retry',

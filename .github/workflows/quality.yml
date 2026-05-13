@@ -17,8 +17,11 @@ jobs:
       - run: npm ci
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
-      - name: Build, lint, unit, e2e, lighthouse
-        run: npm run test:all
+      - name: Build, lint, unit, e2e (no snapshots), lighthouse
+        # test:ci skips visual snapshot assertions — they're locked to the
+        # local-dev OS (darwin) and would diff cross-platform on Linux due
+        # to font hinting. Functional + a11y + Lighthouse remain gates.
+        run: npm run test:ci
       - name: Upload Playwright report
         if: always()
         uses: actions/upload-artifact@v4

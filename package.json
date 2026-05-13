@@ -16,9 +16,11 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test --project=mobile-chrome --project=desktop-chrome",
+    "test:e2e:ci": "playwright test --project=mobile-chrome --project=desktop-chrome --ignore-snapshots",
     "test:e2e:ui": "playwright test --ui",
     "test:lh": "playwright test --project=lighthouse",
-    "test:all": "npm run build && npm run lint && npm run test && npm run test:e2e && npm run test:lh"
+    "test:all": "npm run build && npm run lint && npm run test && npm run test:e2e && npm run test:lh",
+    "test:ci": "npm run build && npm run lint && npm run test && npm run test:e2e:ci && npm run test:lh"
   },
   "dependencies": {
     "framer-motion": "^12.38.0",
