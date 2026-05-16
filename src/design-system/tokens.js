@@ -7,26 +7,39 @@
 // the raw hex tables at the top of this file.
 
 // Raw palette (do not consume directly from UI).
-// Session 18 refresh: warmer paper (a half-step back from the Session 10
-// cool-neutral, but still firmly off-white), deeper ink for dark mode,
-// and a new "raised" surface tier so cards can subtly lift off the page.
+// Phase 6 refresh: paper pulls a half-step *cooler* than Session 18 to
+// give the warm accents (rust, sand, ember) more push; raised tier
+// reads as a deliberate lift, not a wash; ink deepens for true black
+// territory in dark mode; new `espresso` foundational surface used by
+// primary CTAs so the Start button has *gravity* instead of borrowing
+// the day accent twice.
 const paper = {
-  0: '#F7F3EA', // page background — slightly warmer, washi-leaning
-  1: '#EFEAE0', // sunken (inputs, search-bar rest)
-  2: '#E4DED1', // borders, hairlines (used at alpha)
-  raised: '#FBF8F1', // cards/sheets that sit above page (subtle lift)
+  0: '#F4EFE3',     // page background — washi, faintly cooler
+  1: '#ECE6D8',     // sunken (inputs, search-bar rest)
+  2: '#DDD5C3',     // borders, hairlines (used at alpha)
+  raised: '#FBF7EC', // cards/sheets that sit above page — a touch warmer
 };
 const ink = {
-  0: '#0F0D0A', // dark page background — deeper than Session 10
-  1: '#161412', // dark sunken
-  2: '#221F1B', // dark raised
-  3: '#2C2823', // dark elevated (sheets/modals)
-  text0: '#1A1814', // light-mode primary text
-  text1: '#4A453E', // light-mode secondary text
-  text2: '#5C5851', // light-mode tertiary
-  textDark0: '#F0EBE0', // dark-mode primary text — slight lift for contrast
-  textDark1: '#ADA79D',
-  textDark2: '#9E988D',
+  0: '#0B0907',     // dark page background — deeper, true espresso
+  1: '#121008',     // dark sunken
+  2: '#1D1A12',     // dark raised
+  3: '#2A261C',     // dark elevated (sheets/modals)
+  text0: '#181510', // light-mode primary text
+  text1: '#494339', // light-mode secondary text
+  text2: '#5F5849', // light-mode tertiary
+  textDark0: '#F2EBDB', // dark-mode primary text
+  textDark1: '#B0A693',
+  textDark2: '#9B9180',
+};
+// Foundational surfaces — used directly by primary CTAs and the Today
+// hero card. `espresso` is intentionally not a "day" accent — it's the
+// gravity color, so primary actions read as confident regardless of
+// which day lineage is active.
+const foundation = {
+  espresso:      '#22180E', // primary CTA fill (light mode)
+  espressoSoft:  '#3A2C1E', // hover lift
+  espressoDark:  '#F2EBDB', // primary CTA fill (dark mode) — inverts to text colour
+  espressoSoftDark: '#D9CFB9',
 };
 
 // Accents — Session 18 refresh. Slightly more confident saturation on the
@@ -36,15 +49,15 @@ const ink = {
 //   states:   moss (success), amber (warn), signal (danger), sky (info)
 //   accents:  ember (PR / celebrate)
 export const accents = {
-  rust:   '#B65A40', // push lineage  (a hair more saturated)
-  sea:    '#3E8485', // pull lineage  (deepened)
-  sand:   '#B59560', // legs lineage  (more golden)
-  sky:    '#4574A8', // core lineage  (slightly bluer)
-  stone:  '#7B838C', // neutral / mobility
-  moss:   '#6F9078', // success
-  amber:  '#D89B3C', // warn — new dedicated token, distinct from danger
-  signal: '#C04428', // danger — slightly cooler red for legibility on warm paper
-  ember:  '#D17A4A', // PR / celebrate
+  rust:   '#B04A2E', // push lineage  (deepened + a hair more chroma)
+  sea:    '#2F7879', // pull lineage  (cooler, more confident)
+  sand:   '#B0894C', // legs lineage  (more golden, less beige)
+  sky:    '#3563A0', // core lineage  (truer blue)
+  stone:  '#736E66', // neutral / mobility — warmer stone, less greyscale
+  moss:   '#5F8367', // success
+  amber:  '#D49432', // warn
+  signal: '#B83A20', // danger
+  ember:  '#CE6F38', // PR / celebrate
 };
 
 // Per-hue ink variants for legible chip text on the accent wash. The wash is
@@ -52,27 +65,27 @@ export const accents = {
 // saturated dark variant of the same hue to clear WCAG AA 4.5:1. Hand-tuned
 // against the new cooler palette and cooler paper.
 const accentInkLight = {
-  rust:   '#5C2D1B',
-  sea:    '#1F4A4B',
-  sand:   '#5A4520',
-  sky:    '#264168',
-  stone:  '#3A4048',
-  moss:   '#324B3A',
-  amber:  '#6F4A0F',
-  signal: '#6A2613',
-  ember:  '#6D3517',
+  rust:   '#5A2210',
+  sea:    '#163E3F',
+  sand:   '#553D14',
+  sky:    '#1D3661',
+  stone:  '#3A352D',
+  moss:   '#2E4733',
+  amber:  '#6B4308',
+  signal: '#5F1D0C',
+  ember:  '#65300F',
 };
 // Dark mode inverts: ink is a *light* variant of each hue.
 const accentInkDark = {
-  rust:   '#E0A18A',
-  sea:    '#9DC5C6',
-  sand:   '#D9C39A',
-  sky:    '#A2B7D2',
-  stone:  '#BBC2CA',
-  moss:   '#B6CDB9',
-  amber:  '#ECC58B',
-  signal: '#EBA194',
-  ember:  '#E9B393',
+  rust:   '#E29C82',
+  sea:    '#96C0C1',
+  sand:   '#D7BB90',
+  sky:    '#9CB3D2',
+  stone:  '#BFB7A8',
+  moss:   '#AEC9B3',
+  amber:  '#EBC082',
+  signal: '#E89A8B',
+  ember:  '#E8AB87',
 };
 
 // Movement pattern → accent token name. Single source of truth.
@@ -165,6 +178,14 @@ function lightVars() {
     '--surface-raised':  paper.raised,
     '--surface-overlay': paper.raised,
     '--surface-scrim':   withAlpha(ink.text0, 0.45),
+    // Foundational CTA surface — espresso ink, used by the primary button
+    // so the call-to-action has gravity independent of day accent.
+    '--surface-cta':     foundation.espresso,
+    '--surface-cta-hover': foundation.espressoSoft,
+    '--surface-cta-ink': paper.raised,
+    // Hero gradient: page → raised, soft top-to-bottom. Used on the Today
+    // hero card so it lifts off the page without a heavy shadow.
+    '--gradient-hero':  `linear-gradient(180deg, ${paper.raised} 0%, ${paper[0]} 100%)`,
     '--text-primary':    ink.text0,
     '--text-secondary':  ink.text1,
     '--text-tertiary':   ink.text2,
@@ -173,6 +194,7 @@ function lightVars() {
     '--border-strong':   withAlpha(ink.text0, 0.18),
     '--shadow-1':        '0 1px 0 rgba(0,0,0,0.04)',
     '--shadow-2':        '0 1px 1px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.06)',
+    '--shadow-hero':     '0 1px 0 rgba(0,0,0,0.03), 0 12px 32px -16px rgba(34,24,14,0.18)',
     // Semantic state tokens. `warn` now resolves to amber; `danger` is the
     // old signal red (deload, errors). `pr` is ember for PR celebration.
     '--state-warn':        accents.amber,
@@ -204,6 +226,12 @@ function darkVars() {
     '--surface-raised':  ink[2],
     '--surface-overlay': ink[3],
     '--surface-scrim':   withAlpha('#000000', 0.65),
+    // Dark-mode CTA inverts: primary button reads as paper-coloured pill
+    // on the ink page. The contrast feels deliberate, not chrome.
+    '--surface-cta':     foundation.espressoDark,
+    '--surface-cta-hover': foundation.espressoSoftDark,
+    '--surface-cta-ink': ink[0],
+    '--gradient-hero':  `linear-gradient(180deg, ${ink[2]} 0%, ${ink[0]} 100%)`,
     '--text-primary':    ink.textDark0,
     '--text-secondary':  ink.textDark1,
     '--text-tertiary':   ink.textDark2,
@@ -212,6 +240,7 @@ function darkVars() {
     '--border-strong':   withAlpha(ink.textDark0, 0.18),
     '--shadow-1':        '0 1px 0 rgba(0,0,0,0.4)',
     '--shadow-2':        '0 1px 1px rgba(0,0,0,0.35), 0 6px 24px rgba(0,0,0,0.45)',
+    '--shadow-hero':     '0 1px 0 rgba(0,0,0,0.5), 0 12px 32px -16px rgba(0,0,0,0.7)',
     '--state-warn':        accents.amber,
     '--state-warn-ink':    accentInkDark.amber,
     '--state-danger':      accents.signal,

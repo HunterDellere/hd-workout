@@ -13,6 +13,7 @@ import {
 } from '../design-system/components';
 import { useSettings } from '../state/settings-context.js';
 import { useSession } from '../state/session-context.js';
+import { voiceFor } from '../data/voice';
 import {
   weeklyVolume,
   frequencyHeatmap,
@@ -187,6 +188,23 @@ export function Insights() {
       <Text as="p" variant="body-lg" tone="secondary" style={{ marginTop: 16, maxWidth: 60 * 9 }}>
         Personal records, weekly volume, and how often you actually show up.
       </Text>
+      {volume.weeks.length === 0 && (
+        <Text
+          as="p"
+          variant="title-md"
+          tone="secondary"
+          style={{
+            marginTop: 28,
+            fontStyle: 'italic',
+            fontFamily: 'var(--font-serif)',
+            fontWeight: 300,
+            opacity: 0.78,
+            maxWidth: 60 * 9,
+          }}
+        >
+          {voiceFor('insights-empty') ?? 'Numbers want sets. Log a few and the picture sharpens.'}
+        </Text>
+      )}
 
       <BrushDivider style={{ marginTop: 40 }} />
 

@@ -10,6 +10,7 @@ import { motion as motionTokens, dayLineageAccent } from '../design-system/token
 import { useHaptics } from '../hooks/useHaptics';
 import { useSettings, dayKeyForToday } from '../state/settings-context.js';
 import { useSession } from '../state/session-context.js';
+import { voiceFor } from '../data/voice';
 
 export function Home() {
   const navigate = useNavigate();
@@ -41,9 +42,9 @@ export function Home() {
           as="h1"
           variant="display-lg"
           tone="primary"
-          style={{ fontStyle: 'italic', maxWidth: 18 * 16 }}
+          style={{ fontStyle: 'italic', maxWidth: 18 * 16, fontWeight: 400 }}
         >
-          Your training, written down.
+          {voiceFor('home-italic') ?? 'Your training, written down.'}
         </Text>
 
         <Text
@@ -193,8 +194,8 @@ function TodayCard({ activeSession, todayKey, todayName, accent, onResume, onSta
           Today · rest
         </Text>
       </Stack>
-      <Text as="div" variant="title-lg" style={{ fontStyle: 'italic' }}>
-        A day off the floor.
+      <Text as="div" variant="title-lg" style={{ fontStyle: 'italic', fontWeight: 400 }}>
+        {voiceFor('rest') ?? 'A day off the floor.'}
       </Text>
       <Text as="p" variant="body-md" tone="secondary" style={{ marginTop: 16, maxWidth: 28 * 16 }}>
         Browse a movement or read a glossary entry — keeping a hand on the work counts too.

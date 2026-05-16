@@ -24,6 +24,19 @@ function variantStyles(variant, accent) {
         color: 'var(--text-on-accent)',
         border: '1px solid transparent',
       };
+    // CTA — the gravity primary. Espresso surface, paper ink. Used for
+    // Start Session and other "this is the one button on the page" moments.
+    // Accent (if provided) renders as a 2px left rule inside the button,
+    // keeping the day lineage cue without compromising the surface.
+    case 'cta':
+      return {
+        background: 'var(--surface-cta)',
+        color: 'var(--surface-cta-ink)',
+        border: '1px solid transparent',
+        boxShadow: accent
+          ? `inset 3px 0 0 var(--accent-${accent}-solid)`
+          : undefined,
+      };
     case 'ghost':
       return {
         background: 'transparent',

@@ -17,7 +17,8 @@ import {
 } from '../design-system/components';
 import { dayLineageAccent } from '../design-system/tokens';
 import { findExerciseAnywhere } from '../data';
-import { parsePrescription } from '../data/prescription';
+import { parsePrescription, parseRest } from '../data/prescription';
+import { voiceFor } from '../data/voice';
 import { historyForExercise, lastTopSetForExercise } from '../data/history';
 import { prsFromSession, suggestNextLoad, annotatePRs } from '../data/intelligence';
 import { REST_DAY, ACTIVE_REST_ACTIVITIES } from '../data/rest';
@@ -196,6 +197,139 @@ function PerformanceCard({ performance, accent, unit, restTimerMode, isResting, 
   );
 }
 
+// Rough estimate of how long the day will take, in minutes. Per exercise:
+// (sets × ~45s work) + ((sets - 1) × upper-rest-seconds). Sums across the
+// day. Doesn't try to be exact — the user reads this as "is this a 40
+// minute lift or a 90 minute one?" and that's enough.
+function estimateDayMinutes(day) {
+  if (!day) return null;
+  let totalSec = 0;
+  for (const section of day.sections ?? []) {
+    for (const ex of section.exercises ?? []) {
+      const p = parsePrescription(ex.sets);
+      const r = parseRest(ex.rest);
+      const sets = p.setsTotal || 3;
+      const restSec = r.upperBoundSec ?? r.lowerBoundSec ?? 90;
+      totalSec += sets * 45 + Math.max(0, sets - 1) * restSec;
+    }
+  }
+  return Math.round(totalSec / 60);
+}
+
+function TodayHero({
+  day, accent, todayKey, exerciseCount, sectionCount, estMinutes,
+  voice, onStart, hasOverlay, onResetDay,
+}) {
+  return (
+    <div
+      data-testid="today-hero"
+      style={{
+        position: 'relative',
+        marginTop: 24,
+        padding: '28px 28px 32px',
+        background: 'var(--gradient-hero)',
+        border: '1px solid var(--border-hairline)',
+        borderRadius: 16,
+        boxShadow: 'var(--shadow-hero)',
+        overflow: 'hidden',
+      }}
+    >
+      {/* Day-lineage rule running the full left edge — quiet but unmissable. */}
+      <span
+        aria-hidden
+        style={{
+          position: 'absolute',
+          left: 0, top: 0, bottom: 0,
+          width: 3,
+          background: `var(--accent-${accent}-solid)`,
+        }}
+      />
+
+      <Stack direction="row" align="center" justify="space-between" gap={2}>
+        <Stack direction="row" align="center" gap={2}>
+          <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase', letterSpacing: '0.14em' }}>
+            Today · {todayKey}
+          </Text>
+        </Stack>
+        {hasOverlay && (
+          <button
+            type="button"
+            onClick={onResetDay}
+            data-testid="reset-day"
+            style={previewMonoBtnStyle}
+          >
+            Reset day
+          </button>
+        )}
+      </Stack>
+
+      <Text
+        as="h1"
+        variant="display-lg"
+        style={{
+          marginTop: 12,
+          fontStyle: 'italic',
+          fontWeight: 400,
+          lineHeight: 1.05,
+        }}
+      >
+        {day.name}
+      </Text>
+
+      {voice && (
+        <Text
+          as="p"
+          variant="title-md"
+          tone="secondary"
+          style={{
+            marginTop: 12,
+            fontStyle: 'italic',
+            fontFamily: 'var(--font-serif)',
+            fontWeight: 300,
+            maxWidth: 40 * 9,
+            opacity: 0.78,
+          }}
+        >
+          {voice}
+        </Text>
+      )}
+
+      {/* Metrics strip — three quiet numbers, mono. */}
+      <Stack direction="row" gap={6} style={{ marginTop: 24 }}>
+        <HeroStat label="Exercises" value={exerciseCount} />
+        <HeroStat label="Sections" value={sectionCount} />
+        {estMinutes != null && <HeroStat label="≈ Minutes" value={estMinutes} />}
+      </Stack>
+
+      <div style={{ marginTop: 28 }}>
+        <Button
+          variant="cta"
+          accent={accent}
+          size="lg"
+          onClick={onStart}
+          data-testid="start-session"
+        >
+          Start session
+          <span aria-hidden style={{ marginLeft: 4, opacity: 0.75 }}>→</span>
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function HeroStat({ label, value }) {
+  return (
+    <div>
+      <Text as="div" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase', letterSpacing: '0.12em', opacity: 0.8 }}>
+        {label}
+      </Text>
+      <Text as="div" variant="mono-lg" tone="primary" style={{ marginTop: 6 }}>
+        {value}
+      </Text>
+    </div>
+  );
+}
+
 function LocationChip({ label, active, onClick, testId }) {
   return (
     <button
@@ -359,8 +493,22 @@ export function Today() {
         >
           {prs.length > 0 ? 'PR day.' : 'Logged.'}
         </Text>
-        <Text as="p" variant="body-lg" tone="secondary" style={{ marginTop: 16, maxWidth: 60 * 9 }}>
-          {totalSets} sets across {endedSummary.performances.filter((p) => p.sets.length > 0).length} exercises.
+        <Text
+          as="p"
+          variant="title-md"
+          tone="secondary"
+          style={{
+            marginTop: 12,
+            fontStyle: 'italic',
+            fontFamily: 'var(--font-serif)',
+            fontWeight: 300,
+            opacity: 0.78,
+          }}
+        >
+          {voiceFor(prs.length > 0 ? 'session-end-pr' : 'session-end-plain', endedSummary.id)}
+        </Text>
+        <Text as="p" variant="body-md" tone="tertiary" style={{ marginTop: 16, maxWidth: 60 * 9, textTransform: 'uppercase', letterSpacing: '0.10em', fontSize: 11, fontFamily: 'var(--font-mono)' }}>
+          {totalSets} sets · {endedSummary.performances.filter((p) => p.sets.length > 0).length} exercises
         </Text>
         <BrushDivider style={{ marginTop: 32 }} />
         {prs.length > 0 ? (
@@ -527,79 +675,83 @@ export function Today() {
     );
   }
 
+  const exerciseCount = day.sections.reduce((n, s) => n + s.exercises.length, 0);
+  const sectionCount = day.sections.length;
+  const estMinutes = estimateDayMinutes(day);
+  const heroVoice = voiceFor(todayKey);
+  const hasOverlay = Boolean(overlay?.[settings.activeProgramKey ?? 'full-spectrum']?.[todayKey]);
+
   return (
     <Page>
-      <Stack direction="row" align="center" gap={2}>
-        <span
-          aria-hidden
-          style={{
-            width: 8,
-            height: 8,
-            background: `var(--accent-${accent}-solid)`,
-            borderRadius: 1,
-          }}
-        />
-        <Text as="div" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
-          Today · {day.key}
-        </Text>
-      </Stack>
-      <Text as="h1" variant="display-lg" style={{ marginTop: 8, fontStyle: 'italic' }}>
-        {day.name}
-      </Text>
-      <Text as="p" variant="body-lg" tone="secondary" style={{ marginTop: 16, maxWidth: 60 * 9 }}>
-        {day.description}
-      </Text>
+      {!activeSession ? (
+        <>
+          <TodayHero
+            day={day}
+            accent={accent}
+            todayKey={todayKey}
+            exerciseCount={exerciseCount}
+            sectionCount={sectionCount}
+            estMinutes={estMinutes}
+            voice={heroVoice}
+            onStart={() => startSession(day, settings.activeProgramKey ?? 'full-spectrum')}
+            hasOverlay={hasOverlay}
+            onResetDay={() => resetDay(todayKey)}
+          />
 
-      <Stack direction="row" gap={2} style={{ marginTop: 16 }}>
-        <LocationChip
-          label="Gym"
-          active={settings.location !== 'home'}
-          onClick={() => setLocation('gym')}
-          testId="location-gym"
-        />
-        <LocationChip
-          label="Home"
-          active={settings.location === 'home'}
-          onClick={() => setLocation('home')}
-          testId="location-home"
-        />
-        <Text as="span" variant="mono-sm" tone="tertiary" style={{ alignSelf: 'center', textTransform: 'uppercase' }}>
-          Preset · each remembers its own swaps
-        </Text>
-      </Stack>
+          <Text as="p" variant="body-lg" tone="secondary" style={{ marginTop: 28, maxWidth: 60 * 9 }}>
+            {day.description}
+          </Text>
 
-      <BrushDivider style={{ marginTop: 32 }} />
+          <Stack direction="row" gap={2} style={{ marginTop: 16, flexWrap: 'wrap', rowGap: 8 }}>
+            <LocationChip
+              label="Gym"
+              active={settings.location !== 'home'}
+              onClick={() => setLocation('gym')}
+              testId="location-gym"
+            />
+            <LocationChip
+              label="Home"
+              active={settings.location === 'home'}
+              onClick={() => setLocation('home')}
+              testId="location-home"
+            />
+            <Text as="span" variant="mono-sm" tone="tertiary" style={{ alignSelf: 'center', textTransform: 'uppercase', opacity: 0.7 }}>
+              Each remembers its own swaps
+            </Text>
+          </Stack>
+
+          <BrushDivider style={{ marginTop: 32 }} />
+        </>
+      ) : (
+        <>
+          <Stack direction="row" align="center" gap={2}>
+            <span
+              aria-hidden
+              style={{
+                width: 8,
+                height: 8,
+                background: `var(--accent-${accent}-solid)`,
+                borderRadius: 1,
+              }}
+            />
+            <Text as="div" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
+              Today · {day.key}
+            </Text>
+          </Stack>
+          <Text as="h1" variant="display-lg" style={{ marginTop: 8, fontStyle: 'italic' }}>
+            {day.name}
+          </Text>
+          <Text as="p" variant="body-lg" tone="secondary" style={{ marginTop: 16, maxWidth: 60 * 9 }}>
+            {day.description}
+          </Text>
+
+          <BrushDivider style={{ marginTop: 32 }} />
+        </>
+      )}
 
       {!activeSession ? (
         <Block gapTop={24}>
           <Stack direction="column" gap={4}>
-            <Stack direction="row" align="baseline" justify="space-between" gap={3}>
-              <Text as="p" variant="body-lg" tone="secondary">
-                {day.sections.reduce((n, s) => n + s.exercises.length, 0)} exercises, {day.sections.length} sections.
-              </Text>
-              {overlay?.[settings.activeProgramKey ?? 'full-spectrum']?.[todayKey] && (
-                <button
-                  type="button"
-                  onClick={() => resetDay(todayKey)}
-                  data-testid="reset-day"
-                  style={previewMonoBtnStyle}
-                >
-                  Reset day
-                </button>
-              )}
-            </Stack>
-            <div>
-              <Button
-                variant="primary"
-                accent={accent}
-                size="lg"
-                onClick={() => startSession(day, settings.activeProgramKey ?? 'full-spectrum')}
-                data-testid="start-session"
-              >
-                Start session
-              </Button>
-            </div>
-            <BrushDivider />
             <div>
               {day.sections.map((section) => {
                 const addedIds = new Set(
@@ -607,11 +759,23 @@ export function Today() {
                     .map((e) => e.id),
                 );
                 return (
-                  <div key={section.key} data-testid="preview-section" data-section-key={section.key} style={{ marginTop: 24 }}>
+                  <div key={section.key} data-testid="preview-section" data-section-key={section.key} style={{ marginTop: 32 }}>
                     <Stack direction="row" align="baseline" justify="space-between" gap={2}>
-                      <Text as="div" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
-                        {section.title}
-                      </Text>
+                      <Stack direction="row" align="center" gap={2}>
+                        <span
+                          aria-hidden
+                          style={{
+                            display: 'inline-block',
+                            width: 14,
+                            height: 1,
+                            background: `var(--accent-${accent}-solid)`,
+                            opacity: 0.7,
+                          }}
+                        />
+                        <Text as="div" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase', letterSpacing: '0.14em' }}>
+                          {section.title}
+                        </Text>
+                      </Stack>
                       <Text as="div" variant="mono-sm" tone="tertiary">
                         {section.exercises.length}
                       </Text>
@@ -631,10 +795,28 @@ export function Today() {
                             display: 'flex',
                             alignItems: 'baseline',
                             gap: 12,
-                            padding: '10px 0',
+                            padding: '12px 0',
                             borderTop: i === 0 ? 'none' : '1px solid var(--border-hairline)',
                           }}
                         >
+                          {/* Tier mark — small mono character, accent-tinted.
+                              Reads as a visual "rank" cue without shouting. */}
+                          {ex.tier && (
+                            <Text
+                              as="span"
+                              variant="mono-sm"
+                              style={{
+                                width: 16,
+                                color: ex.tier === 'S'
+                                  ? `var(--accent-${accent}-ink)`
+                                  : 'var(--text-tertiary)',
+                                opacity: ex.tier === 'S' ? 0.95 : 0.55,
+                                fontWeight: 600,
+                              }}
+                            >
+                              {ex.tier}
+                            </Text>
+                          )}
                           <Text as="span" variant="body-md" style={{ flex: 1, minWidth: 0 }}>
                             {ex.name}
                             {addedIds.has(ex.id) && (

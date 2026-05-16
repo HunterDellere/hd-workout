@@ -24,6 +24,7 @@ import {
 } from '../design-system/components';
 import { useSession } from '../state/session-context.js';
 import { findExerciseAnywhere } from '../data';
+import { voiceFor } from '../data/voice';
 
 function formatDate(iso) {
   if (!iso) return '—';
@@ -373,9 +374,25 @@ export function History() {
         <BrushDivider style={{ marginTop: 24 }} />
 
         {!hasSessions ? (
-          <Text as="p" variant="body-lg" tone="secondary" style={{ marginTop: 32 }}>
-            No sessions yet. Start one from <em>/today</em> — it'll appear here the moment you log a set.
-          </Text>
+          <>
+            <Text
+              as="p"
+              variant="title-md"
+              tone="secondary"
+              style={{
+                marginTop: 32,
+                fontStyle: 'italic',
+                fontFamily: 'var(--font-serif)',
+                fontWeight: 300,
+                opacity: 0.78,
+              }}
+            >
+              {voiceFor('history-empty') ?? 'No sessions yet.'}
+            </Text>
+            <Text as="p" variant="body-md" tone="tertiary" style={{ marginTop: 12, maxWidth: 30 * 16 }}>
+              Start one from <em>/today</em> — it'll appear here the moment you log a set.
+            </Text>
+          </>
         ) : (
           <ul data-testid="history-list" style={{ listStyle: 'none', padding: 0, margin: '24px 0 0' }}>
             {activeSession && totalSets(activeSession) > 0 && (
