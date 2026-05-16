@@ -13,8 +13,20 @@ import {
   BrushDivider,
 } from '../../design-system/components';
 import { findExerciseById } from '../../data';
-import { prsFromSession } from '../../data/intelligence';
+import { prsFromSession, gapSincePreviousPR } from '../../data/intelligence';
 import { voiceFor } from '../../data/voice';
+import { useSession } from '../../state/session-context.js';
+
+const MS_DAY = 24 * 60 * 60 * 1000;
+
+function gapLabel(ms) {
+  if (ms == null) return null;
+  const days = Math.floor(ms / MS_DAY);
+  if (days < 7) return null; // <1w isn't notable
+  if (days < 14) return 'Heaviest in over a week';
+  if (days < 60) return `Heaviest in ${Math.round(days / 7)}w`;
+  return `Heaviest in ${Math.round(days / 30)}mo`;
+}
 
 export function SessionSummary({
   session,
@@ -24,9 +36,18 @@ export function SessionSummary({
   onOpenInsights,
   onResume,
 }) {
+  const { archive } = useSession();
   const prs = prsFromSession(session);
   const totalSets = session.performances.reduce((n, p) => n + p.sets.length, 0);
   const exerciseCount = session.performances.filter((p) => p.sets.length > 0).length;
+  // Wave 6.3b: enrich each PR with how long since the last PR for the
+  // same exercise. The archive at this point already includes the
+  // current session, so we use the session's start as the "before" cutoff.
+  const sessionStart = session.startedAt ?? new Date().toISOString();
+  const prsWithGap = prs.map((pr) => ({
+    ...pr,
+    gapMs: gapSincePreviousPR(archive, pr.exerciseId, sessionStart),
+  }));
 
   return (
     <Page>
@@ -77,12 +98,13 @@ export function SessionSummary({
       {prs.length > 0 ? (
         <Block gapTop={24} eyebrow="Personal records">
           <ul data-testid="pr-list" style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-            {prs.map((pr, i) => {
+            {prsWithGap.map((pr, i) => {
               const ex = findExerciseById(pr.exerciseId);
               const name = ex?.name ?? pr.exerciseId;
               const kind = pr.kinds.includes('weight') && pr.kinds.includes('reps')
                 ? 'Weight + reps'
                 : pr.kinds.includes('weight') ? 'Weight' : 'Reps';
+              const gap = gapLabel(pr.gapMs);
               return (
                 <li
                   key={i}
@@ -99,7 +121,25 @@ export function SessionSummary({
                   <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
                     {kind}
                   </Text>
-                  <Text as="span" variant="title-md">{name}</Text>
+                  <span style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                    <Text as="span" variant="title-md">{name}</Text>
+                    {gap && (
+                      <Text
+                        as="span"
+                        variant="mono-sm"
+                        data-testid="pr-gap"
+                        style={{
+                          marginTop: 2,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.10em',
+                          color: 'var(--state-pr-ink, var(--text-secondary))',
+                          opacity: 0.85,
+                        }}
+                      >
+                        {gap}
+                      </Text>
+                    )}
+                  </span>
                   <Text as="span" variant="mono-lg" style={{ color: 'var(--state-pr-ink, var(--text-primary))' }}>
                     {pr.set.weight}{pr.set.unit ?? ''} × {pr.set.reps}
                   </Text>

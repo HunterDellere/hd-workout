@@ -70,6 +70,8 @@ export function TodayHero({
         borderRadius: 16,
         boxShadow: 'var(--shadow-hero)',
         overflow: 'hidden',
+        // Wave 6.4 #35: focus ring picks up the day's pattern accent.
+        '--focus-color': `var(--accent-${accent}-ink)`,
       }}
     >
       {/* Day-lineage rule running the full left edge — quiet but unmissable. */}

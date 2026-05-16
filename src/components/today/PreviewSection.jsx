@@ -1,17 +1,26 @@
 // PreviewSection — one section of the pre-start preview. Lists the
 // programmed exercises with tier mark, sets prescription, and per-row
 // Swap / Remove + a section-level "+ Add exercise" affordance.
+//
+// Wave 6.2: when there are hidden exercises in this section, a quiet
+// "+ Show N hidden" footer chip lets the user restore them one at a time
+// (per-row undo of the wholesale Reset day). Tapping it expands an inline
+// list of hidden exercises; each row is tappable to un-hide.
 
+import { useState } from 'react';
 import { Stack, Text, MonoChipButton } from '../../design-system/components';
 
 export function PreviewSection({
   section,
   accent,
   addedIds,
+  hiddenExercises = [],
   onSwapExercise,
   onRemoveExercise,
+  onUnhideExercise,
   onAddExercise,
 }) {
+  const [hiddenExpanded, setHiddenExpanded] = useState(false);
   return (
     <div
       data-testid="preview-section"
@@ -115,7 +124,7 @@ export function PreviewSection({
           </li>
         ))}
       </ul>
-      <div style={{ marginTop: 10 }}>
+      <Stack direction="row" gap={2} style={{ marginTop: 10, flexWrap: 'wrap', rowGap: 8 }}>
         <MonoChipButton
           variant="dashed"
           data-testid="preview-add"
@@ -124,7 +133,57 @@ export function PreviewSection({
         >
           + Add exercise
         </MonoChipButton>
-      </div>
+        {hiddenExercises.length > 0 && onUnhideExercise && (
+          <MonoChipButton
+            data-testid="preview-show-hidden"
+            data-section-key={section.key}
+            onClick={() => setHiddenExpanded((v) => !v)}
+          >
+            {hiddenExpanded
+              ? '× Hide list'
+              : `+ Show ${hiddenExercises.length} hidden`}
+          </MonoChipButton>
+        )}
+      </Stack>
+
+      {hiddenExpanded && hiddenExercises.length > 0 && (
+        <ul
+          data-testid="hidden-list"
+          style={{
+            listStyle: 'none',
+            padding: '12px 0 0',
+            margin: 0,
+            borderTop: '1px dashed var(--border-hairline)',
+            marginTop: 10,
+          }}
+        >
+          {hiddenExercises.map((ex) => (
+            <li
+              key={ex.id}
+              data-exercise-id={ex.id}
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'baseline',
+                gap: 12,
+                padding: '10px 0',
+              }}
+            >
+              <Text as="span" variant="body-sm" tone="secondary" style={{ flex: 1, minWidth: 0, opacity: 0.7 }}>
+                {ex.name}
+              </Text>
+              <MonoChipButton
+                data-testid="unhide-button"
+                data-exercise-id={ex.id}
+                aria-label={`Restore ${ex.name}`}
+                onClick={() => onUnhideExercise(section.key, ex.id)}
+              >
+                Restore
+              </MonoChipButton>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

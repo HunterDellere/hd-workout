@@ -7,6 +7,9 @@ import {
   frequencyHeatmap,
   isoWeekKey,
   suggestNextLoad,
+  diagnoseStagnation,
+  gapSincePreviousPR,
+  recoveryDebt,
 } from './intelligence';
 
 const session = (id, endedAt, exerciseId, sets) => ({
@@ -338,5 +341,148 @@ describe('suggestNextLoad', () => {
     // genuinely stuck (probably grinding the last rep with form drift).
     const out = suggestNextLoad(history, RX_5_8, 'kg');
     expect(out.kind).toBe('deload');
+  });
+});
+
+// ─── Wave 6.3a — diagnoseStagnation ──────────────────────────────────
+describe('diagnoseStagnation', () => {
+  const histEntry = (weight, reps, daysAgo) => ({
+    sessionId: `s-${daysAgo}`,
+    endedAt: new Date(Date.now() - daysAgo * 24 * 3600 * 1000).toISOString(),
+    dayKey: 'push',
+    top: { weight, reps, unit: 'kg' },
+    setCount: 3,
+  });
+
+  it('returns null when history is too short', () => {
+    expect(diagnoseStagnation([])).toBeNull();
+    expect(diagnoseStagnation([histEntry(100, 5, 7)])).toBeNull();
+    expect(diagnoseStagnation([histEntry(100, 5, 14), histEntry(100, 5, 7)])).toBeNull();
+  });
+
+  it('flags 3 stalled sessions at the same weight', () => {
+    const history = [
+      histEntry(100, 6, 21),
+      histEntry(100, 5, 14),
+      histEntry(100, 5, 7),
+    ];
+    const out = diagnoseStagnation(history);
+    expect(out).toEqual({ weight: 100, reps: [6, 5, 5], sessions: 3 });
+  });
+
+  it('returns null when reps are improving', () => {
+    const history = [
+      histEntry(100, 5, 21),
+      histEntry(100, 6, 14),
+      histEntry(100, 7, 7),
+    ];
+    expect(diagnoseStagnation(history)).toBeNull();
+  });
+
+  it('returns null when weight is changing', () => {
+    const history = [
+      histEntry(95, 5, 21),
+      histEntry(100, 5, 14),
+      histEntry(100, 5, 7),
+    ];
+    expect(diagnoseStagnation(history)).toBeNull();
+  });
+});
+
+// ─── Wave 6.3b — gapSincePreviousPR ──────────────────────────────────
+describe('gapSincePreviousPR', () => {
+  it('returns null when no prior PRs exist', () => {
+    const archive = [];
+    expect(gapSincePreviousPR(archive, 'bench', '2026-05-15T00:00:00.000Z')).toBeNull();
+  });
+
+  it('returns ms since the most recent prior PR', () => {
+    const archive = [
+      {
+        ...session('a', '2026-05-01T00:00:00.000Z', 'bench', [{ weight: 100, reps: 5 }]),
+        performances: [{
+          exerciseId: 'bench',
+          sets: [{ weight: 100, reps: 5, pr: { weight: true } }],
+        }],
+      },
+    ];
+    const gap = gapSincePreviousPR(archive, 'bench', '2026-05-08T00:00:00.000Z');
+    expect(gap).toBe(7 * 24 * 60 * 60 * 1000);
+  });
+
+  it('ignores PRs after the cutoff', () => {
+    const archive = [{
+      id: 'a',
+      startedAt: '2026-05-08T00:00:00.000Z',
+      endedAt: '2026-05-08T00:00:00.000Z',
+      performances: [{
+        exerciseId: 'bench',
+        sets: [{ weight: 100, reps: 5, pr: { weight: true } }],
+      }],
+    }];
+    expect(gapSincePreviousPR(archive, 'bench', '2026-05-01T00:00:00.000Z')).toBeNull();
+  });
+});
+
+// ─── Wave 6.3c — recoveryDebt ────────────────────────────────────────
+describe('recoveryDebt', () => {
+  it('returns empty when archive is empty', () => {
+    expect(recoveryDebt([])).toEqual({});
+  });
+
+  it('returns empty when recent volume is at or below baseline', () => {
+    // Use push-bb-bench, a real catalog id → horizontal-press pattern.
+    const now = new Date('2026-05-15T00:00:00.000Z');
+    const day = (msAgo) => new Date(now.getTime() - msAgo).toISOString();
+    const sess = (when, sets) => ({
+      id: when, startedAt: day(when), endedAt: day(when),
+      performances: [{ exerciseId: 'push-bb-bench', sets }],
+    });
+    const archive = [
+      sess(12 * 24 * 3600 * 1000, [{ weight: 100, reps: 5 }]),
+      sess(10 * 24 * 3600 * 1000, [{ weight: 100, reps: 5 }]),
+      sess(8 * 24 * 3600 * 1000, [{ weight: 100, reps: 5 }]),
+      sess(4 * 24 * 3600 * 1000, [{ weight: 100, reps: 5 }]),
+    ];
+    expect(recoveryDebt(archive, { now })).toEqual({});
+  });
+
+  it('flags a pattern where last 72h is >1.4× the 14d baseline', () => {
+    const now = new Date('2026-05-15T00:00:00.000Z');
+    const day = (msAgo) => new Date(now.getTime() - msAgo).toISOString();
+    const sess = (when, exId, count) => ({
+      id: String(when),
+      startedAt: day(when), endedAt: day(when),
+      performances: [{
+        exerciseId: exId,
+        sets: Array.from({ length: count }, () => ({ weight: 100, reps: 5 })),
+      }],
+    });
+    // 14-day baseline: just one session 12d ago at 3 sets → ~0.64 sets/72h.
+    // Recent 72h: 6 working sets across two sessions → >1.4× baseline.
+    const archive = [
+      sess(12 * 24 * 3600 * 1000, 'push-bb-bench', 3),
+      sess(2 * 24 * 3600 * 1000, 'push-bb-bench', 3),
+      sess(1 * 24 * 3600 * 1000, 'push-bb-bench', 3),
+    ];
+    const out = recoveryDebt(archive, { now });
+    expect(out['horizontal-press']).toBeTruthy();
+    expect(out['horizontal-press'].ratio).toBeGreaterThan(1.4);
+  });
+
+  it('excludes warmups from working-set counts', () => {
+    const now = new Date('2026-05-15T00:00:00.000Z');
+    const day = (msAgo) => new Date(now.getTime() - msAgo).toISOString();
+    const archive = [{
+      id: 'a', startedAt: day(2 * 24 * 3600 * 1000), endedAt: day(2 * 24 * 3600 * 1000),
+      performances: [{
+        exerciseId: 'push-bb-bench',
+        sets: [
+          { weight: 40, reps: 8, isWarmup: true },
+          { weight: 40, reps: 8, isWarmup: true },
+        ],
+      }],
+    }];
+    expect(recoveryDebt(archive, { now })).toEqual({});
   });
 });

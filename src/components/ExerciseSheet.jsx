@@ -24,6 +24,7 @@ import { Stack, Text, BrushDivider } from '../design-system/components';
 import { VariantList } from './VariantList';
 import { HistoryStrip } from './HistoryStrip';
 import { ExerciseArc } from './ExerciseArc';
+import { useSession } from '../state/session-context.js';
 
 const TIER_LABEL = {
   S: 'Foundational',
@@ -143,6 +144,7 @@ function BulletList({ items, tone = 'secondary' }) {
 }
 
 export function ExerciseSheet({ open, onClose, exercise }) {
+  const { activeSession } = useSession();
   if (!exercise) {
     return <Sheet open={open} onClose={onClose} ariaLabel="Exercise detail" />;
   }
@@ -154,6 +156,15 @@ export function ExerciseSheet({ open, onClose, exercise }) {
   const DAY_TO_ACCENT = { push: 'rust', pull: 'sea', legs: 'sand', core: 'sky' };
   const accent = DAY_TO_ACCENT[exercise._day] ?? 'stone';
   const tierLabel = TIER_LABEL[exercise.tier] ?? exercise.tier;
+
+  // Wave 6.4: if there's an in-flight performance for this exercise, surface
+  // the active session's prescription instead of the catalog's "—". Catalog
+  // entries have no sets/rest after the Phase-4 catalog/program split.
+  const livePerf = activeSession?.performances?.find((p) => p.exerciseId === exercise.id);
+  const liveSets = livePerf?.prescription?.sets;
+  const liveRest = livePerf?.prescription?.rest;
+  const displaySets = exercise.sets ?? liveSets ?? '—';
+  const displayRest = exercise.rest ?? liveRest ?? '—';
 
   return (
     <Sheet open={open} onClose={onClose} ariaLabel={exercise.name}>
@@ -205,8 +216,8 @@ export function ExerciseSheet({ open, onClose, exercise }) {
 
         <SectionBlock>
           <Stack direction="row" gap={5}>
-            <StatRow label="Sets" value={exercise.sets ?? '—'} accent={accent} />
-            <StatRow label="Rest" value={exercise.rest ?? '—'} accent={accent} />
+            <StatRow label="Sets" value={displaySets} accent={accent} />
+            <StatRow label="Rest" value={displayRest} accent={accent} />
           </Stack>
         </SectionBlock>
 

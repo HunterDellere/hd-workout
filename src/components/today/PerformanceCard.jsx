@@ -58,6 +58,8 @@ export function PerformanceCard({
         marginTop: 40,
         padding: '24px 0',
         borderTop: '1px solid var(--border-hairline)',
+        // Wave 6.4 #35: focus ring picks up the day's pattern accent.
+        '--focus-color': `var(--accent-${accent}-ink)`,
       }}
     >
       <Stack direction="row" align="flex-start" justify="space-between" gap={3}>

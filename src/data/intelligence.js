@@ -397,5 +397,104 @@ export function suggestNextLoad(history, prescription, unit = 'kg') {
   };
 }
 
+// ─── Stagnation diagnosis (Wave 6.3a) ────────────────────────────────
+// Returns a short diagnostic when a per-exercise history shows a stall
+// (≥3 sessions at the same top weight without rep progress). Null when
+// there's no stall. The reason text reads the heuristic out loud so the
+// user can see the algorithm's view.
+export function diagnoseStagnation(history) {
+  if (!Array.isArray(history) || history.length < 3) return null;
+  const recent = history.slice(-3);
+  const last = recent[recent.length - 1];
+  if (!last?.top) return null;
+  const lastWeight = last.top.weight;
+  const sameWeight = recent.every((r) => r?.top?.weight === lastWeight);
+  if (!sameWeight) return null;
+  const reps = recent.map((r) => r.top.reps);
+  const monotonicNonImproving = reps.every((r, i) => (i === 0 ? true : r <= reps[i - 1]));
+  if (!monotonicNonImproving) return null;
+  return {
+    weight: lastWeight,
+    reps,
+    sessions: recent.length,
+  };
+}
+
+// ─── PR gap framing (Wave 6.3b) ──────────────────────────────────────
+// For each PR-stamped set in a session, how long since the previous PR
+// for this exercise. Returns ms; consumers can format days / weeks /
+// months. Used by the session-end summary to enrich the PR row.
+export function gapSincePreviousPR(archive, exerciseId, beforeIso) {
+  if (!Array.isArray(archive)) return null;
+  let mostRecentPRTime = null;
+  for (const session of archive) {
+    const stamp = session.endedAt ?? session.startedAt;
+    if (!stamp || stamp >= beforeIso) continue;
+    for (const perf of session.performances ?? []) {
+      if (perf.exerciseId !== exerciseId) continue;
+      for (const s of perf.sets ?? []) {
+        if (!s.pr) continue;
+        if (!mostRecentPRTime || stamp > mostRecentPRTime) mostRecentPRTime = stamp;
+      }
+    }
+  }
+  if (!mostRecentPRTime) return null;
+  return new Date(beforeIso).getTime() - new Date(mostRecentPRTime).getTime();
+}
+
+// ─── Recovery debt by pattern (Wave 6.3c) ────────────────────────────
+// Count working sets per movement pattern in the last 72h, compared to
+// the trailing 14d baseline (excluding the last 72h). Returns
+//   { pattern: { recent: number, baseline: number, ratio: number } }
+// only for patterns where recent volume exceeds 1.4× the proportional
+// 72h baseline. Caller decides whether to surface; nothing fires by
+// default.
+const MS_HOUR = 60 * 60 * 1000;
+export function recoveryDebt(archive, { now = new Date() } = {}) {
+  if (!Array.isArray(archive) || archive.length === 0) return {};
+  const nowMs = now instanceof Date ? now.getTime() : new Date(now).getTime();
+  const threeDaysAgo = nowMs - 72 * MS_HOUR;
+  const fourteenDaysAgo = nowMs - 14 * 24 * MS_HOUR;
+
+  const recent = new Map();
+  const baseline = new Map();
+
+  for (const session of archive) {
+    const stamp = session.endedAt ?? session.startedAt;
+    if (!stamp) continue;
+    const sessionMs = new Date(stamp).getTime();
+    if (sessionMs < fourteenDaysAgo) continue;
+    const bucket = sessionMs >= threeDaysAgo ? recent : baseline;
+    for (const perf of session.performances ?? []) {
+      const patterns = patternsForExerciseId(perf.exerciseId);
+      if (patterns.length === 0) continue;
+      // Working-set count (warmups excluded).
+      const workingSets = (perf.sets ?? []).filter((s) => !s.isWarmup).length;
+      if (workingSets === 0) continue;
+      // Split share across patterns (same convention as weeklyVolume).
+      const share = workingSets / patterns.length;
+      for (const p of patterns) {
+        bucket.set(p, (bucket.get(p) ?? 0) + share);
+      }
+    }
+  }
+
+  // Normalize baseline to a per-72h proportion: total / (14 / 3) = total × (3/14).
+  const out = {};
+  for (const [pattern, recentSets] of recent.entries()) {
+    const baselineSets = baseline.get(pattern) ?? 0;
+    const baselinePer72h = baselineSets * (3 / 14);
+    if (baselinePer72h === 0) continue;
+    const ratio = recentSets / baselinePer72h;
+    if (ratio < 1.4) continue;
+    out[pattern] = {
+      recent: Math.round(recentSets * 10) / 10,
+      baseline: Math.round(baselinePer72h * 10) / 10,
+      ratio: Math.round(ratio * 10) / 10,
+    };
+  }
+  return out;
+}
+
 // Re-export so consumers don't reach into derive directly.
 export { exercisesForPattern };

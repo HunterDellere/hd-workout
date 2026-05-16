@@ -1,5 +1,9 @@
 // /library — hub. Two groups: by day, by movement pattern. Both always
 // expanded; the page reads as a single browsable index.
+//
+// Wave 6.1: at ≥1024px the page splits into a content rail + sticky
+// right-side anchor strip so the desktop view stops reading as a centered
+// column floating in a void.
 
 import { Link } from 'react-router-dom';
 import {
@@ -13,7 +17,7 @@ import { patternAccent, dayLineageAccent, space as spaceScale } from '../design-
 import { PATTERNS } from '../data/patterns';
 import { dayList } from '../data';
 
-function GroupHeader({ label, count }) {
+function GroupHeader({ id, label, count }) {
   return (
     <Stack
       direction="row"
@@ -22,7 +26,7 @@ function GroupHeader({ label, count }) {
       gap={3}
       style={{ padding: '20px 0 12px' }}
     >
-      <Text as="h2" variant="title-lg">{label}</Text>
+      <Text as="h2" id={id} variant="title-lg" style={{ scrollMarginTop: 24 }}>{label}</Text>
       <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
         {count}
       </Text>
@@ -115,55 +119,137 @@ function PatternRow({ pattern, isFirst }) {
   );
 }
 
-export function Library() {
+// Sticky anchor list (≥1024px only). Quiet mono labels; uppercase tracking.
+function AnchorRail({ anchors }) {
   return (
-    <Page>
-      <Text as="div" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
-        Library
+    <nav
+      aria-label="Library sections"
+      style={{
+        position: 'sticky',
+        top: 24,
+        alignSelf: 'start',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 12,
+        paddingTop: 80,
+        paddingLeft: 24,
+        borderLeft: '1px solid var(--border-hairline)',
+      }}
+    >
+      <Text as="div" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase', letterSpacing: '0.14em', marginBottom: 4 }}>
+        Index
       </Text>
-      <Text
-        as="h1"
-        variant="display-lg"
-        style={{ marginTop: 8, fontStyle: 'italic' }}
-      >
-        Reference
-      </Text>
-      <Text
-        as="p"
-        variant="body-lg"
-        tone="secondary"
-        style={{ marginTop: 16, maxWidth: 56 * 9 }}
-      >
-        Browse by day, or by movement.
-      </Text>
-
-      <BrushDivider style={{ marginTop: 40 }} />
-
-      <section>
-        <GroupHeader label="Days" count={`${dayList.length}`} />
-        <ul
-          data-testid="library-days"
-          style={{ listStyle: 'none', margin: 0, padding: 0 }}
+      {anchors.map(({ id, label, count }) => (
+        <a
+          key={id}
+          href={`#${id}`}
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'baseline',
+            gap: 12,
+            textDecoration: 'none',
+            color: 'var(--text-secondary)',
+            fontFamily: 'var(--font-mono)',
+            fontSize: 11,
+            letterSpacing: '0.12em',
+            textTransform: 'uppercase',
+            padding: '4px 0',
+          }}
         >
-          {dayList.map((d, i) => (
-            <DayRow key={d.key} day={d} isFirst={i === 0} />
-          ))}
-        </ul>
-      </section>
+          <span>{label}</span>
+          <span style={{ color: 'var(--text-tertiary)' }}>{count}</span>
+        </a>
+      ))}
+    </nav>
+  );
+}
 
-      <BrushDivider style={{ marginTop: 40 }} />
+export function Library() {
+  const anchors = [
+    { id: 'library-days', label: 'Days', count: dayList.length },
+    { id: 'library-movements', label: 'Movements', count: PATTERNS.length },
+  ];
 
-      <section>
-        <GroupHeader label="Movements" count={`${PATTERNS.length}`} />
-        <ul
-          data-testid="library-patterns"
-          style={{ listStyle: 'none', margin: 0, padding: 0 }}
-        >
-          {PATTERNS.map((p, i) => (
-            <PatternRow key={p.key} pattern={p} isFirst={i === 0} />
-          ))}
-        </ul>
-      </section>
+  return (
+    <Page width="dashboard">
+      <div
+        style={{
+          // Two-column grid at ≥1024px; single column below. The content
+          // rail caps at ~640px so line length stays editorial regardless
+          // of viewport width.
+          display: 'grid',
+          gridTemplateColumns: 'minmax(0, 640px)',
+          justifyContent: 'start',
+          columnGap: 56,
+        }}
+        className="library-grid"
+      >
+        <div>
+          <Text as="div" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
+            Library
+          </Text>
+          <Text
+            as="h1"
+            variant="display-lg"
+            style={{ marginTop: 8, fontStyle: 'italic' }}
+          >
+            Reference
+          </Text>
+          <Text
+            as="p"
+            variant="body-lg"
+            tone="secondary"
+            style={{ marginTop: 16, maxWidth: 56 * 9 }}
+          >
+            Browse by day, or by movement.
+          </Text>
+
+          <BrushDivider style={{ marginTop: 40 }} />
+
+          <section>
+            <GroupHeader id="library-days" label="Days" count={`${dayList.length}`} />
+            <ul
+              data-testid="library-days"
+              style={{ listStyle: 'none', margin: 0, padding: 0 }}
+            >
+              {dayList.map((d, i) => (
+                <DayRow key={d.key} day={d} isFirst={i === 0} />
+              ))}
+            </ul>
+          </section>
+
+          <BrushDivider style={{ marginTop: 40 }} />
+
+          <section>
+            <GroupHeader id="library-movements" label="Movements" count={`${PATTERNS.length}`} />
+            <ul
+              data-testid="library-patterns"
+              style={{ listStyle: 'none', margin: 0, padding: 0 }}
+            >
+              {PATTERNS.map((p, i) => (
+                <PatternRow key={p.key} pattern={p} isFirst={i === 0} />
+              ))}
+            </ul>
+          </section>
+        </div>
+
+        <div className="library-rail">
+          <AnchorRail anchors={anchors} />
+        </div>
+      </div>
+
+      <style>{`
+        @media (min-width: 1024px) {
+          .library-grid {
+            grid-template-columns: minmax(0, 640px) 220px !important;
+            justify-content: center !important;
+          }
+        }
+        @media (max-width: 1023px) {
+          .library-rail { display: none; }
+        }
+      `}</style>
     </Page>
   );
 }

@@ -14,6 +14,7 @@ import { useMemo, useState } from 'react';
 import { Text, Stack } from '../design-system/components';
 import { useSession } from '../state/session-context.js';
 import { historyForExercise } from '../data/history';
+import { diagnoseStagnation } from '../data/intelligence';
 
 // Epley: 1RM ≈ weight × (1 + reps/30). Reasonable for rep ranges ≤ 10.
 function estimateOneRm(weight, reps) {
@@ -157,7 +158,8 @@ export function ExerciseArc({ exerciseId, accent = 'stone' }) {
       ? Math.floor((now - new Date(firstStamp).getTime()) / (24 * 3600 * 1000))
       : null;
     const span = days != null ? spanLabel(days) : null;
-    return { weights, oneRms, prFlags, volumes, heaviest, peak1Rm, totalSessions, span };
+    const stagnation = diagnoseStagnation(rows);
+    return { weights, oneRms, prFlags, volumes, heaviest, peak1Rm, totalSessions, span, stagnation };
   }, [archive, exerciseId, now]);
 
   if (!hydrated || !data) return null;
@@ -199,6 +201,27 @@ export function ExerciseArc({ exerciseId, accent = 'stone' }) {
           Est 1RM · dashed
         </Text>
       </Stack>
+
+      {data.stagnation && (
+        <div
+          data-testid="stagnation-card"
+          style={{
+            marginTop: 20,
+            padding: '14px 16px',
+            border: '1px solid var(--border-hairline)',
+            borderLeft: `3px solid var(--state-warn-ink, var(--accent-${accent}-ink))`,
+            borderRadius: 4,
+            background: 'var(--surface-sunken)',
+          }}
+        >
+          <Text as="div" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase', letterSpacing: '0.12em' }}>
+            Stalled
+          </Text>
+          <Text as="p" variant="body-md" tone="primary" style={{ marginTop: 4, fontStyle: 'italic', fontFamily: 'var(--font-serif)' }}>
+            Three sessions at {data.stagnation.weight} for {data.stagnation.reps.join(', ')} reps. Consider a variation, a deload, or a technical reset.
+          </Text>
+        </div>
+      )}
     </div>
   );
 }
