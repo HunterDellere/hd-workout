@@ -17,8 +17,9 @@ import { useSettings, DAY_OPTIONS, WEEKDAYS } from '../state/settings-context.js
 import { useSession } from '../state/session-context.js';
 import { HAPTIC_MODES, fireHapticAt } from '../hooks/useHaptics';
 import { buildSnapshot, applySnapshot, wipeAll } from '../data/export';
-import { PROGRAM_LIST, DEFAULT_PROGRAM_KEY } from '../data';
+import { GYM_PROGRAMS, HOME_PROGRAMS, DEFAULT_PROGRAM_KEY } from '../data';
 import { EQUIPMENT_CATEGORIES } from '../data/equipment';
+import { useOverlay } from '../state/overlay-context.js';
 
 function Radio({ value, current, onSelect, label, hint }) {
   const checked = current === value;
@@ -191,6 +192,9 @@ export function Settings() {
     resetSplit,
   } = useSettings();
   const activeProgramKey = settings.activeProgramKey ?? DEFAULT_PROGRAM_KEY;
+  const isHome = settings.location === 'home';
+  const availablePrograms = isHome ? HOME_PROGRAMS : GYM_PROGRAMS;
+  const { resetAllOverlays } = useOverlay();
 
   return (
     <Page>
@@ -209,13 +213,14 @@ export function Settings() {
 
       <BrushDivider style={{ marginTop: 40 }} />
 
-      <Block gapTop={24} eyebrow="Program">
+      <Block gapTop={24} eyebrow={isHome ? 'Program · Home' : 'Program · Gym'}>
         <Text as="p" variant="body-md" tone="secondary" style={{ marginBottom: 12 }}>
-          The training template. Switching keeps your archive and overlay edits;
-          each program remembers its own swaps separately.
+          {isHome
+            ? 'The home training template — bands, kettlebells, mace/club, pull-up bar, light dumbbells, bodyweight.'
+            : 'The gym training template. Full equipment access.'}
         </Text>
         <div role="radiogroup" aria-label="Active program" data-testid="program-switcher">
-          {PROGRAM_LIST.map((p) => (
+          {availablePrograms.map((p) => (
             <Radio
               key={p.key}
               value={p.key}
@@ -227,9 +232,8 @@ export function Settings() {
           ))}
         </div>
         {(() => {
-          const active = PROGRAM_LIST.find((p) => p.key === activeProgramKey);
+          const active = availablePrograms.find((p) => p.key === activeProgramKey);
           if (!active?.defaultSplit) return null;
-          // Compare the active program's defaultSplit to the user's current split.
           const matches = Object.keys(active.defaultSplit).every(
             (k) => settings.split?.[k] === active.defaultSplit[k],
           );
@@ -248,6 +252,21 @@ export function Settings() {
             </div>
           );
         })()}
+        <div style={{ marginTop: 20 }}>
+          <Button
+            variant="bare"
+            size="sm"
+            data-testid="reset-routine"
+            onClick={() => {
+              if (typeof window !== 'undefined'
+                && !window.confirm('Reset to the default routine? This clears all swap and add edits across gym and home.')) return;
+              resetAllOverlays();
+            }}
+            style={{ padding: 0, color: 'var(--state-warn-ink)' }}
+          >
+            Reset to default routine
+          </Button>
+        </div>
       </Block>
 
       <BrushDivider style={{ marginTop: 40 }} />

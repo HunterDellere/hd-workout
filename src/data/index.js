@@ -20,6 +20,8 @@ import recoveryCatalog from './recovery';
 import {
   PROGRAMS,
   PROGRAM_LIST,
+  GYM_PROGRAMS,
+  HOME_PROGRAMS,
   DEFAULT_PROGRAM_KEY,
   getActiveProgram,
   fullSpectrum,
@@ -166,5 +168,13 @@ export const core = HYDRATED.core;
 export const recovery = HYDRATED.recovery;
 
 export { principles, injuryPrevention };
-export { fullSpectrum, PROGRAMS, PROGRAM_LIST, DEFAULT_PROGRAM_KEY, getActiveProgram };
+export {
+  fullSpectrum,
+  PROGRAMS,
+  PROGRAM_LIST,
+  GYM_PROGRAMS,
+  HOME_PROGRAMS,
+  DEFAULT_PROGRAM_KEY,
+  getActiveProgram,
+};
 export { applyOverlay } from './programs/overlay';

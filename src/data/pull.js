@@ -192,6 +192,55 @@ export const pull = {
           ],
           tags: ['compound', 'horizontal-pull'],
         },
+        {
+          id: 'pull-tbar-row',
+          name: 'T-Bar Row',
+          tier: 'A',
+          equipment: ['Landmine attachment', 'Olympic barbell', 'V-handle or close-grip attachment'],
+          primaryMuscles: ['Latissimus dorsi', 'Mid trapezius', 'Rhomboids'],
+          secondaryMuscles: ['Posterior deltoid', 'Biceps brachii', 'Spinal erectors'],
+          cues: [
+            'Straddle the bar at the landmine end; hinge to ~45°',
+            'Close-grip handle hooked under the bar',
+            'Pull to the lower sternum; elbows close to ribs',
+            'Brief squeeze at the top, slow on the lower',
+            'Spine stays neutral throughout',
+          ],
+          safetyNotes: [
+            'Easier on the lower back than a bent-over BB row — bar path is fixed',
+            'Still: shorten the ROM before you round to chase the rep',
+          ],
+          variants: [
+            { name: 'Chest-supported T-bar', note: 'Hip-pad version; removes lumbar demand entirely.' },
+            { name: 'Wide-grip T-bar', note: 'Overhand wide pull — biases upper back.' },
+          ],
+          tags: ['compound', 'horizontal-pull'],
+        },
+        {
+          id: 'pull-inverted-row',
+          name: 'Inverted Row',
+          tier: 'A',
+          equipment: ['Sturdy bar at hip-to-chest height OR TRX/rings OR low table'],
+          primaryMuscles: ['Latissimus dorsi', 'Mid trapezius', 'Rhomboids'],
+          secondaryMuscles: ['Biceps brachii', 'Rear deltoid', 'Core'],
+          cues: [
+            'Bar at hip-to-chest height; lie underneath',
+            'Body in a straight line — heels on the floor, hips up',
+            'Pull chest to the bar; elbows track to the ribs',
+            'Full scapular retraction at the top, slow descent',
+            'Lower the angle (more horizontal) to make it harder; raise the bar to make it easier',
+          ],
+          safetyNotes: [
+            'A serious bodyweight horizontal pull — the home counterpart to a barbell row.',
+            'Glutes engaged throughout — no hip sag.',
+          ],
+          variants: [
+            { name: 'Feet-elevated inverted row', note: 'Feet on a bench — closer to bodyweight load.' },
+            { name: 'Single-arm inverted row', note: 'Advanced; brutal anti-rotation demand.' },
+            { name: 'Towel inverted row', note: 'Wrap a towel over the bar; grip + forearm bonus.' },
+          ],
+          tags: ['compound', 'horizontal-pull', 'bodyweight'],
+        },
       ],
     },
     {
@@ -454,9 +503,11 @@ export const pull = {
           variants: [
             { name: 'Suitcase carry', note: 'One side only — anti-lateral flexion.' },
             { name: 'Overhead carry', note: 'Arms locked overhead — shoulder stability + thoracic extension.' },
+            { name: 'Front-rack carry', note: 'KBs at shoulders — mid back + core demand.' },
             { name: 'Zercher carry', note: 'Bar in the crooks of the elbows — brutal core demand.' },
+            { name: 'Sandbag carry', note: 'Unstable load — total body integration.' },
           ],
-          tags: ['loaded-carry', 'grip', 'core'],
+          tags: ['loaded-carry', 'grip', 'core', 'compound'],
         },
         {
           id: 'pull-wrist-curl',

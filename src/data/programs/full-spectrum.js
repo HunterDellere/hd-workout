@@ -117,7 +117,7 @@ export const fullSpectrum = {
         { id: 'legs-tib-raise',     sets: '3 × 15–20', rest: '1:00' },
       ],
       'carries': [
-        { id: 'legs-farmers-carry',   sets: '3–4 × 40–60m',     rest: '2:00' },
+        { id: 'pull-farmers-carry',   sets: '3–4 × 40–60m',     rest: '2:00' },
         { id: 'legs-suitcase-carry',  sets: '3 × 30–40m each',  rest: '1:30' },
       ],
     },
@@ -153,15 +153,15 @@ export const fullSpectrum = {
       ],
       'imbalance': [
         { id: 'rec-1arm-row',        sets: '3 × 8–10 each arm',     rest: '1:30' },
-        { id: 'rec-suitcase-carry',  sets: '3 × 30s each side',     rest: '1:00' },
-        { id: 'rec-copenhagen',      sets: '2 × 20–30s each side',  rest: '1:00' },
+        { id: 'legs-suitcase-carry', sets: '3 × 30s each side',     rest: '1:00' },
+        { id: 'legs-copenhagen',     sets: '2 × 20–30s each side',  rest: '1:00' },
         { id: 'rec-1leg-rdl',        sets: '3 × 8 each leg',        rest: '1:30' },
       ],
       'spine-health': [
         { id: 'rec-mcgill-curlup',       sets: '3 × 5 (10s holds, descending)',           rest: '0:30' },
         { id: 'rec-mcgill-sideplank',    sets: '3 × 5 (10s holds, descending) each side', rest: '0:30' },
         { id: 'rec-bird-dog',            sets: '3 × 8 (5s holds) each side',              rest: '0:30' },
-        { id: 'rec-dead-bug',            sets: '3 × 8 each side',                         rest: '0:45' },
+        { id: 'core-dead-bug',           sets: '3 × 8 each side',                         rest: '0:45' },
         { id: 'rec-glute-bridge-brace',  sets: '3 × 10 (3s holds)',                       rest: '0:45' },
       ],
       'healthspan': [

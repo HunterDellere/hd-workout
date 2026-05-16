@@ -715,9 +715,6 @@ export function Today() {
               onClick={() => setLocation('home')}
               testId="location-home"
             />
-            <Text as="span" variant="mono-sm" tone="tertiary" style={{ alignSelf: 'center', textTransform: 'uppercase', opacity: 0.7 }}>
-              Each remembers its own swaps
-            </Text>
           </Stack>
 
           <BrushDivider style={{ marginTop: 32 }} />

@@ -193,57 +193,9 @@ const recovery = {
           ],
           tags: ['imbalance', 'unilateral', 'horizontal-pull'],
         },
-        {
-          id: 'rec-suitcase-carry',
-          name: 'Suitcase Carry',
-          tier: 'S',
-          intent: 'main',
-          categories: ['imbalance', 'spine'],
-          equipment: ['Dumbbell or kettlebell'],
-          primaryMuscles: ['Obliques', 'Quadratus lumborum'],
-          secondaryMuscles: ['Grip', 'Shoulder stabilizers', 'Glute medius'],
-          cues: [
-            'One weight, one hand. Walk',
-            'Shoulders level — don’t lean or hike',
-            'Ribs stacked over pelvis; no side-bend',
-            'Eyes forward; relaxed neck',
-            'Match duration on the weaker side first, then the strong side',
-          ],
-          safetyNotes: [
-            'Pick a weight you can carry cleanly. Asymmetric loading is the whole point — don’t cheat with body lean.',
-          ],
-          variants: [
-            { name: 'Farmer carry', note: 'Both hands loaded; less anti-lateral demand.' },
-            { name: 'Overhead carry', note: 'One arm overhead; thoracic + shoulder stability.' },
-          ],
-          tags: ['imbalance', 'anti-lateral-flexion', 'core-anti', 'grip'],
-        },
-        {
-          id: 'rec-copenhagen',
-          name: 'Copenhagen Plank',
-          tier: 'A',
-          intent: 'corrective',
-          categories: ['imbalance'],
-          equipment: ['Flat bench'],
-          primaryMuscles: ['Adductors', 'Obliques'],
-          secondaryMuscles: ['Glute medius'],
-          cues: [
-            'Side plank position; top leg’s inner thigh on the bench',
-            'Bottom leg straight, tucked underneath',
-            'Squeeze the inner thigh into the bench to lift the bottom hip',
-            'Body in a straight line — no sag, no pike',
-            'Start at the knee on the bench (regression); progress to ankle',
-          ],
-          safetyNotes: [
-            'Notorious for adductor strains if you load too aggressively. Start with the knee, not the ankle.',
-            'Stop if you feel a sharp pull in the groin.',
-          ],
-          variants: [
-            { name: 'Knee Copenhagen', note: 'Top knee on the bench; ~50 % the demand of full version.' },
-            { name: 'Hip-lift Copenhagen', note: 'Lower and lift the bottom hip each rep.' },
-          ],
-          tags: ['imbalance', 'corrective', 'anti-lateral-flexion'],
-        },
+        // Suitcase carry + Copenhagen Plank are canonical in legs.js
+        // (legs-suitcase-carry, legs-copenhagen). Recovery program
+        // references those ids directly.
         {
           id: 'rec-1leg-rdl',
           name: 'Single-Leg Romanian Deadlift',
@@ -358,31 +310,8 @@ const recovery = {
           ],
           tags: ['corrective', 'spine-health', 'anti-rotation', 'core-anti'],
         },
-        {
-          id: 'rec-dead-bug',
-          name: 'Dead Bug',
-          tier: 'A',
-          intent: 'activation',
-          categories: ['spine'],
-          equipment: ['Mat'],
-          primaryMuscles: ['Rectus abdominis', 'Transverse abdominis'],
-          secondaryMuscles: ['Hip flexors'],
-          cues: [
-            'Supine; arms vertical, knees and hips at 90°',
-            'Press the lower back into the floor — that contact never breaks',
-            'Lower opposite arm and leg slowly; return',
-            'Exhale on the lowering phase to amplify the brace',
-            'If the lower back lifts, shorten the ROM',
-          ],
-          safetyNotes: [
-            'The non-negotiable: lower back stays glued to the floor. If it lifts, the rep didn’t count.',
-          ],
-          variants: [
-            { name: 'Loaded dead bug', note: 'Light plate in each hand; harder anti-extension.' },
-            { name: 'Heel-tap dead bug', note: 'Tap heel to floor instead of full extension; regression.' },
-          ],
-          tags: ['corrective', 'spine-health', 'anti-extension', 'core-anti', 'activation'],
-        },
+        // Dead bug is canonical in core.js (core-dead-bug). Recovery
+        // program references that id directly.
         {
           id: 'rec-glute-bridge-brace',
           name: 'Braced Glute Bridge',

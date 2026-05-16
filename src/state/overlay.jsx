@@ -219,6 +219,12 @@ export function OverlayProvider({ children }) {
     });
   }, [mutateActive, activeProgram.key]);
 
+  // Reset to default routine — wipes BOTH gym and home overlays so the
+  // user returns to the seeded programs. Used by /me/settings.
+  const resetAllOverlays = useCallback(() => {
+    setOverlayByLocation({ gym: {}, home: {} });
+  }, []);
+
   const value = useMemo(() => ({
     overlay,
     hydrated,
@@ -230,8 +236,9 @@ export function OverlayProvider({ children }) {
     removeAddedExercise,
     swapExerciseOverlay,
     resetDay,
+    resetAllOverlays,
   }), [overlay, hydrated, days, updateEntry, hideExercise, unhideExercise,
-    addExercise, removeAddedExercise, swapExerciseOverlay, resetDay]);
+    addExercise, removeAddedExercise, swapExerciseOverlay, resetDay, resetAllOverlays]);
 
   return <OverlayContext.Provider value={value}>{children}</OverlayContext.Provider>;
 }

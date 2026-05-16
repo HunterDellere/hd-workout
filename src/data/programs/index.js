@@ -8,14 +8,20 @@
 
 import { fullSpectrum } from './full-spectrum';
 import { ppl6 } from './ppl-6';
+import { homeDefault } from './home-default';
 
 export const PROGRAMS = {
   [fullSpectrum.key]: fullSpectrum,
   [ppl6.key]: ppl6,
+  [homeDefault.key]: homeDefault,
 };
 
-// Order shown in the /me/settings switcher (default first).
-export const PROGRAM_LIST = [fullSpectrum, ppl6];
+// Order shown in the /me/settings switcher. Gym programs first; home
+// program is shown when the user is in the Home location preset only.
+export const PROGRAM_LIST = [fullSpectrum, ppl6, homeDefault];
+// Programs that show in the gym/home switcher respectively.
+export const GYM_PROGRAMS = [fullSpectrum, ppl6];
+export const HOME_PROGRAMS = [homeDefault];
 
 export const DEFAULT_PROGRAM_KEY = fullSpectrum.key;
 
@@ -47,4 +53,4 @@ export function _resetProgramWarnings() {
   warnedMissing = new Set();
 }
 
-export { fullSpectrum, ppl6 };
+export { fullSpectrum, ppl6, homeDefault };

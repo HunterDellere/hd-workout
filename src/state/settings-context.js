@@ -29,7 +29,13 @@ export const DEFAULT_SETTINGS = {
   units: 'kg',
   haptics: 'standard', // off | standard | strong
   intelligenceEnabled: true, // Phase 3 surface: PRs, volume, heatmap. On by default from session 16; existing users keep their persisted choice.
-  activeProgramKey: 'full-spectrum', // Phase 4 slice 2: programs registry seam. UI to switch lands once a second program exists.
+  // Active program per location. `location` selects which key is live;
+  // each location remembers its own program independently so switching
+  // gym → home doesn't reshuffle the gym build. `activeProgramKey` is
+  // kept as a derived alias for back-compat with the slice-2 seam.
+  activeProgramKey: 'full-spectrum',
+  gymProgramKey:  'full-spectrum',
+  homeProgramKey: 'home-default',
   // Location preset — toggles which equipment-scoped overlay applies on
   // /today. 'gym' keeps the full catalog; 'home' biases to dumbbell /
   // bodyweight / band variants. Each location remembers its own swaps.
