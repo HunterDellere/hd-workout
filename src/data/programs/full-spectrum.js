@@ -18,6 +18,9 @@ export const fullSpectrum = {
     'The default. Five training days — Push, Pull, Legs, Core, Recovery — '
     + 'with rests interspersed. Designed for long-term build with no movement '
     + 'gaps and explicit corrective work.',
+  // Day-of-week → day-key. Sun=0. Used when the user activates the program
+  // from /me/settings to offer a one-tap "apply this program's split" affordance.
+  defaultSplit: { 0: 'recovery', 1: 'push', 2: 'pull', 3: 'rest', 4: 'legs', 5: 'core', 6: 'rest' },
   days: {
     push: {
       'chest-horizontal': [

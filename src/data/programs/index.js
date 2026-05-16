@@ -7,10 +7,15 @@
 // time the fallback fires.
 
 import { fullSpectrum } from './full-spectrum';
+import { ppl6 } from './ppl-6';
 
 export const PROGRAMS = {
   [fullSpectrum.key]: fullSpectrum,
+  [ppl6.key]: ppl6,
 };
+
+// Order shown in the /me/settings switcher (default first).
+export const PROGRAM_LIST = [fullSpectrum, ppl6];
 
 export const DEFAULT_PROGRAM_KEY = fullSpectrum.key;
 
@@ -42,4 +47,4 @@ export function _resetProgramWarnings() {
   warnedMissing = new Set();
 }
 
-export { fullSpectrum };
+export { fullSpectrum, ppl6 };

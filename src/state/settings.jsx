@@ -51,6 +51,14 @@ export function SettingsProvider({ children }) {
     setHaptics: (haptics) => setSettings((s) => ({ ...s, haptics })),
     setIntelligenceEnabled: (enabled) => setSettings((s) => ({ ...s, intelligenceEnabled: !!enabled })),
     setLocation: (location) => setSettings((s) => ({ ...s, location: location === 'home' ? 'home' : 'gym' })),
+    setActiveProgramKey: (key) => setSettings((s) => ({ ...s, activeProgramKey: key })),
+    // Bulk: switch program key AND replace the split in one shot. Used when
+    // the /me/settings switcher fires its "apply program's default split" path.
+    applyProgramSplit: (key, split) => setSettings((s) => ({
+      ...s,
+      activeProgramKey: key,
+      split: { ...DEFAULT_SETTINGS.split, ...split },
+    })),
     resetSplit: () => setSettings((s) => ({ ...s, split: DEFAULT_SETTINGS.split })),
     replaceAll: (next) => setSettings(mergeSettings(next)),
   }), [settings]);

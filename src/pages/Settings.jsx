@@ -17,6 +17,7 @@ import { useSettings, DAY_OPTIONS, WEEKDAYS } from '../state/settings-context.js
 import { useSession } from '../state/session-context.js';
 import { HAPTIC_MODES, fireHapticAt } from '../hooks/useHaptics';
 import { buildSnapshot, applySnapshot, wipeAll } from '../data/export';
+import { PROGRAM_LIST, DEFAULT_PROGRAM_KEY } from '../data';
 
 function Radio({ value, current, onSelect, label, hint }) {
   const checked = current === value;
@@ -176,7 +177,18 @@ function DataBlock() {
 }
 
 export function Settings() {
-  const { settings, setSplit, setRestTimerMode, setUnits, setHaptics, setIntelligenceEnabled, resetSplit } = useSettings();
+  const {
+    settings,
+    setSplit,
+    setRestTimerMode,
+    setUnits,
+    setHaptics,
+    setIntelligenceEnabled,
+    setActiveProgramKey,
+    applyProgramSplit,
+    resetSplit,
+  } = useSettings();
+  const activeProgramKey = settings.activeProgramKey ?? DEFAULT_PROGRAM_KEY;
 
   return (
     <Page>
@@ -192,6 +204,49 @@ export function Settings() {
       <Text as="p" variant="body-lg" tone="secondary" style={{ marginTop: 16, maxWidth: 60 * 9 }}>
         Stays on this device.
       </Text>
+
+      <BrushDivider style={{ marginTop: 40 }} />
+
+      <Block gapTop={24} eyebrow="Program">
+        <Text as="p" variant="body-md" tone="secondary" style={{ marginBottom: 12 }}>
+          The training template. Switching keeps your archive and overlay edits;
+          each program remembers its own swaps separately.
+        </Text>
+        <div role="radiogroup" aria-label="Active program" data-testid="program-switcher">
+          {PROGRAM_LIST.map((p) => (
+            <Radio
+              key={p.key}
+              value={p.key}
+              current={activeProgramKey}
+              onSelect={(key) => setActiveProgramKey(key)}
+              label={p.name}
+              hint={p.description}
+            />
+          ))}
+        </div>
+        {(() => {
+          const active = PROGRAM_LIST.find((p) => p.key === activeProgramKey);
+          if (!active?.defaultSplit) return null;
+          // Compare the active program's defaultSplit to the user's current split.
+          const matches = Object.keys(active.defaultSplit).every(
+            (k) => settings.split?.[k] === active.defaultSplit[k],
+          );
+          if (matches) return null;
+          return (
+            <div style={{ marginTop: 16 }}>
+              <Button
+                variant="bare"
+                size="sm"
+                data-testid="apply-program-split"
+                onClick={() => applyProgramSplit(active.key, active.defaultSplit)}
+                style={{ padding: 0 }}
+              >
+                Apply {active.name}'s suggested split
+              </Button>
+            </div>
+          );
+        })()}
+      </Block>
 
       <BrushDivider style={{ marginTop: 40 }} />
 

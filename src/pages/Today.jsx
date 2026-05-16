@@ -485,7 +485,10 @@ export function Today() {
           No day scheduled
         </Text>
         <Text as="p" variant="body-lg" tone="secondary" style={{ marginTop: 16 }}>
-          The current weekday has no day assigned in your split.
+          {todayKey
+            ? `Your split has "${todayKey}" today, but your active program doesn't define it. `
+              + 'Change today\'s day in Settings, or switch programs.'
+            : 'The current weekday has no day assigned in your split.'}
         </Text>
         <BrushDivider style={{ marginTop: 32 }} />
         <div style={{ marginTop: 24 }}>

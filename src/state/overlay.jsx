@@ -12,7 +12,8 @@ import { OverlayContext } from './overlay-context.js';
 import { useSettings } from './settings-context.js';
 import { loadFromStorage, saveToStorage, STORAGE_KEYS } from '../data/storage';
 import {
-  fullSpectrum,
+  getActiveProgram,
+  DEFAULT_PROGRAM_KEY,
   applyOverlay,
   hydrateProgram,
 } from '../data';
@@ -68,6 +69,8 @@ export function OverlayProvider({ children }) {
   const [hydrated, setHydrated] = useState(false);
   const { settings } = useSettings();
   const location = settings?.location === 'home' ? 'home' : 'gym';
+  const activeProgramKey = settings?.activeProgramKey ?? DEFAULT_PROGRAM_KEY;
+  const activeProgram = useMemo(() => getActiveProgram(activeProgramKey), [activeProgramKey]);
 
   useEffect(() => {
     let cancelled = false;
@@ -90,9 +93,9 @@ export function OverlayProvider({ children }) {
   // Effective hydrated days for the active program — re-derived only when
   // the active-location overlay changes.
   const days = useMemo(() => {
-    const merged = applyOverlay(withAddedEntries(fullSpectrum, overlay), overlay);
+    const merged = applyOverlay(withAddedEntries(activeProgram, overlay), overlay);
     return hydrateProgram(merged);
-  }, [overlay]);
+  }, [overlay, activeProgram]);
 
   // Helper for mutation: applies a (prevProgramOverlay) → nextProgramOverlay
   // updater to ONLY the active location slot. Other location's data stays put.
@@ -107,7 +110,7 @@ export function OverlayProvider({ children }) {
 
   const updateEntry = useCallback((dayKey, sectionKey, exerciseId, patch) => {
     mutateActive((prev) => {
-      const programKey = fullSpectrum.key;
+      const programKey = activeProgram.key;
       const prog = { ...(prev[programKey] ?? {}) };
       const day = { ...(prog[dayKey] ?? {}) };
       const section = { ...(day[sectionKey] ?? {}) };
@@ -124,7 +127,7 @@ export function OverlayProvider({ children }) {
       prog[dayKey] = day;
       return { ...prev, [programKey]: prog };
     });
-  }, [mutateActive]);
+  }, [mutateActive, activeProgram.key]);
 
   const hideExercise = useCallback((dayKey, sectionKey, exerciseId) => {
     updateEntry(dayKey, sectionKey, exerciseId, { hidden: true });
@@ -132,7 +135,7 @@ export function OverlayProvider({ children }) {
 
   const unhideExercise = useCallback((dayKey, sectionKey, exerciseId) => {
     mutateActive((prev) => {
-      const programKey = fullSpectrum.key;
+      const programKey = activeProgram.key;
       const section = prev[programKey]?.[dayKey]?.[sectionKey];
       if (!section || !section[exerciseId]) return prev;
       const nextSection = { ...section };
@@ -155,12 +158,12 @@ export function OverlayProvider({ children }) {
         },
       };
     });
-  }, [mutateActive]);
+  }, [mutateActive, activeProgram.key]);
 
   const addExercise = useCallback((dayKey, sectionKey, entry) => {
     // entry: { id, sets, rest }
     mutateActive((prev) => {
-      const programKey = fullSpectrum.key;
+      const programKey = activeProgram.key;
       const prog = { ...(prev[programKey] ?? {}) };
       const day = { ...(prog[dayKey] ?? {}) };
       const section = { ...(day[sectionKey] ?? {}) };
@@ -171,11 +174,11 @@ export function OverlayProvider({ children }) {
       prog[dayKey] = day;
       return { ...prev, [programKey]: prog };
     });
-  }, [mutateActive]);
+  }, [mutateActive, activeProgram.key]);
 
   const removeAddedExercise = useCallback((dayKey, sectionKey, exerciseId) => {
     mutateActive((prev) => {
-      const programKey = fullSpectrum.key;
+      const programKey = activeProgram.key;
       const section = prev[programKey]?.[dayKey]?.[sectionKey];
       if (!section?.__added) return prev;
       const nextAdded = section.__added.filter((e) => e.id !== exerciseId);
@@ -196,7 +199,7 @@ export function OverlayProvider({ children }) {
         },
       };
     });
-  }, [mutateActive]);
+  }, [mutateActive, activeProgram.key]);
 
   const swapExerciseOverlay = useCallback((dayKey, sectionKey, currentId, newEntry) => {
     // Used by the pre-start swap: hide the original and add the new one.
@@ -207,14 +210,14 @@ export function OverlayProvider({ children }) {
 
   const resetDay = useCallback((dayKey) => {
     mutateActive((prev) => {
-      const programKey = fullSpectrum.key;
+      const programKey = activeProgram.key;
       const prog = prev[programKey];
       if (!prog?.[dayKey]) return prev;
       const next = { ...prog };
       delete next[dayKey];
       return { ...prev, [programKey]: next };
     });
-  }, [mutateActive]);
+  }, [mutateActive, activeProgram.key]);
 
   const value = useMemo(() => ({
     overlay,
