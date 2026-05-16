@@ -176,11 +176,11 @@ export function Insights() {
 
   return (
     <Page>
-      <Button as={Link} to="/me" variant="bare" size="sm" style={{ padding: 0 }}>
-        ← You
+      <Button as={Link} to="/log" variant="bare" size="sm" style={{ padding: 0 }}>
+        ← Log
       </Button>
       <Text as="div" variant="mono-sm" tone="tertiary" style={{ marginTop: 24, textTransform: 'uppercase' }}>
-        Insights
+        Log · Insights
       </Text>
       <Text as="h1" variant="display-lg" style={{ marginTop: 8, fontStyle: 'italic' }}>
         Insights

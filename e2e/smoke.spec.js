@@ -51,15 +51,16 @@ test('home is a11y clean (no serious/critical violations)', async ({ page }) => 
 // Phase 1 exit gate: axe scan on every primary route. If a serious/critical
 // violation lands here, we fail loud before the rest of the route catches up.
 const A11Y_ROUTES = [
+  { name: 'today (root)', hash: '' },
   { name: 'library index', hash: '#/library' },
   { name: 'library pattern detail', hash: '#/library/movements/horizontal-press' },
   { name: 'exercise detail (canonical)', hash: '#/library/exercises/push-bb-bench' },
   { name: 'day (push)', hash: '#/push' },
+  { name: 'log', hash: '#/log' },
   { name: 'about', hash: '#/me/about' },
   { name: 'glossary', hash: '#/me/glossary' },
   { name: 'me index', hash: '#/me' },
   { name: 'me settings', hash: '#/me/settings' },
-  { name: 'today', hash: '#/today' },
 ];
 
 for (const route of A11Y_ROUTES) {

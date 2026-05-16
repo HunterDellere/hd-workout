@@ -1,40 +1,28 @@
-// /me — index of personal pages. Currently: Settings, About, Insights (flagged).
-// Hairline-row list, same shape as the Library index.
+// /me — index of personal pages. Settings, Glossary, About.
+// History and Insights moved to /log in the IA shift (Wave 2). Glossary
+// stays here for now; it'll migrate to /library/glossary in a later pass.
 
 import { Link } from 'react-router-dom';
 import { Page, Text, BrushDivider, Button } from '../design-system/components';
-import { useSettings } from '../state/settings-context.js';
 
-const BASE_ITEMS = [
-  { to: '/history',     label: 'History',  hint: 'Every session, drill in to edit or delete' },
+const ITEMS = [
   { to: '/me/settings', label: 'Settings', hint: 'Split, rest timer, units, haptics, data' },
   { to: '/me/glossary', label: 'Glossary', hint: 'What the words mean' },
   { to: '/me/about',    label: 'About',    hint: 'Install instructions' },
 ];
 
 export function Me() {
-  const { settings } = useSettings();
-  const items = settings.intelligenceEnabled
-    ? [
-      { to: '/insights', label: 'Insights', hint: 'PRs, weekly volume, frequency' },
-      ...BASE_ITEMS,
-    ]
-    : BASE_ITEMS;
-
   return (
     <Page>
       <Button as={Link} to="/" variant="bare" size="sm" style={{ padding: 0 }}>
-        ← Home
+        ← Today
       </Button>
-      <Text as="div" variant="mono-sm" tone="tertiary" style={{ marginTop: 24, textTransform: 'uppercase' }}>
+      <Text as="h1" variant="display-lg" style={{ marginTop: 24, fontStyle: 'italic' }}>
         You
-      </Text>
-      <Text as="h1" variant="display-lg" style={{ marginTop: 8, fontStyle: 'italic' }}>
-        Me
       </Text>
       <BrushDivider style={{ marginTop: 32 }} />
       <ul style={{ listStyle: 'none', margin: '24px 0 0', padding: 0 }}>
-        {items.map((item, i) => (
+        {ITEMS.map((item, i) => (
           <li key={item.to}>
             <Link
               to={item.to}

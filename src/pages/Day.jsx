@@ -98,8 +98,8 @@ export function Day() {
         </Text>
         <BrushDivider style={{ marginTop: 32 }} />
         <div style={{ marginTop: 24 }}>
-          <Button as={Link} to="/" variant="soft" accent="stone" size="md">
-            Back home
+          <Button as={Link} to="/library" variant="soft" accent="stone" size="md">
+            Back to library
           </Button>
         </div>
       </Page>
@@ -119,8 +119,8 @@ export function Day() {
 
   return (
     <Page>
-      <Button as={Link} to="/" variant="bare" size="sm" style={{ padding: 0 }}>
-        ← Home
+      <Button as={Link} to="/library" variant="bare" size="sm" style={{ padding: 0 }}>
+        ← Library
       </Button>
 
       <Stack direction="row" align="center" gap={2} style={{ marginTop: 24 }}>

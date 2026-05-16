@@ -97,6 +97,36 @@ export function SessionProvider({ children }) {
       return completed;
     },
 
+    // Round-trip end-session: re-open an archived session as the active one.
+    // Used by the summary screen's "Resume this session" affordance so the
+    // user can recover from a misfired End-session tap (VISION principle 8:
+    // every action reversible). Strips endedAt + clears PR annotations so
+    // the session re-enters the in-flight state shape cleanly.
+    async resumeArchivedSession(sessionId) {
+      if (session) return false; // never blow away an in-flight session
+      const idx = archive.findIndex((s) => s.id === sessionId);
+      if (idx < 0) return false;
+      const target = archive[idx];
+      const nextArchive = archive.filter((s) => s.id !== sessionId);
+      await saveToStorage(STORAGE_KEYS.archive, nextArchive);
+      setArchive(nextArchive);
+      // Strip PR annotations + endedAt so the session reads as in-progress.
+      const stripped = {
+        ...target,
+        endedAt: null,
+        performances: target.performances.map((p) => ({
+          ...p,
+          sets: p.sets.map((s) => {
+            if (!s.pr) return s;
+            // Strip pr without mutating the original set.
+            return Object.fromEntries(Object.entries(s).filter(([k]) => k !== 'pr'));
+          }),
+        })),
+      };
+      setSession(stripped);
+      return true;
+    },
+
     logSet(performanceId, { weight, reps, rpe, unit }) {
       setSession((s) => {
         if (!s) return s;

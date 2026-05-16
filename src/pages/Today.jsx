@@ -56,6 +56,7 @@ export function Today() {
     removePerformance,
     clearRestTimer,
     dismissResumePrompt,
+    resumeArchivedSession,
   } = useSession();
 
   const {
@@ -155,6 +156,10 @@ export function Today() {
         intelligenceEnabled={settings.intelligenceEnabled}
         onDone={() => { setEndedSummary(null); navigate('/'); }}
         onOpenInsights={() => setEndedSummary(null)}
+        onResume={async () => {
+          const ok = await resumeArchivedSession(endedSummary.id);
+          if (ok) setEndedSummary(null);
+        }}
       />
     );
   }

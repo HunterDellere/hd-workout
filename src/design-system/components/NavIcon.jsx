@@ -1,16 +1,20 @@
 // NavIcon — bespoke 1.5px-stroke marks for the bottom nav.
-// Six glyphs: home, library, push, pull, legs, core. Hand-feel, not
-// geometric-perfect; the day glyphs echo PatternGlyph but simplified for
-// rendering at 18px without losing readability.
+// Hand-feel, not geometric-perfect; the day glyphs echo PatternGlyph but
+// simplified for rendering at 18px without losing readability.
+
+const NOTEBOOK = (
+  <>
+    <path d="M4 6.5 L4 17.5 L12 18.5 L12 7.5 Z" />
+    <path d="M20 6.5 L20 17.5 L12 18.5 L12 7.5 Z" />
+  </>
+);
 
 const ICONS = {
-  // An open notebook — two facing pages with a binding.
-  home: (
-    <>
-      <path d="M4 6.5 L4 17.5 L12 18.5 L12 7.5 Z" />
-      <path d="M20 6.5 L20 17.5 L12 18.5 L12 7.5 Z" />
-    </>
-  ),
+  // An open notebook — two facing pages with a binding. Used as the Log
+  // glyph; the notebook is what you're filling in over time.
+  log: NOTEBOOK,
+  // Legacy alias kept for any unmigrated callers.
+  home: NOTEBOOK,
   // Three horizontal strokes of increasing width — a stack of pages.
   library: (
     <>

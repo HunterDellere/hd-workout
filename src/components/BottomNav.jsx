@@ -1,15 +1,16 @@
-// Bottom navigation — three primary tabs only.
-// Days live inside /library (the "By day" group) and are reachable by direct
-// URL; the BottomNav stays disciplined. No blur, no neon, no gradients.
+// Bottom navigation — four primary tabs, each one job (per SITEMAP.md).
+// Today is the cold-open (/) and owns "let's start." Log holds the history
+// of work and the insights derived from it. Library is the reference.
+// Me is settings + data + glossary + about. No blur, no neon, no gradients.
 
 import { NavLink, useLocation } from 'react-router-dom';
 import { NavIcon } from '../design-system/components';
 
 const TABS = [
-  { to: '/',        label: 'Home',    icon: 'home' },
-  { to: '/today',   label: 'Today',   icon: 'today' },
+  { to: '/',        label: 'Today',   icon: 'today' },
   { to: '/library', label: 'Library', icon: 'library' },
-  { to: '/me',      label: 'Me',      icon: 'profile' },
+  { to: '/log',     label: 'Log',     icon: 'log' },
+  { to: '/me',      label: 'You',     icon: 'profile' },
 ];
 
 export function BottomNav() {

@@ -16,7 +16,14 @@ import { findExerciseById } from '../../data';
 import { prsFromSession } from '../../data/intelligence';
 import { voiceFor } from '../../data/voice';
 
-export function SessionSummary({ session, accent, intelligenceEnabled, onDone, onOpenInsights }) {
+export function SessionSummary({
+  session,
+  accent,
+  intelligenceEnabled,
+  onDone,
+  onOpenInsights,
+  onResume,
+}) {
   const prs = prsFromSession(session);
   const totalSets = session.performances.reduce((n, p) => n + p.sets.length, 0);
   const exerciseCount = session.performances.filter((p) => p.sets.length > 0).length;
@@ -109,7 +116,7 @@ export function SessionSummary({ session, accent, intelligenceEnabled, onDone, o
         </Block>
       )}
       <Block gapTop={32}>
-        <Stack direction="row" gap={2}>
+        <Stack direction="row" gap={2} style={{ flexWrap: 'wrap', rowGap: 8 }}>
           <Button
             variant="primary"
             accent={accent}
@@ -122,7 +129,7 @@ export function SessionSummary({ session, accent, intelligenceEnabled, onDone, o
           {intelligenceEnabled && (
             <Button
               as={Link}
-              to="/insights"
+              to="/log/insights"
               variant="soft"
               accent={accent}
               size="md"
@@ -131,7 +138,26 @@ export function SessionSummary({ session, accent, intelligenceEnabled, onDone, o
               Insights
             </Button>
           )}
+          {onResume && (
+            <Button
+              variant="bare"
+              size="md"
+              data-testid="summary-resume"
+              onClick={onResume}
+              style={{ padding: 0 }}
+            >
+              Resume this session
+            </Button>
+          )}
         </Stack>
+        <Text
+          as="p"
+          variant="body-sm"
+          tone="tertiary"
+          style={{ marginTop: 12, maxWidth: 60 * 9 }}
+        >
+          Tapped end by accident? Resume re-opens the session for more sets.
+        </Text>
       </Block>
     </Page>
   );

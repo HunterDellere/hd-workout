@@ -52,8 +52,8 @@ const ANDROID_STEPS = [
 export function About() {
   return (
     <Page>
-      <Button as={Link} to="/" variant="bare" size="sm" style={{ padding: 0 }}>
-        ← Home
+      <Button as={Link} to="/me" variant="bare" size="sm" style={{ padding: 0 }}>
+        ← You
       </Button>
 
       <Text as="div" variant="mono-sm" tone="tertiary" style={{ marginTop: 24, textTransform: 'uppercase' }}>

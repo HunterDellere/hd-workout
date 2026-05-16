@@ -1,4 +1,8 @@
-// /history — archived sessions list + drill-in editor.
+// /log — archived sessions list + drill-in editor.
+//
+// This is the "Log" destination (sitemap.md). The page also surfaces an
+// Insights anchor when intelligenceEnabled, opening /log/insights for the
+// derived view (PRs, weekly volume, frequency heatmap).
 //
 // Two modes on a single page:
 //   - List view: chronological list of completed sessions, newest first.
@@ -22,7 +26,9 @@ import {
   Button,
   BrushDivider,
 } from '../design-system/components';
+import { Link } from 'react-router-dom';
 import { useSession } from '../state/session-context.js';
+import { useSettings } from '../state/settings-context.js';
 import { findExerciseAnywhere } from '../data';
 import { voiceFor } from '../data/voice';
 
@@ -310,6 +316,7 @@ export function History() {
     updateArchivedSession,
     deleteArchivedSession,
   } = useSession();
+  const { settings } = useSettings();
   const [openId, setOpenId] = useState(null);
 
   // Newest first.
@@ -362,13 +369,32 @@ export function History() {
   return (
     <Page>
       <Block>
-        <Stack direction="column" gap={1}>
-          <Text as="div" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
-            History
-          </Text>
-          <Text as="h1" variant="display-lg" style={{ fontStyle: 'italic', marginTop: 4 }}>
-            Every session you've logged
-          </Text>
+        <Stack direction="row" align="baseline" justify="space-between" gap={3}>
+          <Stack direction="column" gap={1} style={{ flex: 1, minWidth: 0 }}>
+            <Text as="div" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
+              Log
+            </Text>
+            <Text as="h1" variant="display-lg" style={{ fontStyle: 'italic', marginTop: 4 }}>
+              Every session you've logged
+            </Text>
+          </Stack>
+          {settings.intelligenceEnabled && (
+            <Text
+              as={Link}
+              to="/log/insights"
+              variant="mono-sm"
+              tone="tertiary"
+              data-testid="log-insights-link"
+              style={{
+                textTransform: 'uppercase',
+                letterSpacing: '0.12em',
+                textDecoration: 'none',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              Insights →
+            </Text>
+          )}
         </Stack>
 
         <BrushDivider style={{ marginTop: 24 }} />
@@ -390,7 +416,7 @@ export function History() {
               {voiceFor('history-empty') ?? 'No sessions yet.'}
             </Text>
             <Text as="p" variant="body-md" tone="tertiary" style={{ marginTop: 12, maxWidth: 30 * 16 }}>
-              Start one from <em>/today</em> — it'll appear here the moment you log a set.
+              Start one from <em>Today</em> — it'll appear here the moment you log a set.
             </Text>
           </>
         ) : (
