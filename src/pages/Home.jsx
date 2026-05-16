@@ -219,11 +219,11 @@ function cardStyle(accent) {
 function accentSquareStyle(accent) {
   return {
     display: 'inline-block',
-    width: 6,
-    height: 6,
+    width: 8,
+    height: 8,
     background: `var(--accent-${accent}-solid)`,
     borderRadius: 1,
-    transform: 'translateY(-2px)',
+    transform: 'translateY(-1px)',
   };
 }
 

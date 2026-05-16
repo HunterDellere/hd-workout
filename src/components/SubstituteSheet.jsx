@@ -136,10 +136,18 @@ export function SubstituteSheet({ open, onClose, currentExerciseId, hasLoggedSet
         ) : (
           <>
             <BrushDivider style={{ marginTop: 32 }} />
-            <Text as="p" variant="body-lg" tone="secondary" style={{ marginTop: 24 }}>
-              No catalog alternatives for this pattern yet. As the catalog
-              fills in, this list will surface them.
-            </Text>
+            {hiddenByEquipment > 0 ? (
+              <Text as="p" variant="body-lg" tone="secondary" style={{ marginTop: 24 }}>
+                All catalog alternatives for this pattern need equipment
+                you've excluded in Settings. Re-enable a tool to see swaps,
+                or skip the swap for now.
+              </Text>
+            ) : (
+              <Text as="p" variant="body-lg" tone="secondary" style={{ marginTop: 24 }}>
+                No catalog alternatives for this pattern yet. As the catalog
+                fills in, this list will surface them.
+              </Text>
+            )}
           </>
         )}
       </div>

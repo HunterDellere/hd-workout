@@ -74,6 +74,8 @@ function SessionListRow({ session, isActive, onOpen }) {
       data-testid="history-row"
       data-session-id={session.id}
       onClick={() => onOpen(session.id)}
+      onMouseEnter={(e) => { e.currentTarget.style.paddingLeft = '8px'; }}
+      onMouseLeave={(e) => { e.currentTarget.style.paddingLeft = '0px'; }}
       style={{
         all: 'unset',
         cursor: 'pointer',
@@ -81,6 +83,7 @@ function SessionListRow({ session, isActive, onOpen }) {
         width: '100%',
         padding: '16px 0',
         borderTop: '1px solid var(--border-hairline)',
+        transition: 'padding-left 160ms ease',
       }}
     >
       <Stack direction="column" gap={1}>
