@@ -2,21 +2,21 @@
 // name, optional voice quote, three quiet metric stats, the Start CTA, and
 // an optional "Reset day" affordance when an overlay is in effect.
 //
-// Visual character: a single asymmetric brushed ideogram in the day's
-// accent occupies the top-right corner — a quiet kanji-feel mark that
-// gives every day its own visible identity without dominating the type.
+// Visual character: a giant pattern-glyph watermark in the corner. Reuses
+// the PatternGlyph system already in the design system so the brand
+// language stays geometric and consistent — same vocabulary as Library
+// pattern rows, just blown up and tinted in the day's accent.
 
-import { Stack, Text, Button, MonoChipButton } from '../../design-system/components';
+import { Stack, Text, Button, MonoChipButton, PatternGlyph } from '../../design-system/components';
 
-// Day → corner glyph (single path, dry-brush feel). Each is a different
-// abstract gesture tied to the lineage: rising (push), pulling (pull),
-// grounding (legs), spiralling (core), settling (recovery / stone).
-const DAY_GLYPH = {
-  push:  'M 12 70 Q 30 30 60 35 T 110 18',           // rising arc
-  pull:  'M 110 18 Q 80 50 50 38 T 12 60',           // hooking pull
-  legs:  'M 14 70 Q 60 78 60 30 Q 60 78 110 70',     // anchored vertical
-  core:  'M 20 40 Q 60 10 100 40 Q 60 70 20 40 Z',   // closed loop
-  recovery: 'M 18 30 Q 40 70 70 35 T 110 60',        // flowing wave
+// Day → representative pattern-glyph key. Picked one per lineage that
+// best reads as the day's *essence* at watermark scale.
+const DAY_PATTERN_KEY = {
+  push:     'horizontal-press', // bench/press archetype
+  pull:     'vertical-pull',    // pull-up archetype
+  legs:     'squat',            // squat archetype
+  core:     'core-anti',        // anti-rotation cross
+  recovery: 'mobility',         // open arcs
 };
 
 function HeroStat({ label, value }) {
@@ -74,7 +74,7 @@ export function TodayHero({
   onResetDay,
   dayKey,
 }) {
-  const glyph = DAY_GLYPH[dayKey] ?? DAY_GLYPH.recovery;
+  const patternKey = DAY_PATTERN_KEY[dayKey] ?? 'mobility';
   return (
     <div
       data-testid="today-hero"
@@ -102,31 +102,29 @@ export function TodayHero({
         }}
       />
 
-      {/* Corner brush ideogram — quiet, day-specific. Positioned top-right
-          and clipped by the hero's overflow:hidden. Opacity tuned to read
-          as character without competing with the headline. */}
-      <svg
+      {/* Corner pattern-glyph watermark. Reuses the design-system
+          PatternGlyph so the day's visual identity is anchored in the
+          same vocabulary as Library and pattern pages — geometric, not
+          decorative. Sized large + low-opacity so it reads as character
+          without competing with the headline. Tinted in the day's accent. */}
+      <span
         aria-hidden
-        viewBox="0 0 120 80"
         style={{
           position: 'absolute',
-          top: -10,
-          right: -10,
-          width: 200,
-          height: 130,
+          top: -14,
+          right: -14,
+          width: 168,
+          height: 168,
           pointerEvents: 'none',
-          opacity: 0.10,
+          color: `var(--accent-${accent}-ink)`,
+          opacity: 0.11,
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}
       >
-        <path
-          d={glyph}
-          fill={dayKey === 'core' ? `var(--accent-${accent}-solid)` : 'none'}
-          stroke={`var(--accent-${accent}-solid)`}
-          strokeWidth="6"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
+        <PatternGlyph name={patternKey} size={168} strokeWidth={1.25} />
+      </span>
 
       <Stack direction="row" align="center" justify="space-between" gap={2}>
         <Stack direction="row" align="center" gap={2}>
