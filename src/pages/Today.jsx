@@ -5,7 +5,7 @@
 // is active, shows each performance with a SetRow + swap affordance + the
 // rest timer between sets.
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Page,
@@ -18,14 +18,15 @@ import {
 import { dayLineageAccent } from '../design-system/tokens';
 import { getDay, findExerciseAnywhere } from '../data';
 import { parsePrescription } from '../data/prescription';
+import { lastTopSetForExercise } from '../data/history';
 import { REST_DAY, ACTIVE_REST_ACTIVITIES } from '../data/rest';
 import { useSettings, dayKeyForToday } from '../state/settings-context.js';
-import { useSession } from '../state/session-context.js';
+import { useSession, lastLoggedAt } from '../state/session-context.js';
 import { SetRow } from '../components/SetRow';
 import { RestTimer } from '../components/RestTimer';
 import { SubstituteSheet } from '../components/SubstituteSheet';
 
-function PerformanceCard({ performance, accent, unit, restTimerMode, isResting, restStartedAt, restRaw, onLogSet, onDiscardSet, onSwap, onStopRest }) {
+function PerformanceCard({ performance, accent, unit, restTimerMode, isResting, restStartedAt, restRaw, lastTop, onLogSet, onDiscardSet, onSwap, onStopRest }) {
   const found = findExerciseAnywhere(performance.exerciseId);
   if (!found) return null;
   const ex = found.exercise;
@@ -54,6 +55,17 @@ function PerformanceCard({ performance, accent, unit, restTimerMode, isResting, 
           {performance.swappedFromId && (
             <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
               Swapped in this session
+            </Text>
+          )}
+          {lastTop && lastTop.top && (
+            <Text
+              as="span"
+              variant="mono-sm"
+              tone="tertiary"
+              data-testid="last-time"
+              style={{ textTransform: 'uppercase' }}
+            >
+              Last time · {lastTop.top.weight}{lastTop.top.unit ?? ''} × {lastTop.top.reps}
             </Text>
           )}
         </Stack>
@@ -111,6 +123,7 @@ export function Today() {
   const { settings } = useSettings();
   const {
     activeSession,
+    archive,
     startSession,
     endSession,
     logSet,
@@ -125,6 +138,32 @@ export function Today() {
   const accent = todayKey ? (dayLineageAccent[todayKey] ?? 'stone') : 'stone';
 
   const [swapPerformanceId, setSwapPerformanceId] = useState(null);
+  const [resumeDismissed, setResumeDismissed] = useState(false);
+
+  const [longGap, setLongGap] = useState(null);
+  const referenceTime = activeSession
+    ? (lastLoggedAt(activeSession) ?? activeSession.startedAt)
+    : null;
+  useEffect(() => {
+    const FOUR_HOURS = 4 * 60 * 60 * 1000;
+    function tick() {
+      if (!referenceTime) {
+        setLongGap((prev) => (prev === null ? prev : null));
+        return;
+      }
+      const ageMs = Date.now() - new Date(referenceTime).getTime();
+      if (ageMs < FOUR_HOURS) {
+        setLongGap((prev) => (prev === null ? prev : null));
+        return;
+      }
+      const hours = Math.floor(ageMs / (60 * 60 * 1000));
+      setLongGap((prev) => (prev && prev.hours === hours ? prev : { hours }));
+    }
+    const id = setTimeout(tick, 0);
+    const tickId = setInterval(tick, 60_000);
+    return () => { clearTimeout(id); clearInterval(tickId); };
+  }, [referenceTime]);
+
   const swapPerformance = swapPerformanceId
     ? activeSession?.performances.find((p) => p.id === swapPerformanceId)
     : null;
@@ -290,6 +329,45 @@ export function Today() {
         </Block>
       ) : (
         <>
+          {longGap && !resumeDismissed && (
+            <div
+              data-testid="resume-prompt"
+              style={{
+                marginTop: 24,
+                padding: 16,
+                border: '1px solid var(--border-strong)',
+                borderRadius: 6,
+                background: 'var(--surface-sunken)',
+              }}
+            >
+              <Text as="p" variant="body-md" tone="primary">
+                {longGap.hours >= 1 ? `${longGap.hours}h` : 'a while'} since your last set.
+                Continue this session or end it now?
+              </Text>
+              <Stack direction="row" gap={2} style={{ marginTop: 12 }}>
+                <Button
+                  variant="soft"
+                  accent={accent}
+                  size="sm"
+                  data-testid="resume-continue"
+                  onClick={() => setResumeDismissed(true)}
+                >
+                  Continue
+                </Button>
+                <Button
+                  variant="bare"
+                  size="sm"
+                  data-testid="resume-end"
+                  onClick={() => {
+                    endSession();
+                    navigate('/');
+                  }}
+                >
+                  End now
+                </Button>
+              </Stack>
+            </div>
+          )}
           {activeSession.performances.map((perf) => (
             <PerformanceCard
               key={perf.id}
@@ -300,6 +378,7 @@ export function Today() {
               isResting={activeSession.restPerformanceId === perf.id}
               restStartedAt={activeSession.restStartedAt}
               restRaw={perf.prescription?.rest}
+              lastTop={lastTopSetForExercise(archive, perf.exerciseId)}
               onLogSet={logSet}
               onDiscardSet={discardSet}
               onSwap={setSwapPerformanceId}

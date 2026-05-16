@@ -11,9 +11,18 @@ export function useSession() {
   return ctx;
 }
 
-export const STORAGE_KEY = 'hdw:session:active';
-
 export function totalLoggedSets(session) {
   if (!session) return 0;
   return session.performances.reduce((acc, p) => acc + p.sets.length, 0);
+}
+
+export function lastLoggedAt(session) {
+  if (!session) return null;
+  let max = null;
+  for (const p of session.performances) {
+    for (const s of p.sets) {
+      if (!max || s.loggedAt > max) max = s.loggedAt;
+    }
+  }
+  return max;
 }

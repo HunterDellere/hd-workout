@@ -1,42 +1,44 @@
 // Settings store provider. Hooks + constants live in ./settings-context.js
 // so React Fast Refresh can keep the component edits isolated.
+//
+// Phase 2 slice 2: storage layer swapped from localStorage to IDB
+// (via src/data/storage.js). Shape unchanged. First IDB load triggers a
+// one-shot migration from any legacy localStorage value.
 
 import { useEffect, useMemo, useState } from 'react';
 import {
   SettingsContext,
-  STORAGE_KEY,
   DEFAULT_SETTINGS,
 } from './settings-context.js';
+import { loadFromStorage, saveToStorage, STORAGE_KEYS } from '../data/storage';
 
-function loadFromStorage() {
-  if (typeof window === 'undefined') return DEFAULT_SETTINGS;
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return DEFAULT_SETTINGS;
-    const parsed = JSON.parse(raw);
-    return {
-      ...DEFAULT_SETTINGS,
-      ...parsed,
-      split: { ...DEFAULT_SETTINGS.split, ...(parsed.split ?? {}) },
-    };
-  } catch {
-    return DEFAULT_SETTINGS;
-  }
-}
-
-function saveToStorage(settings) {
-  if (typeof window === 'undefined') return;
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
-  } catch {
-    /* noop */
-  }
+function mergeSettings(parsed) {
+  if (!parsed || typeof parsed !== 'object') return DEFAULT_SETTINGS;
+  return {
+    ...DEFAULT_SETTINGS,
+    ...parsed,
+    split: { ...DEFAULT_SETTINGS.split, ...(parsed.split ?? {}) },
+  };
 }
 
 export function SettingsProvider({ children }) {
-  const [settings, setSettings] = useState(() => loadFromStorage());
+  const [settings, setSettings] = useState(DEFAULT_SETTINGS);
+  const [hydrated, setHydrated] = useState(false);
 
-  useEffect(() => { saveToStorage(settings); }, [settings]);
+  useEffect(() => {
+    let cancelled = false;
+    loadFromStorage(STORAGE_KEYS.settings).then((value) => {
+      if (cancelled) return;
+      setSettings(mergeSettings(value));
+      setHydrated(true);
+    });
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    saveToStorage(STORAGE_KEYS.settings, settings);
+  }, [settings, hydrated]);
 
   const value = useMemo(() => ({
     settings,
@@ -48,6 +50,7 @@ export function SettingsProvider({ children }) {
     setUnits: (units) => setSettings((s) => ({ ...s, units })),
     setHaptics: (haptics) => setSettings((s) => ({ ...s, haptics })),
     resetSplit: () => setSettings((s) => ({ ...s, split: DEFAULT_SETTINGS.split })),
+    replaceAll: (next) => setSettings(mergeSettings(next)),
   }), [settings]);
 
   return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;

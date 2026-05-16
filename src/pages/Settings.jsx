@@ -3,6 +3,7 @@
 // reloads. IDB migration in Session 12 will swap the storage layer without
 // changing the shape.
 
+import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Page,
@@ -13,7 +14,9 @@ import {
   BrushDivider,
 } from '../design-system/components';
 import { useSettings, DAY_OPTIONS, WEEKDAYS } from '../state/settings-context.js';
+import { useSession } from '../state/session-context.js';
 import { useHaptics, HAPTIC_MODES } from '../hooks/useHaptics';
+import { buildSnapshot, applySnapshot, wipeAll } from '../data/export';
 
 function Radio({ value, current, onSelect, label, hint }) {
   const checked = current === value;
@@ -62,6 +65,115 @@ function Radio({ value, current, onSelect, label, hint }) {
 }
 
 const DAY_LABEL = { push: 'Push', pull: 'Pull', legs: 'Legs', core: 'Core', rest: 'Rest' };
+
+function downloadBlob(filename, text) {
+  const blob = new Blob([text], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function DataBlock() {
+  const { replaceAll: replaceSettings } = useSettings();
+  const { replaceAll: replaceSession, clearAll } = useSession();
+  const fileRef = useRef(null);
+  const [status, setStatus] = useState(null);
+
+  async function onExport() {
+    setStatus(null);
+    try {
+      const snapshot = await buildSnapshot();
+      const stamp = new Date().toISOString().slice(0, 10);
+      downloadBlob(`hdw-snapshot-${stamp}.json`, JSON.stringify(snapshot, null, 2));
+      setStatus({ kind: 'ok', message: 'Snapshot downloaded.' });
+    } catch (err) {
+      setStatus({ kind: 'err', message: `Export failed: ${err.message}` });
+    }
+  }
+
+  async function onImport(event) {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+    setStatus(null);
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+      await applySnapshot(parsed);
+      replaceSettings(parsed.settings);
+      await replaceSession({
+        active: parsed.activeSession ?? null,
+        archive: parsed.archive ?? [],
+      });
+      setStatus({ kind: 'ok', message: 'Snapshot imported.' });
+    } catch (err) {
+      setStatus({ kind: 'err', message: `Import failed: ${err.message}` });
+    }
+  }
+
+  async function onWipe() {
+    if (typeof window !== 'undefined'
+      && !window.confirm('Wipe all on-device data? This cannot be undone.')) return;
+    setStatus(null);
+    try {
+      await wipeAll();
+      await clearAll();
+      setStatus({ kind: 'ok', message: 'All on-device data cleared.' });
+    } catch (err) {
+      setStatus({ kind: 'err', message: `Wipe failed: ${err.message}` });
+    }
+  }
+
+  return (
+    <Block gapTop={24} eyebrow="Data">
+      <Text as="p" variant="body-md" tone="secondary" style={{ marginBottom: 16 }}>
+        Snapshot includes settings, the active session, and all completed sessions.
+        JSON only — moves cleanly between devices.
+      </Text>
+      <Stack direction="column" gap={3}>
+        <Button variant="soft" accent="stone" size="md" data-testid="export-button" onClick={onExport}>
+          Export snapshot
+        </Button>
+        <Button
+          variant="soft"
+          accent="stone"
+          size="md"
+          data-testid="import-button"
+          onClick={() => fileRef.current?.click()}
+        >
+          Import snapshot
+        </Button>
+        <input
+          ref={fileRef}
+          type="file"
+          accept="application/json,.json"
+          onChange={onImport}
+          data-testid="import-file"
+          style={{ display: 'none' }}
+        />
+        <Button variant="bare" size="sm" data-testid="wipe-button" onClick={onWipe} style={{ padding: 0 }}>
+          Wipe all on-device data
+        </Button>
+      </Stack>
+      {status && (
+        <Text
+          as="p"
+          variant="body-sm"
+          tone={status.kind === 'err' ? 'primary' : 'tertiary'}
+          data-testid="data-status"
+          style={{ marginTop: 12, color: status.kind === 'err' ? 'var(--state-warn-ink)' : undefined }}
+        >
+          {status.message}
+        </Text>
+      )}
+    </Block>
+  );
+}
 
 export function Settings() {
   const { settings, setSplit, setRestTimerMode, setUnits, setHaptics, resetSplit } = useSettings();
@@ -166,6 +278,10 @@ export function Settings() {
           />
         </div>
       </Block>
+
+      <BrushDivider style={{ marginTop: 40 }} />
+
+      <DataBlock />
 
       <BrushDivider style={{ marginTop: 40 }} />
 

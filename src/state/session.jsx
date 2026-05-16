@@ -1,33 +1,15 @@
 // Session store provider — the in-workout state machine.
-// Persisted to localStorage under `hdw:session:active`. Schema mirrors
-// local/04-data-model/SCHEMA.md so the Session 12 IDB migration is a swap-in.
+//
+// Phase 2 slice 2: storage is now IDB (via src/data/storage.js). Schema is
+// unchanged. On endSession the completed blob is appended to
+// `hdw:sessions:archive` instead of being dropped. This gives the
+// Exercise-page history strip and the /today "Last time" line a place
+// to read from.
 
 import { useEffect, useMemo, useState } from 'react';
 import { ulid } from '../data/ulid';
-import { SessionContext, STORAGE_KEY } from './session-context.js';
-
-function loadFromStorage() {
-  if (typeof window === 'undefined') return null;
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
-}
-
-function saveToStorage(session) {
-  if (typeof window === 'undefined') return;
-  try {
-    if (session) {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
-    } else {
-      window.localStorage.removeItem(STORAGE_KEY);
-    }
-  } catch {
-    /* noop */
-  }
-}
+import { SessionContext } from './session-context.js';
+import { loadFromStorage, saveToStorage, STORAGE_KEYS } from '../data/storage';
 
 function buildPerformances(day) {
   if (!day) return [];
@@ -48,21 +30,42 @@ function buildPerformances(day) {
   return out;
 }
 
-export function SessionProvider({ children }) {
-  const [session, setSession] = useState(() => loadFromStorage());
+async function appendArchive(session) {
+  const list = (await loadFromStorage(STORAGE_KEYS.archive, [])) ?? [];
+  const next = [...list, { ...session, endedAt: new Date().toISOString() }];
+  await saveToStorage(STORAGE_KEYS.archive, next);
+}
 
-  useEffect(() => { saveToStorage(session); }, [session]);
+export function SessionProvider({ children }) {
+  const [session, setSession] = useState(null);
+  const [archive, setArchive] = useState([]);
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    function onStorage(e) {
-      if (e.key === STORAGE_KEY) setSession(loadFromStorage());
-    }
-    window.addEventListener('storage', onStorage);
-    return () => window.removeEventListener('storage', onStorage);
+    let cancelled = false;
+    Promise.all([
+      loadFromStorage(STORAGE_KEYS.activeSession),
+      loadFromStorage(STORAGE_KEYS.archive, []),
+    ]).then(([s, a]) => {
+      if (cancelled) return;
+      setSession(s ?? null);
+      setArchive(Array.isArray(a) ? a : []);
+      setHydrated(true);
+    });
+    return () => { cancelled = true; };
   }, []);
+
+  // Persist after every change once hydrated. The first post-hydration run
+  // writes back the same value we just loaded (harmless idempotent set).
+  useEffect(() => {
+    if (!hydrated) return;
+    saveToStorage(STORAGE_KEYS.activeSession, session);
+  }, [session, hydrated]);
 
   const value = useMemo(() => ({
     activeSession: session,
+    archive,
+    hydrated,
 
     startSession(day) {
       if (session) return;
@@ -79,8 +82,14 @@ export function SessionProvider({ children }) {
       });
     },
 
-    endSession() {
+    async endSession() {
       if (!session) return;
+      const totalSets = session.performances.reduce((n, p) => n + p.sets.length, 0);
+      if (totalSets > 0) {
+        const completed = { ...session, endedAt: new Date().toISOString() };
+        await appendArchive(completed);
+        setArchive((prev) => [...prev, completed]);
+      }
       setSession(null);
     },
 
@@ -145,7 +154,19 @@ export function SessionProvider({ children }) {
         s ? { ...s, restStartedAt: null, restTargetSec: null, restPerformanceId: null } : s
       ));
     },
-  }), [session]);
+
+    async replaceAll({ active = null, archive: nextArchive = [] } = {}) {
+      await saveToStorage(STORAGE_KEYS.archive, nextArchive);
+      setArchive(Array.isArray(nextArchive) ? nextArchive : []);
+      setSession(active);
+    },
+
+    async clearAll() {
+      await saveToStorage(STORAGE_KEYS.archive, []);
+      setArchive([]);
+      setSession(null);
+    },
+  }), [session, archive, hydrated]);
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
 }

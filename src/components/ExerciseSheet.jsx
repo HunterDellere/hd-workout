@@ -22,6 +22,7 @@
 import { Sheet } from '../design-system';
 import { Stack, Text, BrushDivider } from '../design-system/components';
 import { VariantList } from './VariantList';
+import { HistoryStrip } from './HistoryStrip';
 
 const TIER_LABEL = {
   S: 'Foundational',
@@ -206,6 +207,14 @@ export function ExerciseSheet({ open, onClose, exercise }) {
             <StatRow label="Sets" value={exercise.sets ?? '—'} accent={accent} />
             <StatRow label="Rest" value={exercise.rest ?? '—'} accent={accent} />
           </Stack>
+        </SectionBlock>
+
+        <BrushDivider style={{ marginTop: 32 }} />
+        <SectionBlock style={{ marginTop: 20 }}>
+          <Eyebrow>History</Eyebrow>
+          <div style={{ marginTop: 12 }}>
+            <HistoryStrip exerciseId={exercise.id} accent={accent} />
+          </div>
         </SectionBlock>
 
         {(exercise.equipment?.length > 0

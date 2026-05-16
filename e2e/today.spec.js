@@ -18,9 +18,10 @@ test.beforeEach(async ({ page }, testInfo) => {
   await page.addInitScript(() => {
     try {
       // Pin today's split to Push for every weekday so the test is deterministic.
-      // Do NOT touch hdw:session:active here — addInitScript runs on every
-      // navigation including reload, and the log-set test depends on the
-      // active session surviving a reload.
+      // Phase 2 slice 2: storage moved to IDB. The settings store uses a
+      // per-key migration — if IDB has no value but localStorage does, the
+      // localStorage value is promoted into IDB on first read and removed
+      // from localStorage. So writing the seed here works once IDB is empty.
       localStorage.setItem('hdw:settings', JSON.stringify({
         split: { 0: 'push', 1: 'push', 2: 'push', 3: 'push', 4: 'push', 5: 'push', 6: 'push' },
         restTimerMode: 'count-up',
@@ -30,12 +31,11 @@ test.beforeEach(async ({ page }, testInfo) => {
     } catch { /* noop */ }
   });
 
-  // Each test still starts with no active session; explicit per-test wipe so
-  // a stale session from a previous test can't leak.
+  // Playwright contexts are isolated per test, so IDB starts fresh. The
+  // addInitScript above writes the seed settings into localStorage; on
+  // first IDB read the storage layer migrates them in. Active session
+  // starts unset.
   await page.goto('./');
-  await page.evaluate(() => {
-    try { localStorage.removeItem('hdw:session:active'); } catch { /* noop */ }
-  });
 });
 
 test.afterEach(async ({}, testInfo) => {
@@ -66,18 +66,18 @@ test('start a session and log a set, then reload to confirm persistence', async 
 
   await firstSetRow.getByTestId('log-set-button').click();
 
-  // Wait for the set to land in localStorage (the store useEffect runs after
-  // the render that processes setSession).
-  await expect.poll(async () => {
-    return page.evaluate(() => {
-      const raw = window.localStorage.getItem('hdw:session:active');
-      if (!raw) return 0;
-      const s = JSON.parse(raw);
-      return s.performances?.[0]?.sets?.length ?? 0;
-    });
-  }, { timeout: 5000 }).toBe(1);
+  // Wait for the set to land in the UI (the logged set surfaces as a summary
+  // row inside the same performance card). The storage layer is IDB-backed
+  // (Phase 2 slice 2); the visible row is the contract we care about.
+  const firstCard = page.getByTestId('performance-card').first();
+  await expect(firstCard).toContainText('100');
+  await expect(firstCard).toContainText('5');
 
-  // Reload — the set must persist via localStorage.
+  // Give the SessionProvider's persist effect time to flush to IDB before
+  // we reload (the write is async; reloading too eagerly can race it).
+  await page.waitForTimeout(250);
+
+  // Reload — the set must persist via IDB.
   await page.reload();
 
   // After reload, the same first performance card should show the logged set.
