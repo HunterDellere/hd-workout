@@ -149,6 +149,53 @@ export function SessionProvider({ children }) {
       });
     },
 
+    addPerformance(sectionKey, exercise) {
+      if (!exercise || !sectionKey) return;
+      setSession((s) => {
+        if (!s) return s;
+        // Bail if a performance for this exercise already exists in the section.
+        const exists = s.performances.some(
+          (p) => p.sectionKey === sectionKey && p.exerciseId === exercise.id,
+        );
+        if (exists) return s;
+        const newPerf = {
+          id: ulid(),
+          exerciseId: exercise.id,
+          sectionKey,
+          swappedFromId: null,
+          addedInSession: true,
+          prescription: { sets: exercise.sets, rest: exercise.rest },
+          sets: [],
+          notes: '',
+        };
+        // Insert at the end of the same section; if the section isn't
+        // present (cross-section add) append to the tail.
+        let inserted = false;
+        const next = [];
+        for (let i = 0; i < s.performances.length; i++) {
+          next.push(s.performances[i]);
+          const here = s.performances[i].sectionKey === sectionKey;
+          const nextDifferent = i + 1 >= s.performances.length
+            || s.performances[i + 1].sectionKey !== sectionKey;
+          if (here && nextDifferent && !inserted) {
+            next.push(newPerf);
+            inserted = true;
+          }
+        }
+        if (!inserted) next.push(newPerf);
+        return { ...s, performances: next };
+      });
+    },
+
+    removePerformance(performanceId) {
+      setSession((s) => {
+        if (!s) return s;
+        const target = s.performances.find((p) => p.id === performanceId);
+        if (!target || target.sets.length > 0) return s; // never remove a logged performance
+        return { ...s, performances: s.performances.filter((p) => p.id !== performanceId) };
+      });
+    },
+
     clearRestTimer() {
       setSession((s) => (
         s ? { ...s, restStartedAt: null, restTargetSec: null, restPerformanceId: null } : s

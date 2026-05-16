@@ -78,6 +78,8 @@ export const patternAccent = {
   'core-anti':        'sky',
   'core-flexion':     'sky',
   'mobility':         'stone',
+  'corrective':       'stone',
+  'healthspan':       'stone',
 };
 
 // Day lineage → accent. Bridge for legacy day-keyed code; see also
@@ -87,6 +89,7 @@ export const dayLineageAccent = {
   pull: 'sea',
   legs: 'sand',
   core: 'sky',
+  recovery: 'stone',
 };
 
 export const fontFamilies = {

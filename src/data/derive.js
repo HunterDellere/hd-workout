@@ -24,6 +24,8 @@ export const PATTERN_KEYS = [
   'core-anti',
   'core-flexion',
   'mobility',
+  'corrective',
+  'healthspan',
 ];
 
 // section.key → patterns this section primarily trains
@@ -51,6 +53,14 @@ const SECTION_TO_PATTERNS = {
   'anti-extension':    ['core-anti'],
   'anti-lateral':      ['core-anti'],
   'rotation-power':    ['core-flexion'],
+  // Recovery-day sections + cross-day warmup/activation blocks.
+  'warmup':            ['mobility'],
+  'activation':        ['mobility', 'corrective'],
+  'posture':           ['corrective'],
+  'imbalance':         ['corrective'],
+  'spine-health':      ['corrective'],
+  'facial-cervical':   ['healthspan'],
+  'healthspan':        ['healthspan'],
 };
 
 // Tag → pattern. Explicit pattern slugs first; semantic fallbacks after.
@@ -68,6 +78,14 @@ const TAG_TO_PATTERNS = {
   'rotator-cuff':     ['mobility'],
   'warm-up':          ['mobility'],
   'recovery':         ['mobility'],
+  'corrective':       ['corrective'],
+  'posture':          ['corrective'],
+  'imbalance':        ['corrective'],
+  'spine-health':     ['corrective'],
+  'healthspan':       ['healthspan'],
+  'facial':           ['healthspan'],
+  'grip':             ['healthspan'],
+  'mobility':         ['mobility'],
 };
 
 function patternsForExercise(exercise, section) {

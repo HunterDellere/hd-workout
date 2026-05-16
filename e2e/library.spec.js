@@ -11,6 +11,8 @@ const PATTERNS = [
   'core-anti',
   'core-flexion',
   'mobility',
+  'corrective',
+  'healthspan',
 ];
 
 const consoleErrorsByTest = new WeakMap();
@@ -33,7 +35,7 @@ test.afterEach(async ({}, testInfo) => {
   expect(errors, `console errors:\n${errors.join('\n')}`).toEqual([]);
 });
 
-test('library lists all ten movement patterns', async ({ page }) => {
+test('library lists all twelve movement patterns', async ({ page }) => {
   await page.goto('./#/library');
   const list = page.getByTestId('library-patterns');
   await expect(list).toBeVisible();

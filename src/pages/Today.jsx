@@ -25,8 +25,9 @@ import { useSession, lastLoggedAt } from '../state/session-context.js';
 import { SetRow } from '../components/SetRow';
 import { RestTimer } from '../components/RestTimer';
 import { SubstituteSheet } from '../components/SubstituteSheet';
+import { SlotPicker } from '../components/SlotPicker';
 
-function PerformanceCard({ performance, accent, unit, restTimerMode, isResting, restStartedAt, restRaw, lastTop, onLogSet, onDiscardSet, onSwap, onStopRest }) {
+function PerformanceCard({ performance, accent, unit, restTimerMode, isResting, restStartedAt, restRaw, lastTop, onLogSet, onDiscardSet, onSwap, onStopRest, onRemove }) {
   const found = findExerciseAnywhere(performance.exerciseId);
   if (!found) return null;
   const ex = found.exercise;
@@ -69,27 +70,52 @@ function PerformanceCard({ performance, accent, unit, restTimerMode, isResting, 
             </Text>
           )}
         </Stack>
-        <button
-          type="button"
-          onClick={() => onSwap(performance.id)}
-          data-testid="swap-button"
-          aria-label={`Swap ${ex.name}`}
-          style={{
-            all: 'unset',
-            cursor: 'pointer',
-            padding: '6px 12px',
-            border: '1px solid var(--border-hairline)',
-            borderRadius: 4,
-            color: 'var(--text-secondary)',
-            fontFamily: 'var(--font-mono)',
-            fontSize: 11,
-            textTransform: 'uppercase',
-            letterSpacing: '0.12em',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          Swap
-        </button>
+        <Stack direction="row" gap={2} align="center">
+          <button
+            type="button"
+            onClick={() => onSwap(performance.id)}
+            data-testid="swap-button"
+            aria-label={`Swap ${ex.name}`}
+            style={{
+              all: 'unset',
+              cursor: 'pointer',
+              padding: '6px 12px',
+              border: '1px solid var(--border-hairline)',
+              borderRadius: 4,
+              color: 'var(--text-secondary)',
+              fontFamily: 'var(--font-mono)',
+              fontSize: 11,
+              textTransform: 'uppercase',
+              letterSpacing: '0.12em',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            Swap
+          </button>
+          {onRemove && (
+            <button
+              type="button"
+              onClick={onRemove}
+              data-testid="remove-performance"
+              aria-label={`Remove ${ex.name}`}
+              style={{
+                all: 'unset',
+                cursor: 'pointer',
+                padding: '6px 12px',
+                border: '1px solid var(--border-hairline)',
+                borderRadius: 4,
+                color: 'var(--text-secondary)',
+                fontFamily: 'var(--font-mono)',
+                fontSize: 11,
+                textTransform: 'uppercase',
+                letterSpacing: '0.12em',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              Remove
+            </button>
+          )}
+        </Stack>
       </Stack>
 
       <div style={{ marginTop: 20 }}>
@@ -129,6 +155,8 @@ export function Today() {
     logSet,
     discardSet,
     swapExercise,
+    addPerformance,
+    removePerformance,
     clearRestTimer,
   } = useSession();
 
@@ -138,7 +166,32 @@ export function Today() {
   const accent = todayKey ? (dayLineageAccent[todayKey] ?? 'stone') : 'stone';
 
   const [swapPerformanceId, setSwapPerformanceId] = useState(null);
+  const [pickerSectionKey, setPickerSectionKey] = useState(null);
   const [resumeDismissed, setResumeDismissed] = useState(false);
+
+  // Group active-session performances by their original section. Preserves
+  // the encounter order of section keys so the warmup/main/finisher
+  // progression authored in the catalog reads top-to-bottom.
+  const performancesBySection = useMemo(() => {
+    if (!activeSession) return [];
+    const order = [];
+    const map = new Map();
+    for (const perf of activeSession.performances) {
+      if (!map.has(perf.sectionKey)) {
+        map.set(perf.sectionKey, []);
+        order.push(perf.sectionKey);
+      }
+      map.get(perf.sectionKey).push(perf);
+    }
+    return order.map((key) => ({ key, performances: map.get(key) }));
+  }, [activeSession]);
+
+  function sectionMeta(sectionKey) {
+    if (!day) return { title: sectionKey, blurb: null };
+    const found = day.sections.find((s) => s.key === sectionKey);
+    return { title: found?.title ?? sectionKey, blurb: found?.blurb ?? null };
+  }
+
 
   const [longGap, setLongGap] = useState(null);
   const referenceTime = activeSession
@@ -302,29 +355,46 @@ export function Today() {
               </Button>
             </div>
             <BrushDivider />
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-              {day.sections.flatMap((section) =>
-                section.exercises.map((ex, i) => (
-                  <li
-                    key={ex.id}
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      gap: 16,
-                      padding: '12px 0',
-                      borderTop: i === 0 ? 'none' : '1px solid var(--border-hairline)',
-                    }}
-                  >
-                    <Text as="span" variant="body-lg" style={{ flex: 1 }}>
-                      {ex.name}
+            <div>
+              {day.sections.map((section) => (
+                <div key={section.key} data-testid="preview-section" style={{ marginTop: 24 }}>
+                  <Stack direction="row" align="baseline" justify="space-between" gap={2}>
+                    <Text as="div" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
+                      {section.title}
                     </Text>
-                    <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
-                      {ex.sets}
+                    <Text as="div" variant="mono-sm" tone="tertiary">
+                      {section.exercises.length}
                     </Text>
-                  </li>
-                ))
-              )}
-            </ul>
+                  </Stack>
+                  {section.blurb && (
+                    <Text as="p" variant="body-sm" tone="secondary" style={{ marginTop: 8, maxWidth: 60 * 9 }}>
+                      {section.blurb}
+                    </Text>
+                  )}
+                  <ul style={{ listStyle: 'none', padding: 0, margin: '12px 0 0' }}>
+                    {section.exercises.map((ex, i) => (
+                      <li
+                        key={ex.id}
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          gap: 16,
+                          padding: '10px 0',
+                          borderTop: i === 0 ? 'none' : '1px solid var(--border-hairline)',
+                        }}
+                      >
+                        <Text as="span" variant="body-md" style={{ flex: 1 }}>
+                          {ex.name}
+                        </Text>
+                        <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
+                          {ex.sets}
+                        </Text>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
           </Stack>
         </Block>
       ) : (
@@ -368,23 +438,74 @@ export function Today() {
               </Stack>
             </div>
           )}
-          {activeSession.performances.map((perf) => (
-            <PerformanceCard
-              key={perf.id}
-              performance={perf}
-              accent={accent}
-              unit={settings.units}
-              restTimerMode={settings.restTimerMode}
-              isResting={activeSession.restPerformanceId === perf.id}
-              restStartedAt={activeSession.restStartedAt}
-              restRaw={perf.prescription?.rest}
-              lastTop={lastTopSetForExercise(archive, perf.exerciseId)}
-              onLogSet={logSet}
-              onDiscardSet={discardSet}
-              onSwap={setSwapPerformanceId}
-              onStopRest={clearRestTimer}
-            />
-          ))}
+          {performancesBySection.map(({ key: sectionKey, performances }) => {
+            const meta = sectionMeta(sectionKey);
+            return (
+              <section
+                key={sectionKey}
+                data-testid="section-group"
+                data-section-key={sectionKey}
+                style={{ marginTop: 40 }}
+              >
+                <Stack direction="row" align="baseline" justify="space-between" gap={2}>
+                  <Text as="div" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
+                    {meta.title}
+                  </Text>
+                  <Text as="div" variant="mono-sm" tone="tertiary">
+                    {performances.length}
+                  </Text>
+                </Stack>
+                {meta.blurb && (
+                  <Text as="p" variant="body-sm" tone="secondary" style={{ marginTop: 8, maxWidth: 60 * 9 }}>
+                    {meta.blurb}
+                  </Text>
+                )}
+                {performances.map((perf) => (
+                  <PerformanceCard
+                    key={perf.id}
+                    performance={perf}
+                    accent={accent}
+                    unit={settings.units}
+                    restTimerMode={settings.restTimerMode}
+                    isResting={activeSession.restPerformanceId === perf.id}
+                    restStartedAt={activeSession.restStartedAt}
+                    restRaw={perf.prescription?.rest}
+                    lastTop={lastTopSetForExercise(archive, perf.exerciseId)}
+                    onLogSet={logSet}
+                    onDiscardSet={discardSet}
+                    onSwap={setSwapPerformanceId}
+                    onStopRest={clearRestTimer}
+                    onRemove={perf.addedInSession && perf.sets.length === 0
+                      ? () => removePerformance(perf.id)
+                      : null}
+                  />
+                ))}
+                <div style={{ marginTop: 16 }}>
+                  <button
+                    type="button"
+                    onClick={() => setPickerSectionKey(sectionKey)}
+                    data-testid="add-to-section"
+                    data-section-key={sectionKey}
+                    style={{
+                      all: 'unset',
+                      cursor: 'pointer',
+                      padding: '10px 14px',
+                      border: '1px dashed var(--border-hairline)',
+                      borderRadius: 6,
+                      color: 'var(--text-secondary)',
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: 11,
+                      letterSpacing: '0.12em',
+                      textTransform: 'uppercase',
+                      display: 'inline-block',
+                    }}
+                  >
+                    + Add to {meta.title}
+                  </button>
+                </div>
+              </section>
+            );
+          })}
 
           <Block gapTop={48}>
             <BrushDivider />
@@ -417,6 +538,21 @@ export function Today() {
         onPick={(newId) => {
           if (swapPerformance) swapExercise(swapPerformance.id, newId);
           setSwapPerformanceId(null);
+        }}
+      />
+
+      <SlotPicker
+        open={Boolean(pickerSectionKey)}
+        onClose={() => setPickerSectionKey(null)}
+        sectionKey={pickerSectionKey}
+        sectionTitle={pickerSectionKey ? sectionMeta(pickerSectionKey).title : null}
+        excludeIds={activeSession ? activeSession.performances.map((p) => p.exerciseId) : []}
+        onPick={(exerciseId) => {
+          const found = findExerciseAnywhere(exerciseId);
+          if (found && pickerSectionKey) {
+            addPerformance(pickerSectionKey, found.exercise);
+          }
+          setPickerSectionKey(null);
         }}
       />
     </Page>

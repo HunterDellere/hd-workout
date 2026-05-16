@@ -2,10 +2,11 @@ import push from './push';
 import pull from './pull';
 import legs from './legs';
 import core from './core';
+import recovery from './recovery';
 import { principles, injuryPrevention } from './principles';
 
-export const days = { push, pull, legs, core };
-export const dayList = [push, pull, legs, core];
+export const days = { push, pull, legs, core, recovery };
+export const dayList = [push, pull, legs, core, recovery];
 
 export function getDay(key) {
   return days[key];
@@ -37,4 +38,4 @@ export function findExerciseAnywhere(exerciseId) {
   return null;
 }
 
-export { push, pull, legs, core, principles, injuryPrevention };
+export { push, pull, legs, core, recovery, principles, injuryPrevention };

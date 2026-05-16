@@ -30,7 +30,7 @@ export const DEFAULT_SETTINGS = {
   haptics: 'standard', // off | standard | strong
 };
 
-export const DAY_OPTIONS = ['push', 'pull', 'legs', 'core', 'rest'];
+export const DAY_OPTIONS = ['push', 'pull', 'legs', 'core', 'recovery', 'rest'];
 export const WEEKDAYS = [
   { idx: 1, label: 'Monday' },
   { idx: 2, label: 'Tuesday' },

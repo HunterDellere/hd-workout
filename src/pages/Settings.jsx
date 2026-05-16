@@ -64,7 +64,7 @@ function Radio({ value, current, onSelect, label, hint }) {
   );
 }
 
-const DAY_LABEL = { push: 'Push', pull: 'Pull', legs: 'Legs', core: 'Core', rest: 'Rest' };
+const DAY_LABEL = { push: 'Push', pull: 'Pull', legs: 'Legs', core: 'Core', recovery: 'Recovery', rest: 'Rest' };
 
 function downloadBlob(filename, text) {
   const blob = new Blob([text], { type: 'application/json' });
