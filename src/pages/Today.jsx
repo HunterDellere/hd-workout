@@ -18,8 +18,8 @@ import {
 import { dayLineageAccent } from '../design-system/tokens';
 import { getDay, findExerciseAnywhere } from '../data';
 import { parsePrescription } from '../data/prescription';
-import { lastTopSetForExercise } from '../data/history';
-import { prsFromSession } from '../data/intelligence';
+import { historyForExercise, lastTopSetForExercise } from '../data/history';
+import { prsFromSession, suggestNextLoad } from '../data/intelligence';
 import { REST_DAY, ACTIVE_REST_ACTIVITIES } from '../data/rest';
 import { useSettings, dayKeyForToday } from '../state/settings-context.js';
 import { useSession, lastLoggedAt } from '../state/session-context.js';
@@ -28,7 +28,23 @@ import { RestTimer } from '../components/RestTimer';
 import { SubstituteSheet } from '../components/SubstituteSheet';
 import { SlotPicker } from '../components/SlotPicker';
 
-function PerformanceCard({ performance, accent, unit, restTimerMode, isResting, restStartedAt, restRaw, lastTop, onLogSet, onDiscardSet, onSwap, onStopRest, onRemove }) {
+function suggestionLine(suggestion, unit) {
+  if (!suggestion) return null;
+  switch (suggestion.kind) {
+    case 'progress':
+      return `Try ${suggestion.weight}${unit} × ${suggestion.reps} · +${suggestion.increment}${unit}`;
+    case 'hold':
+      return suggestion.reason
+        ? `Hold ${suggestion.weight}${unit} × ${suggestion.reps} · ${suggestion.reason}`
+        : `Hold ${suggestion.weight}${unit} × ${suggestion.reps}`;
+    case 'deload':
+      return `Deload to ${suggestion.weight}${unit} · ${suggestion.reason}`;
+    default:
+      return null;
+  }
+}
+
+function PerformanceCard({ performance, accent, unit, restTimerMode, isResting, restStartedAt, restRaw, lastTop, suggestion, onLogSet, onDiscardSet, onSwap, onStopRest, onRemove }) {
   const found = findExerciseAnywhere(performance.exerciseId);
   if (!found) return null;
   const ex = found.exercise;
@@ -68,6 +84,22 @@ function PerformanceCard({ performance, accent, unit, restTimerMode, isResting, 
               style={{ textTransform: 'uppercase' }}
             >
               Last time · {lastTop.top.weight}{lastTop.top.unit ?? ''} × {lastTop.top.reps}
+            </Text>
+          )}
+          {suggestionLine(suggestion, unit) && (
+            <Text
+              as="span"
+              variant="mono-sm"
+              data-testid="suggestion-line"
+              data-suggestion-kind={suggestion.kind}
+              style={{
+                textTransform: 'uppercase',
+                color: suggestion.kind === 'deload'
+                  ? 'var(--state-warn-ink)'
+                  : `var(--accent-${accent}-ink)`,
+              }}
+            >
+              {suggestionLine(suggestion, unit)}
             </Text>
           )}
         </Stack>
@@ -558,6 +590,13 @@ export function Today() {
                     restStartedAt={activeSession.restStartedAt}
                     restRaw={perf.prescription?.rest}
                     lastTop={lastTopSetForExercise(archive, perf.exerciseId)}
+                    suggestion={settings.intelligenceEnabled
+                      ? suggestNextLoad(
+                        historyForExercise(archive, perf.exerciseId),
+                        parsePrescription(perf.prescription?.sets ?? ''),
+                        settings.units,
+                      )
+                      : null}
                     onLogSet={logSet}
                     onDiscardSet={discardSet}
                     onSwap={setSwapPerformanceId}

@@ -6,6 +6,7 @@ import {
   weeklyVolume,
   frequencyHeatmap,
   isoWeekKey,
+  suggestNextLoad,
 } from './intelligence';
 
 const session = (id, endedAt, exerciseId, sets) => ({
@@ -182,5 +183,82 @@ describe('frequencyHeatmap', () => {
     const archive = [session('a', '2025-01-01T00:00:00.000Z', 'bench', [{ weight: 50, reps: 5 }])];
     const out = frequencyHeatmap(archive, { now: new Date('2026-05-15T12:00:00.000Z') });
     expect(out.max).toBe(0);
+  });
+});
+
+describe('suggestNextLoad', () => {
+  const RX_5_8 = { kind: 'straight', sets: 4, repsLow: 5, repsHigh: 8, repsMid: 7 };
+
+  const histEntry = (weight, reps, daysAgo) => ({
+    sessionId: `s-${daysAgo}`,
+    endedAt: new Date(Date.now() - daysAgo * 24 * 3600 * 1000).toISOString(),
+    dayKey: 'push',
+    top: { weight, reps, unit: 'kg' },
+    setCount: 3,
+  });
+
+  it('first-time with empty history', () => {
+    expect(suggestNextLoad([], RX_5_8)).toEqual({ kind: 'first-time' });
+  });
+
+  it('insufficient-data with free-text prescription', () => {
+    expect(suggestNextLoad([histEntry(100, 5, 7)], { kind: 'free-text', raw: 'as many as possible' }))
+      .toEqual({ kind: 'insufficient-data' });
+  });
+
+  it('progress when top of rep range cleared', () => {
+    const history = [histEntry(100, 8, 7)];
+    expect(suggestNextLoad(history, RX_5_8, 'kg'))
+      .toEqual({ kind: 'progress', weight: 102.5, reps: 5, increment: 2.5 });
+  });
+
+  it('progress respects lb increment', () => {
+    const history = [histEntry(225, 8, 7)];
+    expect(suggestNextLoad(history, RX_5_8, 'lb'))
+      .toEqual({ kind: 'progress', weight: 230, reps: 5, increment: 5 });
+  });
+
+  it('hold when mid-range', () => {
+    const history = [histEntry(100, 6, 7)];
+    const out = suggestNextLoad(history, RX_5_8, 'kg');
+    expect(out.kind).toBe('hold');
+    expect(out.weight).toBe(100);
+  });
+
+  it('deload after three same-weight non-improving sessions', () => {
+    const history = [
+      histEntry(100, 6, 21),
+      histEntry(100, 6, 14),
+      histEntry(100, 5, 7),
+    ];
+    const out = suggestNextLoad(history, RX_5_8, 'kg');
+    expect(out.kind).toBe('deload');
+    expect(out.weight).toBe(90); // 100 × 0.9 rounded to 2.5 → 90
+    expect(out.reason).toMatch(/Stalled/);
+  });
+
+  it('hold (not deload) after a single regression', () => {
+    const history = [
+      histEntry(100, 6, 14),
+      histEntry(100, 4, 7),
+    ];
+    const out = suggestNextLoad(history, RX_5_8, 'kg');
+    expect(out.kind).toBe('hold');
+    expect(out.reps).toBe(6);
+    expect(out.reason).toMatch(/Last time was 4/);
+  });
+
+  it('progress not triggered by stalled sessions even at top of range', () => {
+    // Three sessions at top-of-range, same weight, same reps — that's a plateau.
+    const history = [
+      histEntry(100, 8, 21),
+      histEntry(100, 8, 14),
+      histEntry(100, 8, 7),
+    ];
+    // Per current heuristic, this counts as stagnation (sameWeight + monotonic-non-improving).
+    // Acceptable: if you've parked at top-of-range three sessions running you're
+    // genuinely stuck (probably grinding the last rep with form drift).
+    const out = suggestNextLoad(history, RX_5_8, 'kg');
+    expect(out.kind).toBe('deload');
   });
 });

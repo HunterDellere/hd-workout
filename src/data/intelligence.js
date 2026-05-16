@@ -248,5 +248,106 @@ export function frequencyHeatmap(archive, { weeks: weekCount = 8, now = new Date
   return { weeks, grid, max };
 }
 
+// ─── Suggested load + stagnation ─────────────────────────────────────────
+
+// Minimum load increment per unit. 2.5 kg / 5 lb tracks real-world barbell
+// micro-loading; smaller jumps are accessory-style which the catalog
+// expresses through reps anyway.
+const INCREMENT_BY_UNIT = { kg: 2.5, lb: 5 };
+
+function increment(unit) {
+  return INCREMENT_BY_UNIT[unit] ?? INCREMENT_BY_UNIT.kg;
+}
+
+/**
+ * Given the per-exercise history (oldest-first array from historyForExercise),
+ * the parsed prescription (from parsePrescription), and the user's unit, return
+ * a single load suggestion for the next session:
+ *
+ *   { kind: 'first-time'        } — no archive entries yet, no suggestion
+ *   { kind: 'insufficient-data' } — ≥1 but <3 entries, suggest steady
+ *   { kind: 'progress', weight, reps, increment }
+ *   { kind: 'hold',     weight, reps }
+ *   { kind: 'deload',   weight, reason }
+ *
+ * Heuristic:
+ *   - last session cleared the top of the rep range → progress (+1 increment)
+ *   - last session mid-range → hold (same load, finish the range first)
+ *   - last 3 sessions same-or-falling at same weight → deload (–10 %)
+ *   - regression on the most recent session → hold (one bad day, not a trend)
+ */
+export function suggestNextLoad(history, prescription, unit = 'kg') {
+  if (!Array.isArray(history) || history.length === 0) {
+    return { kind: 'first-time' };
+  }
+  if (!prescription || (prescription.kind !== 'straight' && prescription.kind !== 'pyramid')) {
+    return { kind: 'insufficient-data' };
+  }
+
+  const repsHigh = prescription.repsHigh;
+  const repsLow = prescription.repsLow;
+  const repsMid = prescription.repsMid;
+  const step = increment(unit);
+
+  const recent = history.slice(-3); // newest at end
+  const last = recent[recent.length - 1];
+  if (!last?.top) return { kind: 'insufficient-data' };
+
+  const lastWeight = last.top.weight;
+  const lastReps = last.top.reps;
+
+  // Stagnation check: ≥3 sessions all at the same weight and reps not improving.
+  if (recent.length >= 3) {
+    const sameWeight = recent.every((r) => r.top && r.top.weight === lastWeight);
+    if (sameWeight) {
+      const repsByOrder = recent.map((r) => r.top.reps);
+      const monotonicNonImproving = repsByOrder.every((r, i) => (
+        i === 0 ? true : r <= repsByOrder[i - 1]
+      ));
+      if (monotonicNonImproving) {
+        const deloadWeight = Math.max(
+          step,
+          Math.round((lastWeight * 0.9) / step) * step,
+        );
+        return {
+          kind: 'deload',
+          weight: deloadWeight,
+          reps: repsMid ?? repsLow,
+          reason: `Stalled at ${lastWeight}${unit} × ${lastReps} for three sessions`,
+        };
+      }
+    }
+  }
+
+  // Regression check: last session reps fell below the prior session at the
+  // same weight → hold and try to reclaim the lost reps before adding load.
+  const prev = recent[recent.length - 2];
+  if (prev?.top && prev.top.weight === lastWeight && lastReps < prev.top.reps) {
+    return {
+      kind: 'hold',
+      weight: lastWeight,
+      reps: prev.top.reps,
+      reason: `Last time was ${lastReps}; previous was ${prev.top.reps}`,
+    };
+  }
+
+  // Progress check: top of rep range cleared → bump weight.
+  if (typeof repsHigh === 'number' && lastReps >= repsHigh) {
+    return {
+      kind: 'progress',
+      weight: lastWeight + step,
+      reps: repsLow ?? repsHigh,
+      increment: step,
+    };
+  }
+
+  // Default: hold and finish the rep range at the current weight.
+  return {
+    kind: 'hold',
+    weight: lastWeight,
+    reps: Math.min(repsHigh ?? lastReps + 1, lastReps + 1),
+  };
+}
+
 // Re-export so consumers don't reach into derive directly.
 export { exercisesForPattern };
