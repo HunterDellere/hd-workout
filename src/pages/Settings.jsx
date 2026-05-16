@@ -18,6 +18,7 @@ import { useSession } from '../state/session-context.js';
 import { HAPTIC_MODES, fireHapticAt } from '../hooks/useHaptics';
 import { buildSnapshot, applySnapshot, wipeAll } from '../data/export';
 import { PROGRAM_LIST, DEFAULT_PROGRAM_KEY } from '../data';
+import { EQUIPMENT_CATEGORIES } from '../data/equipment';
 
 function Radio({ value, current, onSelect, label, hint }) {
   const checked = current === value;
@@ -186,6 +187,7 @@ export function Settings() {
     setIntelligenceEnabled,
     setActiveProgramKey,
     applyProgramSplit,
+    toggleExcludedEquipment,
     resetSplit,
   } = useSettings();
   const activeProgramKey = settings.activeProgramKey ?? DEFAULT_PROGRAM_KEY;
@@ -331,6 +333,54 @@ export function Settings() {
             hint="5 lb minimum increment."
           />
         </div>
+      </Block>
+
+      <BrushDivider style={{ marginTop: 40 }} />
+
+      <Block gapTop={24} eyebrow="Equipment I don't have">
+        <Text as="p" variant="body-md" tone="secondary" style={{ marginBottom: 12 }}>
+          Toggle anything you don't have access to. Exercises that need it
+          stop appearing in swap and add suggestions across the app.
+        </Text>
+        <div data-testid="excluded-equipment" style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+          {EQUIPMENT_CATEGORIES.map((eq) => {
+            const active = (settings.excludedEquipment ?? []).includes(eq.key);
+            return (
+              <button
+                key={eq.key}
+                type="button"
+                role="checkbox"
+                aria-checked={active}
+                aria-label={`I don't have: ${eq.label}`}
+                data-testid={`exclude-${eq.key}`}
+                data-active={active ? '1' : '0'}
+                onClick={() => toggleExcludedEquipment(eq.key)}
+                title={eq.hint}
+                style={{
+                  all: 'unset',
+                  cursor: 'pointer',
+                  padding: '10px 16px',
+                  borderRadius: 999,
+                  border: '1px solid var(--border-hairline)',
+                  background: active ? 'var(--state-warn-ink, var(--text-primary))' : 'transparent',
+                  color: active ? 'var(--surface-page)' : 'var(--text-secondary)',
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: 12,
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                  transition: 'background 120ms ease, color 120ms ease',
+                }}
+              >
+                {active ? '✕ ' : ''}{eq.label}
+              </button>
+            );
+          })}
+        </div>
+        {(settings.excludedEquipment ?? []).length > 0 && (
+          <Text as="p" variant="mono-sm" tone="tertiary" style={{ marginTop: 12, textTransform: 'uppercase' }}>
+            · Excluding {(settings.excludedEquipment ?? []).length} type{(settings.excludedEquipment ?? []).length === 1 ? '' : 's'}
+          </Text>
+        )}
       </Block>
 
       <BrushDivider style={{ marginTop: 40 }} />

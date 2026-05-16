@@ -52,6 +52,13 @@ export function SettingsProvider({ children }) {
     setIntelligenceEnabled: (enabled) => setSettings((s) => ({ ...s, intelligenceEnabled: !!enabled })),
     setLocation: (location) => setSettings((s) => ({ ...s, location: location === 'home' ? 'home' : 'gym' })),
     setActiveProgramKey: (key) => setSettings((s) => ({ ...s, activeProgramKey: key })),
+    toggleExcludedEquipment: (key) => setSettings((s) => {
+      const current = s.excludedEquipment ?? [];
+      const next = current.includes(key)
+        ? current.filter((k) => k !== key)
+        : [...current, key];
+      return { ...s, excludedEquipment: next };
+    }),
     // Bulk: switch program key AND replace the split in one shot. Used when
     // the /me/settings switcher fires its "apply program's default split" path.
     applyProgramSplit: (key, split) => setSettings((s) => ({

@@ -20,6 +20,8 @@ import { useMemo, useState } from 'react';
 import { Sheet, Stack, Text, BrushDivider } from '../design-system/components';
 import { CATEGORIES, PATTERN_BY_KEY } from '../data/patterns';
 import { dayList } from '../data';
+import { isExerciseExcludedByEquipment } from '../data/equipment';
+import { useSettings } from '../state/settings-context.js';
 
 // Section-key → categories that "belong" here. Used only for recovery-day
 // sections whose exercises are tagged with `categories` rather than
@@ -153,6 +155,11 @@ export function SlotPicker({
   const [showAll, setShowAll] = useState(false);
   const [activePatterns, setActivePatterns] = useState([]);
   const [activeCategories, setActiveCategories] = useState([]);
+  const { settings } = useSettings();
+  const excludedEquipment = useMemo(
+    () => settings?.excludedEquipment ?? [],
+    [settings?.excludedEquipment],
+  );
 
   // Inferred pattern set for the section. Stable per (sectionKey, ex-list-shape).
   const inferredPatterns = useMemo(
@@ -177,7 +184,9 @@ export function SlotPicker({
   //   4. defaultCategories non-empty → default to those categories.
   //   5. otherwise → no filter (sensible for unknown sections).
   const candidates = useMemo(() => {
-    const notExcluded = catalog.filter((ex) => !excludeIds.includes(ex.id));
+    const notExcluded = catalog
+      .filter((ex) => !excludeIds.includes(ex.id))
+      .filter((ex) => !isExerciseExcludedByEquipment(ex, excludedEquipment));
     if (showAll) return notExcluded;
 
     // Explicit chip selection takes priority.
@@ -214,6 +223,7 @@ export function SlotPicker({
     catalog, excludeIds, showAll,
     activePatterns, activeCategories,
     inferredPatterns, defaultCategories,
+    excludedEquipment,
   ]);
 
   function togglePattern(key) {

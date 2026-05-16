@@ -34,6 +34,11 @@ export const DEFAULT_SETTINGS = {
   // /today. 'gym' keeps the full catalog; 'home' biases to dumbbell /
   // bodyweight / band variants. Each location remembers its own swaps.
   location: 'gym',
+  // Equipment the user does NOT have. Filters SubstituteSheet + SlotPicker
+  // candidate lists. Composes with the location preset: location decides
+  // which overlay bucket is active, excludedEquipment narrows the candidate
+  // pool for any swap/add operation regardless of location.
+  excludedEquipment: [],
 };
 
 export const DAY_OPTIONS = ['push', 'pull', 'legs', 'core', 'recovery', 'rest'];

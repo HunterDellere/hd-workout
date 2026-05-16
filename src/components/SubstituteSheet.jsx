@@ -13,6 +13,8 @@
 import { Sheet, Stack, Text, BrushDivider } from '../design-system/components';
 import { exercisesForPattern, patternToExercises } from '../data/derive';
 import { findExerciseAnywhere } from '../data';
+import { isExerciseExcludedByEquipment } from '../data/equipment';
+import { useSettings } from '../state/settings-context.js';
 
 function patternForExercise(exerciseId) {
   const map = patternToExercises();
@@ -59,13 +61,17 @@ function SwapRow({ exercise, onPick, isFirst }) {
 }
 
 export function SubstituteSheet({ open, onClose, currentExerciseId, hasLoggedSets, onPick }) {
+  const { settings } = useSettings();
   if (!open) return null;
 
+  const excludedEquipment = settings?.excludedEquipment ?? [];
   const current = currentExerciseId ? findExerciseAnywhere(currentExerciseId) : null;
   const patternKey = current ? patternForExercise(currentExerciseId) : null;
-  const candidates = patternKey
+  const rawCandidates = patternKey
     ? exercisesForPattern(patternKey).filter((e) => e.id !== currentExerciseId)
     : [];
+  const candidates = rawCandidates.filter((e) => !isExerciseExcludedByEquipment(e, excludedEquipment));
+  const hiddenByEquipment = rawCandidates.length - candidates.length;
 
   return (
     <Sheet open={open} onClose={onClose} ariaLabel="Swap exercise">
@@ -115,6 +121,17 @@ export function SubstituteSheet({ open, onClose, currentExerciseId, hasLoggedSet
                 </li>
               ))}
             </ul>
+            {hiddenByEquipment > 0 && (
+              <Text
+                as="p"
+                variant="mono-sm"
+                tone="tertiary"
+                data-testid="swap-hidden-count"
+                style={{ marginTop: 16, textTransform: 'uppercase' }}
+              >
+                · {hiddenByEquipment} hidden by your equipment settings
+              </Text>
+            )}
           </>
         ) : (
           <>
