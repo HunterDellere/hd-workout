@@ -16,11 +16,15 @@ import { dayLineageAccent, space as spaceScale } from '../design-system/tokens';
 import { ExerciseCardV2 } from '../components/ExerciseCardV2';
 import { useHaptics } from '../hooks/useHaptics';
 
+// Wave 4.2 #14: role="tab" without role="tabpanel" was an a11y dead end —
+// SR users heard "tab selected" with no corresponding panel to switch to.
+// This is an in-page anchor nav now: a <nav> of <button> elements
+// (button-styled-as-link to preserve the smooth scroll behaviour and
+// haptic). The scrollspy intent is preserved by data-active.
 function SectionNav({ sections, activeKey, onPick, accent }) {
   return (
-    <div
-      role="tablist"
-      aria-label="Sections"
+    <nav
+      aria-label="Sections in this day"
       style={{
         display: 'flex',
         gap: spaceScale[4],
@@ -38,8 +42,9 @@ function SectionNav({ sections, activeKey, onPick, accent }) {
           <button
             key={s.key}
             type="button"
-            role="tab"
-            aria-selected={active}
+            data-section-anchor={s.key}
+            data-active={active ? '1' : '0'}
+            aria-current={active ? 'true' : undefined}
             onClick={() => onPick(s.key)}
             style={{
               all: 'unset',
@@ -65,7 +70,7 @@ function SectionNav({ sections, activeKey, onPick, accent }) {
           </button>
         );
       })}
-    </div>
+    </nav>
   );
 }
 

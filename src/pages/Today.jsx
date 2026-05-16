@@ -33,7 +33,7 @@ import { SubstituteSheet } from '../components/SubstituteSheet';
 import { SlotPicker } from '../components/SlotPicker';
 import { AddGroupSheet } from '../components/AddGroupSheet';
 import { PerformanceCard } from '../components/today/PerformanceCard';
-import { TodayHero, LocationChip } from '../components/today/TodayHero';
+import { TodayHero } from '../components/today/TodayHero';
 import { estimateDayMinutes } from '../components/today/estimateDayMinutes';
 import { PreviewSection } from '../components/today/PreviewSection';
 import { RestDay } from '../components/today/RestDay';
@@ -42,7 +42,7 @@ import { useLongGap } from '../hooks/useLongGap';
 
 export function Today() {
   const navigate = useNavigate();
-  const { settings, setLocation } = useSettings();
+  const { settings } = useSettings();
   const {
     activeSession,
     archive,
@@ -218,21 +218,6 @@ export function Today() {
             hasOverlay={hasOverlay}
             onResetDay={() => resetDay(todayKey)}
           />
-
-          <Stack direction="row" gap={2} style={{ marginTop: 24, flexWrap: 'wrap', rowGap: 8 }}>
-            <LocationChip
-              label="Gym"
-              active={settings.location !== 'home'}
-              onClick={() => setLocation('gym')}
-              testId="location-gym"
-            />
-            <LocationChip
-              label="Home"
-              active={settings.location === 'home'}
-              onClick={() => setLocation('home')}
-              testId="location-home"
-            />
-          </Stack>
 
           <Block gapTop={24}>
             <Stack direction="column" gap={4}>

@@ -53,25 +53,28 @@ function Stepper({ label, value, step, onDelta, onChange, suffix }) {
   );
 }
 
+// Wave 4.2 #16: 44×44 touch targets per WCAG 2.2 AAA and Apple HIG.
+// Previous 36×36 passed visually but failed mid-set on smaller hands /
+// thumb-only operation.
 const stepBtnStyle = {
   all: 'unset',
-  width: 36,
-  height: 36,
+  width: 44,
+  height: 44,
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center',
   border: '1px solid var(--border-hairline)',
   borderRadius: 6,
   fontFamily: 'var(--font-mono)',
-  fontSize: 18,
+  fontSize: 20,
   color: 'var(--text-secondary)',
   cursor: 'pointer',
   flexShrink: 0,
 };
 
 const inputStyle = {
-  width: 64,
-  height: 36,
+  width: 72,
+  height: 44,
   border: '1px solid var(--border-strong)',
   borderRadius: 6,
   background: 'var(--surface-page)',
@@ -103,15 +106,19 @@ function RpeRow({ value, onChange, accent }) {
               style={{
                 all: 'unset',
                 cursor: 'pointer',
-                width: 36,
-                height: 36,
+                width: 44,
+                height: 44,
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 borderRadius: 999,
-                border: active ? '1.5px solid transparent' : '1px solid var(--border-hairline)',
-                background: active ? `var(--accent-${accent}-ink)` : 'transparent',
-                color: active ? 'var(--text-on-accent)' : 'var(--text-secondary)',
+                border: active
+                  ? `1.5px solid var(--accent-${accent}-ink)`
+                  : '1px solid var(--border-hairline)',
+                // Wave 4.1 #27: active RPE chip is wash + ink text, not a
+                // solid fill. Reserves visual climax for the Log button.
+                background: active ? `var(--accent-${accent}-wash)` : 'transparent',
+                color: active ? `var(--accent-${accent}-ink)` : 'var(--text-secondary)',
                 fontFamily: 'var(--font-mono)',
                 fontSize: 13,
                 fontWeight: 600,

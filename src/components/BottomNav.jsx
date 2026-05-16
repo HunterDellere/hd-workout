@@ -57,19 +57,22 @@ export function BottomNav() {
                   flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: 4,
-                  padding: '8px 4px',
+                  gap: 6,
+                  padding: '10px 4px',
                   textDecoration: 'none',
                   color: isActive ? 'var(--text-primary)' : 'var(--text-tertiary)',
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: 10,
-                  letterSpacing: '0.16em',
-                  textTransform: 'uppercase',
+                  // Inter (not mono) — mono is reserved for data lines; nav
+                  // labels are navigational, not metric. Slightly larger
+                  // size and looser tracking land closer to "notebook" than
+                  // the previous mono-as-chrome reading.
+                  fontFamily: 'var(--font-sans)',
+                  fontSize: 11,
+                  letterSpacing: '0.04em',
                   fontWeight: isActive ? 600 : 500,
                   transition: 'color 120ms ease',
                 }}
               >
-                <NavIcon name={t.icon} size={18} />
+                <NavIcon name={t.icon} size={20} />
                 {t.label}
               </NavLink>
             </li>

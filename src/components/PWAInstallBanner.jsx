@@ -1,21 +1,24 @@
 // PWAInstallBanner — calm install prompt that appears above the BottomNav
 // when the browser fires beforeinstallprompt. Theme-reactive; CSS vars only.
 
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { Stack, Text, Button } from '../design-system/components';
 import { motion as M, radius, z } from '../design-system/tokens';
 import { usePWAInstall } from '../hooks/usePWAInstall';
 
 export function PWAInstallBanner() {
   const { canInstall, promptInstall, dismiss } = usePWAInstall();
+  // Wave 4.3 P0 #7: respect prefers-reduced-motion. Framer's JS animation
+  // loop ignores the CSS transition override; this is the sanctioned gate.
+  const prefersReduced = useReducedMotion();
   return (
     <AnimatePresence>
       {canInstall && (
         <motion.div
-          initial={{ y: 80, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: 80, opacity: 0 }}
-          transition={M.spring}
+          initial={prefersReduced ? false : { y: 80, opacity: 0 }}
+          animate={prefersReduced ? { opacity: 1 } : { y: 0, opacity: 1 }}
+          exit={prefersReduced ? { opacity: 0 } : { y: 80, opacity: 0 }}
+          transition={prefersReduced ? { duration: 0 } : M.spring}
           role="region"
           aria-label="Install HDW"
           style={{

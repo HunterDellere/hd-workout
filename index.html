@@ -15,16 +15,9 @@
     <link rel="apple-touch-icon" href="./icon-192.png" />
     <link rel="manifest" href="./manifest.webmanifest" />
 
-    <!-- Fonts. Newsreader carries the display + italic voice (display-lg
-         and title-lg lean on its 300/400 italic); Inter handles body and
-         UI text; JetBrains Mono is reserved for eyebrows and metric
-         readouts. Preconnect to keep first-paint snappy. -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,300;1,6..72,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap"
-    />
+    <!-- Fonts: self-hosted via @fontsource/*, imported in src/main.jsx.
+         Vite emits the woff2 binaries into dist/assets and the PWA
+         precache picks them up, so "fully offline" actually means it now. -->
 
     <!-- Pre-paint theme attr to prevent FOUC. Light is the default. -->
     <script>

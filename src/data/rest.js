@@ -8,13 +8,12 @@ export const REST_DAY = {
   description: 'No lifting today.',
 };
 
+// Wave 4.4 #9: trimmed from 8 numbered options to 3. The previous list
+// read as a checklist of obligations, contradicting VISION's "hush of a
+// Kinfolk page" framing. Three quiet options keep the door open without
+// inviting compliance.
 export const ACTIVE_REST_ACTIVITIES = [
   { key: 'walk',      name: 'Walk',          detail: '30–60 min, easy pace.' },
-  { key: 'hike',      name: 'Hike',          detail: 'Trail or hills.' },
-  { key: 'swim',      name: 'Swim',          detail: 'Easy laps or open water.' },
-  { key: 'kayak',     name: 'Kayak',         detail: 'Flat water; paddle without pushing.' },
-  { key: 'bike',      name: 'Easy bike',     detail: 'Conversational pace.' },
-  { key: 'ping-pong', name: 'Ping pong',     detail: 'Or any racquet sport.' },
-  { key: 'yoga',      name: 'Yoga',          detail: 'Gentle flow or yin.' },
   { key: 'mobility',  name: 'Mobility flow', detail: '15–20 min through your stiffest joints.' },
+  { key: 'outdoor',   name: 'Anything outdoors', detail: 'Hike, swim, bike, paddle — pick by weather.' },
 ];

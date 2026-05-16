@@ -56,7 +56,9 @@ export const accents = {
   stone:  '#736E66', // neutral / mobility — warmer stone, less greyscale
   moss:   '#5F8367', // success
   amber:  '#D49432', // warn
-  signal: '#B83A20', // danger
+  // Danger (Wave 4.1 #25): pushed cooler + deeper so warning no longer reads
+  // as the push lineage. Previous #B83A20 collided with rust at low chroma.
+  signal: '#9E2613',
   ember:  '#CE6F38', // PR / celebrate
 };
 
@@ -72,7 +74,7 @@ const accentInkLight = {
   stone:  '#3A352D',
   moss:   '#2E4733',
   amber:  '#6B4308',
-  signal: '#5F1D0C',
+  signal: '#4F1409',
   ember:  '#65300F',
 };
 // Dark mode inverts: ink is a *light* variant of each hue.

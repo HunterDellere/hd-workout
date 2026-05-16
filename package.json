@@ -23,6 +23,9 @@
     "test:ci": "npm run build && npm run lint && npm run test && npm run test:e2e:ci && npm run test:lh"
   },
   "dependencies": {
+    "@fontsource/inter": "^5.2.8",
+    "@fontsource/jetbrains-mono": "^5.2.8",
+    "@fontsource/newsreader": "^5.2.10",
     "framer-motion": "^12.38.0",
     "idb-keyval": "^6.2.2",
     "lucide-react": "^1.14.0",

@@ -21,15 +21,42 @@ import { GYM_PROGRAMS, HOME_PROGRAMS, DEFAULT_PROGRAM_KEY } from '../data';
 import { EQUIPMENT_CATEGORIES } from '../data/equipment';
 import { useOverlay } from '../state/overlay-context.js';
 
-function Radio({ value, current, onSelect, label, hint }) {
+// Wave 4.2 #15: WAI-ARIA radio pattern with roving tabindex + arrow-key
+// navigation. The parent <div role="radiogroup"> wires up the keyboard
+// handler; individual Radio buttons stamp tabIndex=0 when checked
+// (or first when none checked) and tabIndex=-1 otherwise.
+function Radio({ value, current, onSelect, label, hint, isFirst, groupValues }) {
   const checked = current === value;
+  // The checked radio (or the first one if nothing checked) holds tab focus.
+  const tabIndex = checked || (current == null && isFirst) ? 0 : -1;
+
+  function onKeyDown(e) {
+    if (!groupValues || groupValues.length === 0) return;
+    const idx = groupValues.indexOf(value);
+    if (idx < 0) return;
+    if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+      e.preventDefault();
+      const next = groupValues[(idx + 1) % groupValues.length];
+      onSelect(next);
+    } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+      e.preventDefault();
+      const prev = groupValues[(idx - 1 + groupValues.length) % groupValues.length];
+      onSelect(prev);
+    } else if (e.key === ' ' || e.key === 'Enter') {
+      e.preventDefault();
+      onSelect(value);
+    }
+  }
+
   return (
     <button
       type="button"
       role="radio"
       aria-checked={checked}
+      tabIndex={tabIndex}
       data-radio={value}
       onClick={() => onSelect(value)}
+      onKeyDown={onKeyDown}
       style={{
         all: 'unset',
         cursor: 'pointer',
@@ -187,6 +214,7 @@ export function Settings() {
     setHaptics,
     setIntelligenceEnabled,
     setActiveProgramKey,
+    setLocation,
     applyProgramSplit,
     toggleExcludedEquipment,
     resetSplit,
@@ -213,14 +241,40 @@ export function Settings() {
 
       <BrushDivider style={{ marginTop: 40 }} />
 
-      <Block gapTop={24} eyebrow={isHome ? 'Program · Home' : 'Program · Gym'}>
+      <Block gapTop={24} eyebrow="Where you train">
+        <Text as="p" variant="body-md" tone="secondary" style={{ marginBottom: 12 }}>
+          Gates the available program templates and which equipment is
+          assumed. Move this up when you swap gyms or set up a home rack.
+        </Text>
+        <div role="radiogroup" aria-label="Training location" data-testid="location-radiogroup">
+          <Radio
+            value="gym"
+            current={settings.location ?? 'gym'}
+            onSelect={setLocation}
+            label="Gym"
+            hint="Full equipment access."
+            isFirst
+            groupValues={['gym', 'home']}
+          />
+          <Radio
+            value="home"
+            current={settings.location ?? 'gym'}
+            onSelect={setLocation}
+            label="Home"
+            hint="Bands, kettlebells, mace/club, bar, light dumbbells, bodyweight."
+            groupValues={['gym', 'home']}
+          />
+        </div>
+      </Block>
+
+      <Block gapTop={56} eyebrow={isHome ? 'Program · Home' : 'Program · Gym'}>
         <Text as="p" variant="body-md" tone="secondary" style={{ marginBottom: 12 }}>
           {isHome
             ? 'The home training template — bands, kettlebells, mace/club, pull-up bar, light dumbbells, bodyweight.'
             : 'The gym training template. Full equipment access.'}
         </Text>
         <div role="radiogroup" aria-label="Active program" data-testid="program-switcher">
-          {availablePrograms.map((p) => (
+          {availablePrograms.map((p, i) => (
             <Radio
               key={p.key}
               value={p.key}
@@ -228,6 +282,8 @@ export function Settings() {
               onSelect={(key) => setActiveProgramKey(key)}
               label={p.name}
               hint={p.description}
+              isFirst={i === 0}
+              groupValues={availablePrograms.map((q) => q.key)}
             />
           ))}
         </div>
@@ -269,9 +325,8 @@ export function Settings() {
         </div>
       </Block>
 
-      <BrushDivider style={{ marginTop: 40 }} />
 
-      <Block gapTop={24} eyebrow="Split">
+      <Block gapTop={56} eyebrow="Split">
         <Text as="p" variant="body-md" tone="secondary" style={{ marginBottom: 12 }}>
           What appears on <code style={{ fontFamily: 'var(--font-mono)' }}>/today</code> each weekday.
         </Text>
@@ -312,9 +367,8 @@ export function Settings() {
         </div>
       </Block>
 
-      <BrushDivider style={{ marginTop: 40 }} />
 
-      <Block gapTop={24} eyebrow="Rest timer">
+      <Block gapTop={56} eyebrow="Rest timer">
         <div role="radiogroup" aria-label="Rest timer mode">
           <Radio
             value="count-up"
@@ -322,6 +376,8 @@ export function Settings() {
             onSelect={setRestTimerMode}
             label="Count up"
             hint="0:00 → target. Pulses when ready."
+            isFirst
+            groupValues={['count-up', 'countdown']}
           />
           <Radio
             value="countdown"
@@ -329,13 +385,13 @@ export function Settings() {
             onSelect={setRestTimerMode}
             label="Countdown"
             hint="Target → 0:00. Pulses at zero."
+            groupValues={['count-up', 'countdown']}
           />
         </div>
       </Block>
 
-      <BrushDivider style={{ marginTop: 40 }} />
 
-      <Block gapTop={24} eyebrow="Units">
+      <Block gapTop={56} eyebrow="Units">
         <div role="radiogroup" aria-label="Units">
           <Radio
             value="kg"
@@ -343,6 +399,8 @@ export function Settings() {
             onSelect={setUnits}
             label="Kilograms"
             hint="2.5 kg minimum increment."
+            isFirst
+            groupValues={['kg', 'lb']}
           />
           <Radio
             value="lb"
@@ -350,13 +408,13 @@ export function Settings() {
             onSelect={setUnits}
             label="Pounds"
             hint="5 lb minimum increment."
+            groupValues={['kg', 'lb']}
           />
         </div>
       </Block>
 
-      <BrushDivider style={{ marginTop: 40 }} />
 
-      <Block gapTop={24} eyebrow="Equipment I don't have">
+      <Block gapTop={56} eyebrow="Equipment I don't have">
         <Text as="p" variant="body-md" tone="secondary" style={{ marginBottom: 12 }}>
           Toggle anything you don't have access to. Exercises that need it
           stop appearing in swap and add suggestions across the app.
@@ -402,18 +460,16 @@ export function Settings() {
         )}
       </Block>
 
-      <BrushDivider style={{ marginTop: 40 }} />
 
       <DataBlock />
 
-      <BrushDivider style={{ marginTop: 40 }} />
 
-      <Block gapTop={24} eyebrow="Haptics">
+      <Block gapTop={56} eyebrow="Haptics">
         <Text as="p" variant="body-md" tone="secondary" style={{ marginBottom: 12 }}>
           Tap an option to feel it.
         </Text>
         <div role="radiogroup" aria-label="Haptics">
-          {HAPTIC_MODES.map((m) => (
+          {HAPTIC_MODES.map((m, i) => (
             <Radio
               key={m.value}
               value={m.value}
@@ -427,14 +483,15 @@ export function Settings() {
               }}
               label={m.label}
               hint={m.hint}
+              isFirst={i === 0}
+              groupValues={HAPTIC_MODES.map((x) => x.value)}
             />
           ))}
         </div>
       </Block>
 
-      <BrushDivider style={{ marginTop: 40 }} />
 
-      <Block gapTop={24} eyebrow="Insights">
+      <Block gapTop={56} eyebrow="Insights">
         <Text as="p" variant="body-md" tone="secondary" style={{ marginBottom: 12 }}>
           PR detection, weekly volume, a frequency heatmap, and per-exercise load suggestions.
         </Text>
@@ -444,7 +501,9 @@ export function Settings() {
             current={settings.intelligenceEnabled}
             onSelect={() => setIntelligenceEnabled(true)}
             label="On"
-            hint="Adds an Insights tile to /me."
+            hint="Surfaces an Insights anchor on the Log tab."
+            isFirst
+            groupValues={[true, false]}
           />
           <Radio
             value={false}
@@ -452,6 +511,7 @@ export function Settings() {
             onSelect={() => setIntelligenceEnabled(false)}
             label="Off"
             hint="Hides the surface entirely."
+            groupValues={[true, false]}
           />
         </div>
       </Block>

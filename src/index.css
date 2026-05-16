@@ -1,8 +1,8 @@
 /* HDW — global styles.
    Tokens (CSS vars) come from src/design-system/applyTheme.js, injected at
-   boot. This file is reset + boundary styles only. */
-
-@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap');
+   boot. Fonts come from @fontsource imports in main.jsx (self-hosted in
+   Wave 4.3 — no more Google CDN @import). This file is reset + boundary
+   styles only. */
 
 *, *::before, *::after { box-sizing: border-box; }
 
@@ -46,9 +46,11 @@ button { font-family: inherit; }
 nav [role="tablist"]::-webkit-scrollbar,
 [role="tablist"]::-webkit-scrollbar { display: none; }
 
-/* Selection: ink wash, never neon. */
+/* Selection: a neutral stone wash. Borrowing a movement-pattern accent
+   (rust) would mean every text selection in a non-push context read as
+   a category collision. */
 ::selection {
-  background: var(--accent-rust-wash);
+  background: var(--accent-stone-wash);
   color: var(--text-primary);
 }
 

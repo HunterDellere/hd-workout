@@ -140,8 +140,10 @@ test('today resolves a rest day to the active-rest screen', async ({ page }) => 
   await expect(page.getByRole('heading', { name: /^rest$/i, level: 1 })).toBeVisible();
   const list = page.getByTestId('active-rest-list');
   await expect(list).toBeVisible();
-  await expect(list.locator('[data-activity-key="swim"]')).toBeVisible();
-  await expect(list.locator('[data-activity-key="ping-pong"]')).toBeVisible();
+  // Wave 4.4 trimmed the 8-row list to 3 quiet options: walk, mobility, outdoor.
+  await expect(list.locator('[data-activity-key="walk"]')).toBeVisible();
+  await expect(list.locator('[data-activity-key="mobility"]')).toBeVisible();
+  await expect(list.locator('[data-activity-key="outdoor"]')).toBeVisible();
 });
 
 test('settings page changes the split and today reflects it', async ({ page }) => {

@@ -7,12 +7,13 @@
 // bundle swap). This component is the prompt.
 
 import { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { motion as motionTokens } from '../design-system/tokens';
 
 export function UpdateBanner() {
   const [registration, setRegistration] = useState(null);
   const [needsRefresh, setNeedsRefresh] = useState(false);
+  const prefersReduced = useReducedMotion();
 
   useEffect(() => {
     if (!('serviceWorker' in navigator) || !import.meta.env.PROD) return;
@@ -56,10 +57,10 @@ export function UpdateBanner() {
           role="status"
           aria-live="polite"
           data-testid="update-banner"
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 12 }}
-          transition={motionTokens.base}
+          initial={prefersReduced ? false : { opacity: 0, y: 12 }}
+          animate={prefersReduced ? { opacity: 1 } : { opacity: 1, y: 0 }}
+          exit={prefersReduced ? { opacity: 0 } : { opacity: 0, y: 12 }}
+          transition={prefersReduced ? { duration: 0 } : motionTokens.base}
           style={{
             position: 'fixed',
             left: 16,

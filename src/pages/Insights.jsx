@@ -216,9 +216,8 @@ export function Insights() {
         )}
       </Block>
 
-      <BrushDivider style={{ marginTop: 40 }} />
 
-      <Block gapTop={24} eyebrow="Weekly volume · per pattern">
+      <Block gapTop={56} eyebrow="Weekly volume · per pattern">
         {volume.weeks.length === 0 ? (
           <Text as="p" variant="body-md" tone="secondary">
             No archive yet. End a session with logged sets and the bars start rendering.
@@ -240,9 +239,8 @@ export function Insights() {
         )}
       </Block>
 
-      <BrushDivider style={{ marginTop: 40 }} />
 
-      <Block gapTop={24} eyebrow="Records">
+      <Block gapTop={56} eyebrow="Records">
         {allPRs.length === 0 ? (
           <Text as="p" variant="body-md" tone="secondary">
             No PRs logged yet. They’ll surface here after the first record-breaking set lands in the archive.
@@ -287,9 +285,8 @@ export function Insights() {
         )}
       </Block>
 
-      <BrushDivider style={{ marginTop: 40 }} />
 
-      <Block gapTop={24} eyebrow="How this is computed">
+      <Block gapTop={56} eyebrow="How this is computed">
         <ul
           data-testid="insights-explainer"
           style={{ listStyle: 'none', padding: 0, margin: 0 }}

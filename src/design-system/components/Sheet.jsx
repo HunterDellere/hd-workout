@@ -2,11 +2,12 @@
 // Theme-reactive frame on CSS vars (Session 10). Drag-to-dismiss + escape +
 // scrim-tap-to-close + body-scroll-lock mechanics preserved.
 
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useEffect } from 'react';
 import { motion as M, radius, z } from '../tokens';
 
 export function Sheet({ open, onClose, children, ariaLabel = 'Detail' }) {
+  const prefersReduced = useReducedMotion();
   useEffect(() => {
     if (!open) return undefined;
     const prev = document.body.style.overflow;
@@ -25,10 +26,10 @@ export function Sheet({ open, onClose, children, ariaLabel = 'Detail' }) {
         <>
           <motion.div
             key="scrim"
-            initial={{ opacity: 0 }}
+            initial={prefersReduced ? false : { opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={M.fast}
+            exit={prefersReduced ? { opacity: 0 } : { opacity: 0 }}
+            transition={prefersReduced ? { duration: 0 } : M.fast}
             onClick={onClose}
             style={{
               position: 'fixed',
@@ -44,10 +45,10 @@ export function Sheet({ open, onClose, children, ariaLabel = 'Detail' }) {
             role="dialog"
             aria-modal="true"
             aria-label={ariaLabel}
-            initial={{ y: '100%' }}
+            initial={prefersReduced ? false : { y: '100%' }}
             animate={{ y: 0 }}
-            exit={{ y: '100%' }}
-            transition={M.sheet}
+            exit={prefersReduced ? { opacity: 0 } : { y: '100%' }}
+            transition={prefersReduced ? { duration: 0 } : M.sheet}
             drag="y"
             dragConstraints={{ top: 0, bottom: 0 }}
             dragElastic={{ top: 0, bottom: 0.4 }}

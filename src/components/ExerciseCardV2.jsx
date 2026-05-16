@@ -15,13 +15,16 @@ const TIER_LABEL = {
 };
 
 function tierStyles(tier, accentName) {
-  // S tier uses accent-ink as background (deep, AA-safe against paper text)
-  // so the chip reads as the most weight in the row without failing contrast
-  // on the cooler post-Session-10 palette.
+  // Wave 4.1 #26: tier chips are wash + accent ink across the board.
+  // The previous solid accent-ink fill on S tier competed with the day
+  // accent rule + the log-set button for visual climax. S now keeps a
+  // 1px accent-ink border so it still reads as "the heavy mark" without
+  // a full fill.
   if (tier === 'S') {
     return {
-      background: `var(--accent-${accentName}-ink)`,
-      color: 'var(--text-on-accent)',
+      background: `var(--accent-${accentName}-wash)`,
+      color: `var(--accent-${accentName}-ink)`,
+      border: `1px solid var(--accent-${accentName}-ink)`,
     };
   }
   if (tier === 'A') {
