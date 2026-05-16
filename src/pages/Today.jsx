@@ -294,11 +294,11 @@ function TodayHero({
         </Text>
       )}
 
-      {/* Metrics strip — three quiet numbers, mono. */}
-      <Stack direction="row" gap={6} style={{ marginTop: 24 }}>
+      {/* Metrics strip — three quiet numbers, mono. Wraps on narrow screens. */}
+      <Stack direction="row" gap={5} style={{ marginTop: 24, flexWrap: 'wrap', rowGap: 16 }}>
         <HeroStat label="Exercises" value={exerciseCount} />
         <HeroStat label="Sections" value={sectionCount} />
-        {estMinutes != null && <HeroStat label="≈ Minutes" value={estMinutes} />}
+        {estMinutes != null && <HeroStat label="Minutes" value={`~${estMinutes}`} />}
       </Stack>
 
       <div style={{ marginTop: 28 }}>
@@ -698,11 +698,7 @@ export function Today() {
             onResetDay={() => resetDay(todayKey)}
           />
 
-          <Text as="p" variant="body-lg" tone="secondary" style={{ marginTop: 28, maxWidth: 60 * 9 }}>
-            {day.description}
-          </Text>
-
-          <Stack direction="row" gap={2} style={{ marginTop: 16, flexWrap: 'wrap', rowGap: 8 }}>
+          <Stack direction="row" gap={2} style={{ marginTop: 24, flexWrap: 'wrap', rowGap: 8 }}>
             <LocationChip
               label="Gym"
               active={settings.location !== 'home'}
@@ -716,8 +712,6 @@ export function Today() {
               testId="location-home"
             />
           </Stack>
-
-          <BrushDivider style={{ marginTop: 32 }} />
         </>
       ) : (
         <>
@@ -789,21 +783,25 @@ export function Today() {
                           data-testid="preview-row"
                           data-exercise-id={ex.id}
                           style={{
-                            display: 'flex',
-                            alignItems: 'baseline',
-                            gap: 12,
-                            padding: '12px 0',
+                            display: 'grid',
+                            // Two rows: [tier · name · sets] on top, [actions] right-aligned below.
+                            // Grid collapses cleanly on narrow screens — no overlap.
+                            gridTemplateColumns: 'auto 1fr auto',
+                            columnGap: 12,
+                            rowGap: 6,
+                            padding: '14px 0',
                             borderTop: i === 0 ? 'none' : '1px solid var(--border-hairline)',
+                            alignItems: 'baseline',
                           }}
                         >
                           {/* Tier mark — small mono character, accent-tinted.
-                              Reads as a visual "rank" cue without shouting. */}
-                          {ex.tier && (
+                              S tier in accent ink; others in tertiary. */}
+                          {ex.tier ? (
                             <Text
                               as="span"
                               variant="mono-sm"
                               style={{
-                                width: 16,
+                                width: 14,
                                 color: ex.tier === 'S'
                                   ? `var(--accent-${accent}-ink)`
                                   : 'var(--text-tertiary)',
@@ -813,8 +811,8 @@ export function Today() {
                             >
                               {ex.tier}
                             </Text>
-                          )}
-                          <Text as="span" variant="body-md" style={{ flex: 1, minWidth: 0 }}>
+                          ) : <span style={{ width: 14 }} />}
+                          <Text as="span" variant="body-md" style={{ minWidth: 0, lineHeight: 1.35 }}>
                             {ex.name}
                             {addedIds.has(ex.id) && (
                               <Text as="span" variant="mono-sm" tone="tertiary" style={{ marginLeft: 8, textTransform: 'uppercase' }}>
@@ -822,35 +820,45 @@ export function Today() {
                               </Text>
                             )}
                           </Text>
-                          <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
+                          <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase', whiteSpace: 'nowrap', justifySelf: 'end' }}>
                             {ex.sets}
                           </Text>
-                          <button
-                            type="button"
-                            data-testid="preview-swap"
-                            data-exercise-id={ex.id}
-                            aria-label={`Swap ${ex.name}`}
-                            onClick={() => setEditSwap({ sectionKey: section.key, exerciseId: ex.id })}
-                            style={previewMonoBtnStyle}
-                          >
-                            Swap
-                          </button>
-                          <button
-                            type="button"
-                            data-testid="preview-remove"
-                            data-exercise-id={ex.id}
-                            aria-label={`Remove ${ex.name}`}
-                            onClick={() => {
-                              if (addedIds.has(ex.id)) {
-                                removeAddedExercise(todayKey, section.key, ex.id);
-                              } else {
-                                hideExercise(todayKey, section.key, ex.id);
-                              }
-                            }}
-                            style={previewMonoBtnStyle}
-                          >
-                            Remove
-                          </button>
+                          {/* Actions row sits beneath, spans cols 2-3 and right-aligns.
+                              Cleaner than competing with the name for inline space. */}
+                          <div style={{
+                            gridColumn: '2 / -1',
+                            display: 'flex',
+                            gap: 8,
+                            justifyContent: 'flex-end',
+                            marginTop: 2,
+                          }}>
+                            <button
+                              type="button"
+                              data-testid="preview-swap"
+                              data-exercise-id={ex.id}
+                              aria-label={`Swap ${ex.name}`}
+                              onClick={() => setEditSwap({ sectionKey: section.key, exerciseId: ex.id })}
+                              style={previewMonoBtnStyle}
+                            >
+                              Swap
+                            </button>
+                            <button
+                              type="button"
+                              data-testid="preview-remove"
+                              data-exercise-id={ex.id}
+                              aria-label={`Remove ${ex.name}`}
+                              onClick={() => {
+                                if (addedIds.has(ex.id)) {
+                                  removeAddedExercise(todayKey, section.key, ex.id);
+                                } else {
+                                  hideExercise(todayKey, section.key, ex.id);
+                                }
+                              }}
+                              style={previewMonoBtnStyle}
+                            >
+                              Remove
+                            </button>
+                          </div>
                         </li>
                       ))}
                     </ul>
@@ -865,7 +873,7 @@ export function Today() {
                           border: '1px dashed var(--border-hairline)',
                         }}
                       >
-                        + Add to {section.title}
+                        + Add exercise
                       </button>
                     </div>
                   </div>
@@ -985,7 +993,7 @@ export function Today() {
                       display: 'inline-block',
                     }}
                   >
-                    + Add to {meta.title}
+                    + Add exercise
                   </button>
                 </div>
               </section>

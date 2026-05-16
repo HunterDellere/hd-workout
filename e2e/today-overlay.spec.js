@@ -36,9 +36,12 @@ test('preview Remove hides an exercise and survives reload', async ({ page }) =>
 
 test('preview + Add appends an exercise that survives reload', async ({ page }) => {
   await page.goto('./#/today');
-  // First section's + Add.
+  // First section's + Add. The default section-scoped picker may be empty
+  // when every canonical exercise of that section is already programmed,
+  // so toggle "All catalog" to widen the candidate pool.
   const firstAdd = page.getByTestId('preview-add').first();
   await firstAdd.click();
+  await page.getByTestId('slot-filter-all').click();
   await expect(page.getByTestId('slot-picker-list')).toBeVisible();
   const firstCandidate = page.getByTestId('slot-candidate').first();
   const newId = await firstCandidate.getAttribute('data-exercise-id');

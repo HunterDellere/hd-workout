@@ -100,13 +100,14 @@ test('slot picker opens, filters, picks, removes', async ({ page }) => {
   await page.reload();
   await page.getByTestId('start-session').click();
 
-  // Click the first add-to-section button.
+  // Click the first add-to-section button. The default section-scoped
+  // picker can be empty when every canonical exercise of that section is
+  // already programmed, so toggle Posture to broaden via category chips.
   const addBtn = page.getByTestId('add-to-section').first();
   await addBtn.click();
-  await expect(page.getByTestId('slot-picker-list')).toBeVisible();
-
-  // Toggle the Posture filter and pick a candidate.
+  // Toggle the Posture filter — this becomes the active scope.
   await page.getByTestId('slot-filter-posture').click();
+  await expect(page.getByTestId('slot-picker-list')).toBeVisible();
   const firstCandidate = page.getByTestId('slot-candidate').first();
   await expect(firstCandidate).toBeVisible();
   const exerciseId = await firstCandidate.getAttribute('data-exercise-id');

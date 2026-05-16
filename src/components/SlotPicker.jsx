@@ -19,7 +19,7 @@
 import { useMemo, useState } from 'react';
 import { Sheet, Stack, Text, BrushDivider } from '../design-system/components';
 import { CATEGORIES, PATTERN_BY_KEY } from '../data/patterns';
-import { dayList } from '../data';
+import { rawCatalogList } from '../data';
 import { isExerciseExcludedByEquipment } from '../data/equipment';
 import { useSettings } from '../state/settings-context.js';
 
@@ -42,15 +42,11 @@ const SECTION_DEFAULT_CATEGORIES = {
 const PATTERN_KEYS = new Set(Object.keys(PATTERN_BY_KEY));
 
 function allCatalogExercises() {
-  const out = [];
-  for (const day of dayList) {
-    for (const section of day.sections) {
-      for (const ex of section.exercises) {
-        out.push({ ...ex, _day: day.key, _section: { key: section.key, title: section.title } });
-      }
-    }
-  }
-  return out;
+  // The raw catalog list — every authored exercise across push/pull/legs/
+  // core/recovery, regardless of whether a program references it.
+  // Movements added to the catalog (e.g. home A/S additions) must be
+  // pickable even if no program seeds them.
+  return rawCatalogList();
 }
 
 function exercisePatternTags(ex) {
@@ -174,15 +170,20 @@ export function SlotPicker({
 
   const catalog = useMemo(() => allCatalogExercises(), []);
 
-  // Which filter set is "active" decides which axis the chips operate on.
+  // The most reliable signal for "what exercises are reasonable to add
+  // to section X" is: exercises that canonically live in section X
+  // across the catalog. Section key is what the user clicked — trust it.
+  // Patterns and categories are *broadening* tools layered on top.
   //
   // Decision tree:
   //   1. showAll → no filter (whole catalog).
-  //   2. user toggled chips (patterns or categories) → AND-of-axes;
-  //      within an axis we OR.
-  //   3. inferredPatterns non-empty → default to those patterns.
-  //   4. defaultCategories non-empty → default to those categories.
-  //   5. otherwise → no filter (sensible for unknown sections).
+  //   2. user toggled chips → chip filter takes over.
+  //   3. otherwise → narrow by `ex._section.key === sectionKey` (the
+  //      catalog section). Includes inferred-pattern matches as a small
+  //      widening so cross-section relatives surface too.
+  //   4. custom sections (no catalog match) fall back to inferred
+  //      patterns from the section's existing exercises, then to
+  //      default categories.
   const candidates = useMemo(() => {
     const notExcluded = catalog
       .filter((ex) => !excludeIds.includes(ex.id))
@@ -203,24 +204,41 @@ export function SlotPicker({
       });
     }
 
-    // No chips selected — apply section defaults with a graceful fallback.
-    // If the section's natural-pattern filter yields zero (because every
-    // matching exercise is already in the section and thus excluded), fall
-    // back to the full non-excluded catalog so the user always sees options.
+    // Section-key-first scoping. The question "is this a real catalog
+    // section?" is answered against the FULL catalog (before excludeIds),
+    // so a section whose every exercise is already programmed still
+    // identifies itself as a real section — we just then show an empty
+    // / narrow result with the broaden affordances available.
+    const sectionHasCatalogMatch = catalog.some((ex) => ex._section?.key === sectionKey);
+    if (sectionHasCatalogMatch) {
+      const sectionMatch = notExcluded.filter((ex) => ex._section?.key === sectionKey);
+      if (inferredPatterns.length > 0) {
+        // Widen with same-pattern cross-section relatives.
+        const patternRelatives = notExcluded.filter((ex) => (
+          ex._section?.key !== sectionKey
+          && exerciseMatchesPatterns(ex, inferredPatterns)
+        ));
+        return [...sectionMatch, ...patternRelatives];
+      }
+      return sectionMatch;
+    }
+
+    // Custom section (e.g. user-named "Cardio" group) — no catalog
+    // match. Fall back to inferred patterns from existing entries, then
+    // to hand-mapped default categories.
     if (inferredPatterns.length > 0) {
       const narrow = notExcluded.filter((ex) => exerciseMatchesPatterns(ex, inferredPatterns));
       if (narrow.length > 0) return narrow;
-      // Fall through to full catalog rather than render an empty list.
-      return notExcluded;
     }
     if (defaultCategories.length > 0) {
       const narrow = notExcluded.filter((ex) => exerciseMatchesCategories(ex, defaultCategories));
       if (narrow.length > 0) return narrow;
-      return notExcluded;
     }
+    // Last resort for custom sections only — show everything so the
+    // picker is never empty. Real catalog sections never reach this.
     return notExcluded;
   }, [
-    catalog, excludeIds, showAll,
+    catalog, excludeIds, showAll, sectionKey,
     activePatterns, activeCategories,
     inferredPatterns, defaultCategories,
     excludedEquipment,

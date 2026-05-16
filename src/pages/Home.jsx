@@ -23,7 +23,7 @@ export function Home() {
   const accent = todayKey ? (dayLineageAccent[todayKey] ?? 'stone') : 'stone';
 
   return (
-    <Page topPad={56}>
+    <Page topPad={40}>
       <motion.header
         initial={{ opacity: 0, y: -4 }}
         animate={{ opacity: 1, y: 0 }}
@@ -73,7 +73,7 @@ export function Home() {
         />
       </motion.div>
 
-      <Block eyebrow="Days" gapTop={56}>
+      <Block eyebrow="Days" gapTop={40}>
         <Stack as="ul" gap={0} style={{ listStyle: 'none', padding: 0, margin: 0 }}>
           {dayList.map((d, i) => (
             <DayRow
@@ -91,14 +91,14 @@ export function Home() {
         </Stack>
       </Block>
 
-      <Block eyebrow="Or" gapTop={56}>
+      <Block eyebrow="Or" gapTop={40}>
         <Text as="p" variant="body-md" tone="secondary" style={{ marginBottom: 16 }}>
           Browse by movement.
         </Text>
         <LibraryLink onClick={() => { haptic('select'); navigate('/library'); }} />
       </Block>
 
-      <Block gapTop={64}>
+      <Block gapTop={48}>
         <BrushDivider />
         <Stack direction="row" justify="space-between" align="baseline" style={{ marginTop: 24, flexWrap: 'wrap', rowGap: 12 }}>
           <Stack direction="row" gap={3} align="baseline">
@@ -205,13 +205,13 @@ function TodayCard({ activeSession, todayKey, todayName, accent, onResume, onSta
 }
 
 function cardStyle(accent) {
-  // Subtle raised surface, accent-tinted hairline on the left edge.
+  // Subtle raised surface, accent-tinted rule on the left edge.
   return {
-    marginTop: 40,
-    padding: '24px 24px 28px',
+    marginTop: 32,
+    padding: '20px 22px 24px',
     background: 'var(--surface-raised, var(--surface-page))',
     border: '1px solid var(--border-hairline)',
-    borderLeft: `2px solid var(--accent-${accent}-solid)`,
+    borderLeft: `3px solid var(--accent-${accent}-solid)`,
     borderRadius: 8,
     boxShadow: 'var(--shadow-1, 0 1px 0 rgba(0,0,0,0.02))',
   };

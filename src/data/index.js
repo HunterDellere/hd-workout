@@ -148,13 +148,33 @@ export function getExercise(dayKey, exerciseId) {
 }
 
 export function findExerciseAnywhere(exerciseId) {
-  for (const d of dayList) {
-    for (const s of d.sections) {
-      const ex = s.exercises.find((e) => e.id === exerciseId);
-      if (ex) return { exercise: ex, section: s, day: d };
+  // Walk the RAW catalog (every authored exercise), not the hydrated
+  // dayList — which only includes program-referenced entries. Many
+  // movements live in the catalog without being programmed by default
+  // (home A/S additions like push-pushup, push-band-press, etc.) and
+  // they must still be findable for the SlotPicker, SubstituteSheet,
+  // Library, and History detail.
+  for (const day of Object.values(CATALOG_BY_DAY)) {
+    for (const section of day.sections ?? []) {
+      const ex = section.exercises?.find((e) => e.id === exerciseId);
+      if (ex) return { exercise: ex, section, day };
     }
   }
   return null;
+}
+
+// Walk every authored catalog entry. Used by SlotPicker so newly-added
+// movements that aren't referenced by any program are still pickable.
+export function rawCatalogList() {
+  const out = [];
+  for (const day of Object.values(CATALOG_BY_DAY)) {
+    for (const section of day.sections ?? []) {
+      for (const ex of section.exercises ?? []) {
+        out.push({ ...ex, _day: day.key, _section: { key: section.key, title: section.title } });
+      }
+    }
+  }
+  return out;
 }
 
 // Back-compat named exports for callers that pull a specific day directly.
