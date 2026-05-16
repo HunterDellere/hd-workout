@@ -453,8 +453,15 @@ export function Settings() {
                 ? (settings.barWeightLb ?? 45)
                 : (settings.barWeightKg ?? 20)}
               onChange={(e) => {
-                const v = Number(e.target.value);
-                if (!Number.isFinite(v)) return;
+                const raw = e.target.value;
+                if (raw === '') {
+                  // Empty input snaps back to defaults (null clears the
+                  // override, so the unit-aware default kicks in).
+                  setBarWeight(settings.units, null);
+                  return;
+                }
+                const v = Number(raw);
+                if (!Number.isFinite(v) || v < 0) return;
                 setBarWeight(settings.units, v);
               }}
               min={0}

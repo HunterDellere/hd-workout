@@ -25,6 +25,7 @@ import { applyTheme, initTheme } from './design-system/applyTheme';
 import { SettingsProvider } from './state/settings.jsx';
 import { SessionProvider } from './state/session.jsx';
 import { OverlayProvider } from './state/overlay.jsx';
+import { ErrorBoundary } from './components/ErrorBoundary.jsx';
 
 // Inject theme tokens (CSS vars) once, before first paint.
 applyTheme();
@@ -32,13 +33,15 @@ initTheme();
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <SettingsProvider>
-      <OverlayProvider>
-        <SessionProvider>
-          <App />
-        </SessionProvider>
-      </OverlayProvider>
-    </SettingsProvider>
+    <ErrorBoundary>
+      <SettingsProvider>
+        <OverlayProvider>
+          <SessionProvider>
+            <App />
+          </SessionProvider>
+        </OverlayProvider>
+      </SettingsProvider>
+    </ErrorBoundary>
   </StrictMode>,
 );
 

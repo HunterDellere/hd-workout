@@ -50,6 +50,7 @@ export function SettingsProvider({ children }) {
 
   const value = useMemo(() => ({
     settings,
+    hydrated,
     setSplit: (weekday, dayKey) => setSettings((s) => ({
       ...s,
       split: { ...s.split, [weekday]: dayKey },
@@ -106,7 +107,7 @@ export function SettingsProvider({ children }) {
       ...s,
       plateCalculatorEnabled: !!v,
     })),
-  }), [settings]);
+  }), [settings, hydrated]);
 
   return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;
 }

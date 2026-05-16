@@ -170,18 +170,21 @@ function SplitStep({ initial, onDone, onSkip }) {
 }
 
 export function Onboarding() {
-  const { settings, setOnboarded, replaceAll } = useSettings();
+  const { settings, hydrated, setOnboarded, replaceAll } = useSettings();
   const [step, setStep] = useState(0);
 
   // Trap body scroll while the overlay is up.
   useEffect(() => {
-    if (settings.onboarded) return undefined;
+    if (!hydrated || settings.onboarded) return undefined;
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = prev; };
-  }, [settings.onboarded]);
+  }, [hydrated, settings.onboarded]);
 
-  if (settings.onboarded) return null;
+  // Don't flash the overlay before settings have hydrated from IDB —
+  // otherwise existing users would see a one-frame welcome before the
+  // inferred onboarded:true kicks in.
+  if (!hydrated || settings.onboarded) return null;
 
   function finishWithDefaults() {
     setOnboarded(true);

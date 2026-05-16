@@ -18,6 +18,7 @@ import {
   Text,
   Button,
   BrushDivider,
+  MASTHEAD_HEIGHT_PX,
 } from '../design-system/components';
 import { dayLineageAccent, space as spaceScale } from '../design-system/tokens';
 import { ExerciseCardV2 } from '../components/ExerciseCardV2';
@@ -192,7 +193,7 @@ export function Day() {
         Reference
       </Text>
 
-      <div style={{ marginTop: 16, position: 'sticky', top: 0, background: 'var(--surface-page)', zIndex: 1 }}>
+      <div style={{ marginTop: 16, position: 'sticky', top: MASTHEAD_HEIGHT_PX, background: 'var(--surface-page)', zIndex: 1 }}>
         <SectionNav
           sections={day.sections}
           activeKey={activeKey}
