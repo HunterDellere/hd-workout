@@ -98,5 +98,7 @@ export const CATEGORIES = {
   facial:      { key: 'facial',      label: 'Facial & cervical', hint: 'Neck, jaw, and tongue-posture training.' },
   spine:       { key: 'spine',       label: 'Spine health',      hint: 'Neutral-spine bracing. Spondy-friendly.' },
   grip:        { key: 'grip',        label: 'Grip',              hint: 'Forearm and hand strength.' },
+  cardio:      { key: 'cardio',      label: 'Cardio',            hint: 'Aerobic capacity and conditioning. VO2 intervals, zone-2 work, intervals.' },
+  mobility:    { key: 'mobility',    label: 'Mobility',          hint: 'Active range of motion and joint prep.' },
 };
 

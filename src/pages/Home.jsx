@@ -76,8 +76,14 @@ export function Home() {
       <Block gapTop={64}>
         <BrushDivider />
         <Stack direction="row" justify="space-between" align="baseline" style={{ marginTop: 24 }}>
-          <Text as="div" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
-            HDW
+          <Text
+            as={Link}
+            to="/history"
+            variant="mono-sm"
+            tone="tertiary"
+            style={{ textTransform: 'uppercase', textDecoration: 'none' }}
+          >
+            ← History
           </Text>
           <Text
             as={Link}

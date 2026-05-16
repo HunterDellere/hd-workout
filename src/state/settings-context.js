@@ -30,6 +30,10 @@ export const DEFAULT_SETTINGS = {
   haptics: 'standard', // off | standard | strong
   intelligenceEnabled: true, // Phase 3 surface: PRs, volume, heatmap. On by default from session 16; existing users keep their persisted choice.
   activeProgramKey: 'full-spectrum', // Phase 4 slice 2: programs registry seam. UI to switch lands once a second program exists.
+  // Location preset — toggles which equipment-scoped overlay applies on
+  // /today. 'gym' keeps the full catalog; 'home' biases to dumbbell /
+  // bodyweight / band variants. Each location remembers its own swaps.
+  location: 'gym',
 };
 
 export const DAY_OPTIONS = ['push', 'pull', 'legs', 'core', 'recovery', 'rest'];

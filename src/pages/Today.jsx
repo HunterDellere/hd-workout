@@ -194,9 +194,35 @@ function PerformanceCard({ performance, accent, unit, restTimerMode, isResting, 
   );
 }
 
+function LocationChip({ label, active, onClick, testId }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      data-testid={testId}
+      data-active={active ? '1' : '0'}
+      style={{
+        all: 'unset',
+        cursor: 'pointer',
+        padding: '6px 14px',
+        borderRadius: 999,
+        border: '1px solid var(--border-hairline)',
+        background: active ? 'var(--text-primary)' : 'transparent',
+        color: active ? 'var(--surface-page)' : 'var(--text-secondary)',
+        fontFamily: 'var(--font-mono)',
+        fontSize: 11,
+        letterSpacing: '0.10em',
+        textTransform: 'uppercase',
+      }}
+    >
+      {label}
+    </button>
+  );
+}
+
 export function Today() {
   const navigate = useNavigate();
-  const { settings } = useSettings();
+  const { settings, setLocation } = useSettings();
   const {
     activeSession,
     archive,
@@ -206,6 +232,7 @@ export function Today() {
     discardSet,
     swapExercise,
     addPerformance,
+    addSectionToActiveSession,
     removePerformance,
     clearRestTimer,
     dismissResumePrompt,
@@ -232,6 +259,7 @@ export function Today() {
 
   const [swapPerformanceId, setSwapPerformanceId] = useState(null);
   const [pickerSectionKey, setPickerSectionKey] = useState(null);
+  const [pendingSectionTitle, setPendingSectionTitle] = useState(null);
   const [endedSummary, setEndedSummary] = useState(null);
   // Dismissal lives on the session blob so it survives reloads.
   const resumeDismissed = Boolean(activeSession?.resumePromptDismissed);
@@ -254,9 +282,14 @@ export function Today() {
   }, [activeSession]);
 
   function sectionMeta(sectionKey) {
-    if (!day) return { title: sectionKey, blurb: null };
+    // Custom titles for user-added sections live on the active session blob.
+    const customTitle = activeSession?.customSectionTitles?.[sectionKey];
+    if (!day) return { title: customTitle ?? sectionKey, blurb: null };
     const found = day.sections.find((s) => s.key === sectionKey);
-    return { title: found?.title ?? sectionKey, blurb: found?.blurb ?? null };
+    return {
+      title: found?.title ?? customTitle ?? sectionKey,
+      blurb: found?.blurb ?? null,
+    };
   }
 
 
@@ -487,7 +520,25 @@ export function Today() {
         {day.description}
       </Text>
 
-      <BrushDivider style={{ marginTop: 40 }} />
+      <Stack direction="row" gap={2} style={{ marginTop: 16 }}>
+        <LocationChip
+          label="Gym"
+          active={settings.location !== 'home'}
+          onClick={() => setLocation('gym')}
+          testId="location-gym"
+        />
+        <LocationChip
+          label="Home"
+          active={settings.location === 'home'}
+          onClick={() => setLocation('home')}
+          testId="location-home"
+        />
+        <Text as="span" variant="mono-sm" tone="tertiary" style={{ alignSelf: 'center', textTransform: 'uppercase' }}>
+          Preset · each remembers its own swaps
+        </Text>
+      </Stack>
+
+      <BrushDivider style={{ marginTop: 32 }} />
 
       {!activeSession ? (
         <Block gapTop={24}>
@@ -731,6 +782,40 @@ export function Today() {
             );
           })}
 
+          <div style={{ marginTop: 32 }}>
+            <button
+              type="button"
+              data-testid="add-group"
+              onClick={() => {
+                const title = window.prompt(
+                  'New group name (e.g. Cardio, Imbalance):',
+                  '',
+                );
+                if (!title) return;
+                const trimmed = title.trim();
+                if (!trimmed) return;
+                const sectionKey = `custom-${trimmed.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now().toString(36)}`;
+                setPendingSectionTitle(trimmed);
+                setPickerSectionKey(sectionKey);
+              }}
+              style={{
+                all: 'unset',
+                cursor: 'pointer',
+                padding: '14px 18px',
+                border: '1px dashed var(--border-hairline)',
+                borderRadius: 6,
+                color: 'var(--text-secondary)',
+                fontFamily: 'var(--font-mono)',
+                fontSize: 11,
+                letterSpacing: '0.12em',
+                textTransform: 'uppercase',
+                display: 'inline-block',
+              }}
+            >
+              + Add group (cardio, imbalance, …)
+            </button>
+          </div>
+
           <Block gapTop={48}>
             <BrushDivider />
             <Stack direction="row" justify="space-between" align="center" gap={3} style={{ marginTop: 24 }}>
@@ -774,11 +859,29 @@ export function Today() {
         onClose={() => setPickerSectionKey(null)}
         sectionKey={pickerSectionKey}
         sectionTitle={pickerSectionKey ? sectionMeta(pickerSectionKey).title : null}
+        sectionExercises={
+          pickerSectionKey && activeSession
+            ? activeSession.performances
+              .filter((p) => p.sectionKey === pickerSectionKey)
+              .map((p) => findExerciseAnywhere(p.exerciseId)?.exercise)
+              .filter(Boolean)
+            : []
+        }
         excludeIds={activeSession ? activeSession.performances.map((p) => p.exerciseId) : []}
         onPick={(exerciseId) => {
           const found = findExerciseAnywhere(exerciseId);
           if (found && pickerSectionKey) {
-            addPerformance(pickerSectionKey, found.exercise);
+            // If the section is brand-new (no performances yet), this is the
+            // first exercise → treat as add-section (keeps the title alive).
+            const isNewSection = !activeSession.performances.some(
+              (p) => p.sectionKey === pickerSectionKey,
+            );
+            if (isNewSection && pendingSectionTitle) {
+              addSectionToActiveSession(pickerSectionKey, found.exercise, pendingSectionTitle);
+              setPendingSectionTitle(null);
+            } else {
+              addPerformance(pickerSectionKey, found.exercise);
+            }
           }
           setPickerSectionKey(null);
         }}
@@ -810,6 +913,11 @@ export function Today() {
         onClose={() => setEditAdd(null)}
         sectionKey={editAdd}
         sectionTitle={editAdd && day ? (day.sections.find((s) => s.key === editAdd)?.title ?? null) : null}
+        sectionExercises={
+          editAdd && day
+            ? (day.sections.find((s) => s.key === editAdd)?.exercises ?? [])
+            : []
+        }
         excludeIds={day ? day.sections.flatMap((s) => s.exercises.map((e) => e.id)) : []}
         onPick={(exerciseId) => {
           const found = findExerciseAnywhere(exerciseId);

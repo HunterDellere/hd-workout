@@ -50,6 +50,7 @@ export function SettingsProvider({ children }) {
     setUnits: (units) => setSettings((s) => ({ ...s, units })),
     setHaptics: (haptics) => setSettings((s) => ({ ...s, haptics })),
     setIntelligenceEnabled: (enabled) => setSettings((s) => ({ ...s, intelligenceEnabled: !!enabled })),
+    setLocation: (location) => setSettings((s) => ({ ...s, location: location === 'home' ? 'home' : 'gym' })),
     resetSplit: () => setSettings((s) => ({ ...s, split: DEFAULT_SETTINGS.split })),
     replaceAll: (next) => setSettings(mergeSettings(next)),
   }), [settings]);

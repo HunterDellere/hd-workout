@@ -26,6 +26,7 @@ const Settings = lazy(() => import('./pages/Settings').then((m) => ({ default: m
 const Today = lazy(() => import('./pages/Today').then((m) => ({ default: m.Today })));
 const Insights = lazy(() => import('./pages/Insights').then((m) => ({ default: m.Insights })));
 const Glossary = lazy(() => import('./pages/Glossary').then((m) => ({ default: m.Glossary })));
+const History = lazy(() => import('./pages/History').then((m) => ({ default: m.History })));
 
 function RouteFallback() {
   return <Surface as="main" level="page" style={{ minHeight: '100vh' }} />;
@@ -47,6 +48,7 @@ export default function App() {
           <Route path="/me/about" element={<About />} />
           <Route path="/me/glossary" element={<Glossary />} />
           <Route path="/insights" element={<Insights />} />
+          <Route path="/history" element={<History />} />
           <Route path="/library" element={<Library />} />
           <Route path="/library/movements/:movementKey" element={<LibraryPattern />} />
           <Route path="/library/exercises/:exerciseId" element={<ExercisePage />} />

@@ -223,6 +223,60 @@ export function SessionProvider({ children }) {
       setArchive([]);
       setSession(null);
     },
+
+    // ─── Archive management (History page) ───────────────────────────────
+    // Edit one archived session in-place. The caller supplies a full
+    // replacement blob; PR annotations are re-derived against the rest
+    // of the archive so edits don't desync the "first PR" highlight.
+    async updateArchivedSession(sessionId, nextSession) {
+      const idx = archive.findIndex((s) => s.id === sessionId);
+      if (idx < 0) return false;
+      const without = archive.filter((s) => s.id !== sessionId);
+      const reannotated = annotatePRs(nextSession, without);
+      const next = [...archive.slice(0, idx), reannotated, ...archive.slice(idx + 1)];
+      await saveToStorage(STORAGE_KEYS.archive, next);
+      setArchive(next);
+      return true;
+    },
+
+    async deleteArchivedSession(sessionId) {
+      const idx = archive.findIndex((s) => s.id === sessionId);
+      if (idx < 0) return false;
+      const next = archive.filter((s) => s.id !== sessionId);
+      await saveToStorage(STORAGE_KEYS.archive, next);
+      setArchive(next);
+      return true;
+    },
+
+    // ─── Pre-start: add a new section to the current day ─────────────────
+    // For an active session: stamps an empty performance into the new
+    // section so it renders. Caller supplies the first exercise (mandatory
+    // — empty sections can't render without at least one performance).
+    addSectionToActiveSession(sectionKey, exercise, sectionTitle = null) {
+      if (!sectionKey || !exercise) return;
+      setSession((s) => {
+        if (!s) return s;
+        const exists = s.performances.some((p) => p.sectionKey === sectionKey);
+        if (exists) return s;
+        const newPerf = {
+          id: ulid(),
+          exerciseId: exercise.id,
+          sectionKey,
+          swappedFromId: null,
+          addedInSession: true,
+          prescription: { sets: exercise.sets, rest: exercise.rest },
+          sets: [],
+          notes: '',
+        };
+        const customTitles = { ...(s.customSectionTitles ?? {}) };
+        if (sectionTitle) customTitles[sectionKey] = sectionTitle;
+        return {
+          ...s,
+          performances: [...s.performances, newPerf],
+          customSectionTitles: customTitles,
+        };
+      });
+    },
   }), [session, archive, hydrated]);
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;

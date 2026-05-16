@@ -6,6 +6,7 @@ import { Page, Text, BrushDivider, Button } from '../design-system/components';
 import { useSettings } from '../state/settings-context.js';
 
 const BASE_ITEMS = [
+  { to: '/history',     label: 'History',  hint: 'Every session, drill in to edit or delete' },
   { to: '/me/settings', label: 'Settings', hint: 'Split, rest timer, units, haptics, data' },
   { to: '/me/glossary', label: 'Glossary', hint: 'What the words mean' },
   { to: '/me/about',    label: 'About',    hint: 'Install instructions' },
