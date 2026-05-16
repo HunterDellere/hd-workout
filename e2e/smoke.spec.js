@@ -33,9 +33,16 @@ test('home loads without console errors', async ({ page }) => {
 
 test('home is a11y clean (no serious/critical violations)', async ({ page }) => {
   await page.goto('./');
+  // Wait for fonts AND entrance animations to settle before axe samples
+  // colours. CI was failing intermittently with `color-contrast` while
+  // Newsreader was still loading — fallback Georgia rendered at different
+  // weights, which axe sampled as low-contrast in mid-swap state.
+  await page.evaluate(() => document.fonts && document.fonts.ready);
+  await page.waitForTimeout(700);
   await injectAxe(page);
   await checkA11y(page, undefined, {
-    detailedReport: false,
+    detailedReport: true,
+    detailedReportOptions: { html: true },
     axeOptions: { runOnly: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] },
     includedImpacts: ['serious', 'critical'],
   });
@@ -58,12 +65,11 @@ const A11Y_ROUTES = [
 for (const route of A11Y_ROUTES) {
   test(`${route.name} is a11y clean (no serious/critical violations)`, async ({ page }) => {
     await page.goto(`./${route.hash}`);
-    await injectAxe(page);
-    // Wait for content + entrance animations to settle so axe measures
-    // final-state colours, not in-flight ones. Under parallel load the
-    // ExerciseCardV2 entrance animation can race past the prior 400ms,
-    // so we hold for 700ms here (still well under the 5s test timeout).
+    // Wait for webfonts + entrance animations to settle so axe samples
+    // final-state colours, not the in-flight fallback render.
+    await page.evaluate(() => document.fonts && document.fonts.ready);
     await page.waitForTimeout(700);
+    await injectAxe(page);
     await checkA11y(page, undefined, {
       detailedReport: true,
       detailedReportOptions: { html: true },
