@@ -26,27 +26,43 @@ const SEED_ARCHIVE = [{
   restPerformanceId: null,
 }];
 
+// Seed via addInitScript so localStorage is written BEFORE the app boots.
+// The storage layer's one-shot localStorage→IDB migration then picks the
+// seed up on first read and the app starts with the right state — no
+// races against the settings auto-save effect that was previously
+// overwriting direct-IDB seed writes on slower browsers.
 async function seedIdb(page, { archive = [], intelligenceEnabled = true } = {}) {
-  await page.evaluate(async ({ archive, intelligenceEnabled }) => {
-    await new Promise((resolve) => {
-      const open = indexedDB.open('keyval-store', 1);
-      open.onupgradeneeded = () => open.result.createObjectStore('keyval');
-      open.onsuccess = () => {
-        const tx = open.result.transaction('keyval', 'readwrite');
-        const store = tx.objectStore('keyval');
-        store.put({
-          split: { 0:'push', 1:'push', 2:'push', 3:'push', 4:'push', 5:'push', 6:'push' },
-          restTimerMode: 'count-up',
-          units: 'kg',
-          haptics: 'standard',
-          intelligenceEnabled,
-        }, 'hdw:settings');
-        store.put(archive, 'hdw:sessions:archive');
-        tx.oncomplete = () => resolve();
-        tx.onerror = () => resolve();
+  await page.addInitScript(({ archive, intelligenceEnabled }) => {
+    try {
+      localStorage.setItem('hdw:settings', JSON.stringify({
+        split: { 0:'push', 1:'push', 2:'push', 3:'push', 4:'push', 5:'push', 6:'push' },
+        restTimerMode: 'count-up',
+        units: 'kg',
+        haptics: 'standard',
+        intelligenceEnabled,
+        onboarded: true,
+      }));
+      // Seed the archive via a one-shot IDB write before idb-keyval opens
+      // the DB on the app side. localStorage migration doesn't cover the
+      // archive key (per src/data/storage.js MIGRATABLE_KEYS), so this
+      // is the only way to land an archive blob without a hand-rolled
+      // postMessage to the app.
+      const open = indexedDB.open('keyval-store');
+      open.onupgradeneeded = () => {
+        if (!open.result.objectStoreNames.contains('keyval')) {
+          open.result.createObjectStore('keyval');
+        }
       };
-      open.onerror = () => resolve();
-    });
+      open.onsuccess = () => {
+        const db = open.result;
+        if (!db.objectStoreNames.contains('keyval')) {
+          db.close();
+          return;
+        }
+        const tx = db.transaction('keyval', 'readwrite');
+        tx.objectStore('keyval').put(archive, 'hdw:sessions:archive');
+      };
+    } catch { /* noop */ }
   }, { archive, intelligenceEnabled });
 }
 
@@ -54,7 +70,8 @@ test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
     localStorage.setItem('hd:theme', 'light');
   });
-  await page.goto('./');
+  // Don't goto('./') here — each test calls seedIdb then goto(...) so the
+  // addInitScript writes the seed before any app code runs.
 });
 
 test('insights route is reachable when flag is on', async ({ page }) => {
