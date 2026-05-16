@@ -3,7 +3,7 @@
 // page always closes back to the library.
 
 import { useState } from 'react';
-import { useNavigate, useParams, Link } from 'react-router-dom';
+import { useNavigate, useParams, useLocation, Link } from 'react-router-dom';
 import { useExercise } from '../hooks/useExercise';
 import { ExerciseSheet } from '../components/ExerciseSheet';
 import { Page, Text, Button, BrushDivider } from '../design-system/components';
@@ -12,7 +12,12 @@ import { dayLineageAccent } from '../design-system/tokens';
 export function ExercisePage() {
   const { exerciseId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const found = useExercise(null, exerciseId);
+  // Wave 5.3: track whether we came from an in-app link. The PerformanceCard
+  // name link passes state.from = '/' so we can return to the active session
+  // cleanly. Direct URL hits or library browsing fall back to /library.
+  const cameFrom = location.state?.from;
 
   // Reopen the sheet whenever the route id changes.
   const [open, setOpen] = useState(true);
@@ -55,7 +60,10 @@ export function ExercisePage() {
       open={open}
       onClose={() => {
         setOpen(false);
-        navigate('/library');
+        // Wave 5.3: if we entered via an in-app link that set state.from,
+        // navigate back there. Otherwise (deep link / library browse)
+        // return to /library.
+        navigate(cameFrom ?? '/library');
       }}
       exercise={exercise}
       accent={accent}

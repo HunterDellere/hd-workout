@@ -1,5 +1,12 @@
-// /:dayKey — one day's program. Sections list, each with its exercises.
-// Rewritten Session 10: off the legacy bridge, on Page/Block, calm chrome.
+// /:dayKey — one day's program. Two layers:
+//   1. DayPlanner at the top: TodayHero + per-section preview with
+//      swap/remove/add affordances and a Start CTA. Lets the user plan
+//      and start a session for this day even when it isn't today
+//      (Wave 5.1).
+//   2. Reference list below — full ExerciseCardV2 rows for browsing.
+//
+// When this day IS today and a session is active, the planner collapses
+// to a sticky pill linking back to /today.
 
 import { useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
@@ -14,7 +21,10 @@ import {
 } from '../design-system/components';
 import { dayLineageAccent, space as spaceScale } from '../design-system/tokens';
 import { ExerciseCardV2 } from '../components/ExerciseCardV2';
+import { DayPlanner } from '../components/today/DayPlanner';
 import { useHaptics } from '../hooks/useHaptics';
+import { useSettings, dayKeyForToday } from '../state/settings-context.js';
+import { useSession } from '../state/session-context.js';
 
 // Wave 4.2 #14: role="tab" without role="tabpanel" was an a11y dead end —
 // SR users heard "tab selected" with no corresponding panel to switch to.
@@ -78,6 +88,8 @@ export function Day() {
   const { dayKey } = useParams();
   const navigate = useNavigate();
   const haptic = useHaptics();
+  const { settings } = useSettings();
+  const { activeSession } = useSession();
   const day = useMemo(() => getDay(dayKey), [dayKey]);
 
   const [prevDayKey, setPrevDayKey] = useState(dayKey);
@@ -87,6 +99,14 @@ export function Day() {
     setPrevDayKey(dayKey);
     setActiveKey(day?.sections?.[0]?.key ?? null);
   }
+
+  const isToday = dayKeyForToday(settings.split) === dayKey;
+  const sessionOnThisDay = activeSession?.dayKey === dayKey;
+  // Show the planner unless an in-progress session for this same day is
+  // already running — in that case the planner would conflict with the
+  // active session on /. Plan-ahead for OTHER days when a different
+  // session is in progress is still surfaced (Start will be disabled).
+  const showPlanner = !sessionOnThisDay;
 
   if (!day) {
     return (
@@ -139,7 +159,7 @@ export function Day() {
           }}
         />
         <Text as="div" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
-          Day · {day.key}
+          {isToday ? `Today · ${day.key}` : `Day · ${day.key}`}
         </Text>
       </Stack>
 
@@ -152,7 +172,27 @@ export function Day() {
         </Text>
       )}
 
-      <div style={{ marginTop: 32, position: 'sticky', top: 0, background: 'var(--surface-page)', zIndex: 1 }}>
+      {showPlanner && (
+        <div style={{ marginTop: 8 }}>
+          <DayPlanner dayKey={dayKey} viewMode={isToday ? 'today' : 'ahead'} />
+        </div>
+      )}
+
+      {sessionOnThisDay && (
+        <div style={{ marginTop: 24 }}>
+          <Button as={Link} to="/" variant="soft" accent={accent} size="md">
+            Session in progress — go to Today
+          </Button>
+        </div>
+      )}
+
+      <BrushDivider style={{ marginTop: showPlanner ? 48 : 32 }} />
+
+      <Text as="div" variant="mono-sm" tone="tertiary" style={{ marginTop: 24, textTransform: 'uppercase' }}>
+        Reference
+      </Text>
+
+      <div style={{ marginTop: 16, position: 'sticky', top: 0, background: 'var(--surface-page)', zIndex: 1 }}>
         <SectionNav
           sections={day.sections}
           activeKey={activeKey}

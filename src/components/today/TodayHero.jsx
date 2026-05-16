@@ -47,11 +47,14 @@ export function TodayHero({
   day,
   accent,
   todayKey,
+  labelOverride,
   exerciseCount,
   sectionCount,
   estMinutes,
   voice,
   onStart,
+  startDisabled = false,
+  startLabel = 'Start session',
   hasOverlay,
   onResetDay,
 }) {
@@ -83,7 +86,7 @@ export function TodayHero({
       <Stack direction="row" align="center" justify="space-between" gap={2}>
         <Stack direction="row" align="center" gap={2}>
           <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase', letterSpacing: '0.14em' }}>
-            Today · {todayKey}
+            {labelOverride ?? `Today · ${todayKey}`}
           </Text>
         </Stack>
         {hasOverlay && (
@@ -140,10 +143,11 @@ export function TodayHero({
           accent={accent}
           size="lg"
           onClick={onStart}
+          disabled={startDisabled}
           data-testid="start-session"
         >
-          Start session
-          <span aria-hidden style={{ marginLeft: 4, opacity: 0.75 }}>→</span>
+          {startLabel}
+          {!startDisabled && <span aria-hidden style={{ marginLeft: 4, opacity: 0.75 }}>→</span>}
         </Button>
       </div>
     </div>

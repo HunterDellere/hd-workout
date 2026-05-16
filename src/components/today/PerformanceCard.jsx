@@ -3,6 +3,7 @@
 // suggestion line, the SetRow input surface, and the rest timer when
 // this performance is resting.
 
+import { Link } from 'react-router-dom';
 import { Stack, Text, MonoChipButton } from '../../design-system/components';
 import { findExerciseById } from '../../data';
 import { parsePrescription } from '../../data/prescription';
@@ -54,34 +55,65 @@ export function PerformanceCard({
       data-testid="performance-card"
       data-performance-id={performance.id}
       style={{
-        marginTop: 32,
-        padding: '20px 0',
+        marginTop: 40,
+        padding: '24px 0',
         borderTop: '1px solid var(--border-hairline)',
       }}
     >
       <Stack direction="row" align="flex-start" justify="space-between" gap={3}>
-        <Stack direction="column" gap={1} style={{ flex: 1, minWidth: 0 }}>
+        <Stack direction="column" gap={2} style={{ flex: 1, minWidth: 0 }}>
           <Text as="div" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
             {performance.prescription?.sets ?? ex.sets}
             {performance.prescription?.rest && ` · rest ${performance.prescription.rest}`}
           </Text>
-          <Text as="h2" variant="title-lg">
+          {/* Wave 5.3: name links to the canonical exercise detail with a
+              quiet "↗" affordance. The session is IDB-persisted, so a
+              detail-dive round-trips cleanly. */}
+          <Text
+            as={Link}
+            to={`/library/exercises/${ex.id}`}
+            state={{ from: '/' }}
+            variant="title-lg"
+            data-testid="performance-name-link"
+            style={{
+              color: 'inherit',
+              textDecoration: 'none',
+              display: 'inline-flex',
+              alignItems: 'baseline',
+              gap: 8,
+            }}
+          >
             {ex.name}
+            <span
+              aria-hidden
+              style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: 11,
+                color: 'var(--text-tertiary)',
+                opacity: 0.7,
+              }}
+            >
+              ↗
+            </span>
           </Text>
           {performance.swappedFromId && (
             <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
               Swapped in this session
             </Text>
           )}
+          {/* Wave 5.2: last-time + suggestion stack into one quiet row each.
+              Suggestion takes the accent ink; last-time stays tertiary so
+              the two lines never compete. */}
           {lastTop && lastTop.top && (
             <Text
               as="span"
               variant="mono-sm"
               tone="tertiary"
               data-testid="last-time"
-              style={{ textTransform: 'uppercase' }}
+              style={{ textTransform: 'uppercase', letterSpacing: '0.10em' }}
             >
-              Last time · {lastTop.top.weight}{lastTop.top.unit ?? ''} × {lastTop.top.reps}
+              Last · {lastTop.top.weight}{lastTop.top.unit ?? ''} × {lastTop.top.reps}
+              {lastTop.top.rpe != null ? ` · RPE ${lastTop.top.rpe}` : ''}
             </Text>
           )}
           {suggestionText && (
@@ -92,6 +124,7 @@ export function PerformanceCard({
               data-suggestion-kind={suggestion.kind}
               style={{
                 textTransform: 'uppercase',
+                letterSpacing: '0.10em',
                 color: suggestion.kind === 'deload'
                   ? 'var(--state-warn-ink)'
                   : `var(--accent-${accent}-ink)`,

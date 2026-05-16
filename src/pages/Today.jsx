@@ -23,7 +23,6 @@ import {
 import { dayLineageAccent } from '../design-system/tokens';
 import { findExerciseById } from '../data';
 import { parsePrescription } from '../data/prescription';
-import { voiceFor } from '../data/voice';
 import { historyForExercise, lastTopSetForExercise } from '../data/history';
 import { suggestNextLoad, annotatePRs } from '../data/intelligence';
 import { useSettings, dayKeyForToday } from '../state/settings-context.js';
@@ -33,11 +32,10 @@ import { SubstituteSheet } from '../components/SubstituteSheet';
 import { SlotPicker } from '../components/SlotPicker';
 import { AddGroupSheet } from '../components/AddGroupSheet';
 import { PerformanceCard } from '../components/today/PerformanceCard';
-import { TodayHero } from '../components/today/TodayHero';
-import { estimateDayMinutes } from '../components/today/estimateDayMinutes';
-import { PreviewSection } from '../components/today/PreviewSection';
 import { RestDay } from '../components/today/RestDay';
 import { SessionSummary } from '../components/today/SessionSummary';
+import { DayPlanner } from '../components/today/DayPlanner';
+import { SessionProgress } from '../components/today/SessionProgress';
 import { useLongGap } from '../hooks/useLongGap';
 
 export function Today() {
@@ -46,7 +44,6 @@ export function Today() {
   const {
     activeSession,
     archive,
-    startSession,
     endSession,
     logSet,
     discardSet,
@@ -61,13 +58,7 @@ export function Today() {
   } = useSession();
 
   const {
-    overlay,
     days: overlayDays,
-    swapExerciseOverlay,
-    hideExercise,
-    addExercise,
-    removeAddedExercise,
-    resetDay,
   } = useOverlay();
 
   const todayKey = activeSession?.dayKey ?? dayKeyForToday(settings.split);
@@ -82,11 +73,7 @@ export function Today() {
   );
   const accent = todayKey ? (dayLineageAccent[todayKey] ?? 'stone') : 'stone';
 
-  // Pre-start UI state — independent of the SubstituteSheet/SlotPicker
-  // we already use mid-session (those flow through useSession).
-  const [editSwap, setEditSwap] = useState(null);   // { sectionKey, exerciseId }
-  const [editAdd, setEditAdd] = useState(null);     // sectionKey
-
+  // In-session sheet state. Pre-start overlay edits live in DayPlanner.
   const [swapPerformanceId, setSwapPerformanceId] = useState(null);
   const [pickerSectionKey, setPickerSectionKey] = useState(null);
   const [pendingSectionTitle, setPendingSectionTitle] = useState(null);
@@ -99,17 +86,20 @@ export function Today() {
   // and the archive so every logged set knows whether it's a PR at log
   // time. Pure derivation; recomputed when either the session or the
   // archive shifts.
+  const annotatedSession = useMemo(
+    () => (activeSession ? annotatePRs(activeSession, archive) : null),
+    [activeSession, archive],
+  );
   const livePRSetIds = useMemo(() => {
-    if (!activeSession) return new Set();
-    const annotated = annotatePRs(activeSession, archive);
+    if (!annotatedSession) return new Set();
     const ids = new Set();
-    for (const p of annotated.performances ?? []) {
+    for (const p of annotatedSession.performances ?? []) {
       for (const s of p.sets ?? []) {
         if (s.pr) ids.add(`${p.id}:${s.index}`);
       }
     }
     return ids;
-  }, [activeSession, archive]);
+  }, [annotatedSession]);
 
   // Group active-session performances by their original section. Preserves
   // the encounter order of section keys so the warmup/main/finisher
@@ -195,62 +185,10 @@ export function Today() {
   }
 
   // ─── Branch: training day (pre-start or active) ─────────────────────
-  const exerciseCount = day.sections.reduce((n, s) => n + s.exercises.length, 0);
-  const sectionCount = day.sections.length;
-  const estMinutes = estimateDayMinutes(day);
-  const heroVoice = voiceFor(todayKey);
-  const programKey = settings.activeProgramKey ?? 'full-spectrum';
-  const hasOverlay = Boolean(overlay?.[programKey]?.[todayKey]);
-
   return (
     <Page>
       {!activeSession ? (
-        <>
-          <TodayHero
-            day={day}
-            accent={accent}
-            todayKey={todayKey}
-            exerciseCount={exerciseCount}
-            sectionCount={sectionCount}
-            estMinutes={estMinutes}
-            voice={heroVoice}
-            onStart={() => startSession(day, programKey)}
-            hasOverlay={hasOverlay}
-            onResetDay={() => resetDay(todayKey)}
-          />
-
-          <Block gapTop={24}>
-            <Stack direction="column" gap={4}>
-              <div>
-                {day.sections.map((section) => {
-                  const addedIds = new Set(
-                    (overlay?.[programKey]?.[todayKey]?.[section.key]?.__added ?? [])
-                      .map((e) => e.id),
-                  );
-                  return (
-                    <PreviewSection
-                      key={section.key}
-                      section={section}
-                      accent={accent}
-                      addedIds={addedIds}
-                      onSwapExercise={(sectionKey, exerciseId) =>
-                        setEditSwap({ sectionKey, exerciseId })
-                      }
-                      onRemoveExercise={(sectionKey, exerciseId, wasAdded) => {
-                        if (wasAdded) {
-                          removeAddedExercise(todayKey, sectionKey, exerciseId);
-                        } else {
-                          hideExercise(todayKey, sectionKey, exerciseId);
-                        }
-                      }}
-                      onAddExercise={(sectionKey) => setEditAdd(sectionKey)}
-                    />
-                  );
-                })}
-              </div>
-            </Stack>
-          </Block>
-        </>
+        <DayPlanner dayKey={todayKey} viewMode="today" />
       ) : (
         <>
           <Stack direction="row" align="center" gap={2}>
@@ -275,6 +213,11 @@ export function Today() {
           </Text>
 
           <BrushDivider style={{ marginTop: 32 }} />
+
+          {/* Wave 5.2: sticky session progress lives below the page header
+              so the user always sees how far in they are. Uses the working-
+              set definition + the prescribed total. */}
+          <SessionProgress session={annotatedSession} accent={accent} />
 
           {longGap && !resumeDismissed && (
             <div
@@ -393,12 +336,19 @@ export function Today() {
             </MonoChipButton>
           </div>
 
+          {/* Wave 5.2: end-session rail. Lives at the bottom of the doc
+              flow so it doesn't overlap the BottomNav, but with extra
+              breathing room. The session progress bar at the top is the
+              persistent surface; this is the commit. */}
           <Block gapTop={48}>
             <BrushDivider />
-            <Stack direction="row" justify="space-between" align="center" gap={3} style={{ marginTop: 24 }}>
-              <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
-                {activeSession.performances.reduce((n, p) => n + p.sets.length, 0)} sets logged
-              </Text>
+            <Stack
+              direction="row"
+              justify="flex-end"
+              align="center"
+              gap={3}
+              style={{ marginTop: 24 }}
+            >
               <Button
                 variant="soft"
                 accent={accent}
@@ -475,50 +425,7 @@ export function Today() {
         }}
       />
 
-      {/* Pre-start (overlay) editing sheets */}
-      <SubstituteSheet
-        open={Boolean(editSwap)}
-        onClose={() => setEditSwap(null)}
-        currentExerciseId={editSwap?.exerciseId}
-        hasLoggedSets={false}
-        onPick={(newId) => {
-          if (editSwap) {
-            const ex = findExerciseById(newId);
-            if (ex) {
-              swapExerciseOverlay(todayKey, editSwap.sectionKey, editSwap.exerciseId, {
-                id: newId,
-                sets: ex.sets,
-                rest: ex.rest,
-              });
-            }
-          }
-          setEditSwap(null);
-        }}
-      />
-
-      <SlotPicker
-        open={Boolean(editAdd)}
-        onClose={() => setEditAdd(null)}
-        sectionKey={editAdd}
-        sectionTitle={editAdd && day ? (day.sections.find((s) => s.key === editAdd)?.title ?? null) : null}
-        sectionExercises={
-          editAdd && day
-            ? (day.sections.find((s) => s.key === editAdd)?.exercises ?? [])
-            : []
-        }
-        excludeIds={day ? day.sections.flatMap((s) => s.exercises.map((e) => e.id)) : []}
-        onPick={(exerciseId) => {
-          const ex = findExerciseById(exerciseId);
-          if (ex && editAdd) {
-            addExercise(todayKey, editAdd, {
-              id: exerciseId,
-              sets: ex.sets,
-              rest: ex.rest,
-            });
-          }
-          setEditAdd(null);
-        }}
-      />
+      {/* Pre-start overlay-editing sheets are owned by DayPlanner now. */}
     </Page>
   );
 }
