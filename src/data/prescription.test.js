@@ -35,6 +35,36 @@ describe('parsePrescription', () => {
     expect(parsePrescription(null).kind).toBe('free-text');
     expect(parsePrescription('').kind).toBe('free-text');
   });
+  it('parses duration "3 × 30 sec"', () => {
+    expect(parsePrescription('3 × 30 sec')).toMatchObject({
+      kind: 'duration', sets: 3, setsTotal: 3, holdSec: 30, perSide: false,
+    });
+  });
+  it('parses duration with per-side "2 × 1 min each side"', () => {
+    expect(parsePrescription('2 × 1 min each side')).toMatchObject({
+      kind: 'duration', sets: 2, holdSec: 60, perSide: true,
+    });
+  });
+  it('parses single duration "5 min"', () => {
+    expect(parsePrescription('5 min')).toMatchObject({
+      kind: 'duration', sets: 1, holdSec: 300,
+    });
+  });
+  it('parses minutes with decimal "1.5 min"', () => {
+    expect(parsePrescription('1.5 min')).toMatchObject({
+      kind: 'duration', holdSec: 90,
+    });
+  });
+  it('parses rounds "3 rounds"', () => {
+    expect(parsePrescription('3 rounds')).toMatchObject({
+      kind: 'rounds', rounds: 3, setsTotal: 3,
+    });
+  });
+  it('parses cycles "2 cycles"', () => {
+    expect(parsePrescription('2 cycles')).toMatchObject({
+      kind: 'rounds', rounds: 2,
+    });
+  });
 });
 
 describe('parseRest', () => {

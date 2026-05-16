@@ -8,6 +8,7 @@ import { Stack, Text, MonoChipButton } from '../../design-system/components';
 import { findExerciseById } from '../../data';
 import { parsePrescription } from '../../data/prescription';
 import { SetRow } from '../SetRow';
+import { DurationSetRow } from '../DurationSetRow';
 import { RestTimer } from '../RestTimer';
 import { NoteField } from './NoteField';
 
@@ -160,19 +161,29 @@ export function PerformanceCard({
       </Stack>
 
       <div style={{ marginTop: 20 }}>
-        <SetRow
-          performance={performance}
-          prescription={prescription}
-          accent={accent}
-          unit={unit}
-          lastTop={lastTop}
-          barWeight={barWeight}
-          plateInventory={plateInventory}
-          plateCalculatorEnabled={plateCalculatorEnabled}
-          onLogSet={(payload) => onLogSet(performance.id, payload)}
-          onDiscardSet={(setIdx) => onDiscardSet(performance.id, setIdx)}
-          prSetIds={prSetIds}
-        />
+        {prescription.kind === 'duration' || prescription.kind === 'rounds' ? (
+          <DurationSetRow
+            performance={performance}
+            prescription={prescription}
+            accent={accent}
+            onLogSet={(payload) => onLogSet(performance.id, payload)}
+            onDiscardSet={(setIdx) => onDiscardSet(performance.id, setIdx)}
+          />
+        ) : (
+          <SetRow
+            performance={performance}
+            prescription={prescription}
+            accent={accent}
+            unit={unit}
+            lastTop={lastTop}
+            barWeight={barWeight}
+            plateInventory={plateInventory}
+            plateCalculatorEnabled={plateCalculatorEnabled}
+            onLogSet={(payload) => onLogSet(performance.id, payload)}
+            onDiscardSet={(setIdx) => onDiscardSet(performance.id, setIdx)}
+            prSetIds={prSetIds}
+          />
+        )}
       </div>
 
       {onSetNote && (

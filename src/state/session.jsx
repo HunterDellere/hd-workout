@@ -139,23 +139,48 @@ export function SessionProvider({ children }) {
       return true;
     },
 
-    logSet(performanceId, { weight, reps, rpe, unit }) {
+    logSet(performanceId, payload) {
       setSession((s) => {
         if (!s) return s;
         const performances = s.performances.map((p) => {
           if (p.id !== performanceId) return p;
           const nextIndex = p.sets.length + 1;
-          const newSet = {
-            index: nextIndex,
-            weight,
-            unit,
-            reps,
-            rpe: rpe ?? null,
-            restTakenSec: null,
-            loggedAt: new Date().toISOString(),
-          };
+          // Two payload shapes:
+          //   strength: { weight, reps, rpe, unit, isWarmup?, isDrop? }
+          //   duration/rounds: { kind: 'duration'|'rounds', durationSec, side? }
+          // The schema keeps both flat — duration sets simply have no
+          // weight/reps fields, and strength sets have no durationSec.
+          // Intelligence / archive consumers already gate on
+          // s.weight != null so they ignore duration entries cleanly.
+          const isTimeBased = payload?.kind === 'duration' || payload?.kind === 'rounds';
+          const newSet = isTimeBased
+            ? {
+              index: nextIndex,
+              kind: payload.kind,
+              durationSec: payload.durationSec ?? 0,
+              side: payload.side ?? null,
+              restTakenSec: null,
+              loggedAt: new Date().toISOString(),
+            }
+            : {
+              index: nextIndex,
+              weight: payload.weight,
+              unit: payload.unit,
+              reps: payload.reps,
+              rpe: payload.rpe ?? null,
+              isWarmup: payload.isWarmup || undefined,
+              isDrop: payload.isDrop || undefined,
+              restTakenSec: null,
+              loggedAt: new Date().toISOString(),
+            };
           return { ...p, sets: [...p.sets, newSet] };
         });
+        // Duration / rounds sets don't trigger a rest timer — the exercise
+        // itself is the timed element.
+        const isTimeBased = payload?.kind === 'duration' || payload?.kind === 'rounds';
+        if (isTimeBased) {
+          return { ...s, performances };
+        }
         const target = (s.performances.find((p) => p.id === performanceId)
           ?.prescription?.rest) || null;
         return {

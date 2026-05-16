@@ -729,6 +729,664 @@ const recovery = {
         },
       ],
     },
+
+    // ─── Stretching ───────────────────────────────────────────────────────
+    // Held positions (not active mobility — that lives in the existing
+    // mobility tag). Time-based prescriptions consumed by the duration
+    // log surface. Per-side notes flow through parsePrescription.perSide.
+    {
+      key: 'stretching',
+      title: 'Stretching',
+      blurb:
+        'Static holds for tissue length. Best in the evening or '
+        + 'post-training when muscles are warm. Breath stays nasal '
+        + 'and slow throughout.',
+      exercises: [
+        {
+          id: 'rec-pigeon-stretch',
+          name: 'Pigeon Stretch',
+          tier: 'A',
+          intent: 'corrective',
+          categories: ['mobility'],
+          equipment: ['Floor', 'Optional: yoga block'],
+          primaryMuscles: ['Glute medius', 'Piriformis', 'TFL'],
+          secondaryMuscles: ['Hip capsule'],
+          cues: [
+            'Front shin angled across the body; back leg long behind you',
+            'Square the hips toward the floor — both hip points level',
+            'Walk the hands forward, lower the chest over the front shin',
+            'Sink into the front-hip glute — that\'s the target',
+            'Breathe long and slow; let the tissue release at exhale',
+          ],
+          safetyNotes: [
+            'Knee pain in the front leg → narrow the shin angle. Hip pain is fine; sharp knee pain is not.',
+            'A block under the front-leg hip takes the load off the joint if you can\'t get square.',
+          ],
+          variants: [
+            { name: 'Supported pigeon', note: 'Forehead on a block; reduces depth, keeps the spine long.' },
+            { name: 'Supine figure-4', note: 'On your back; same target, gentler on the front knee.' },
+          ],
+          tags: ['mobility', 'corrective', 'flexibility'],
+        },
+        {
+          id: 'rec-frog-stretch',
+          name: 'Frog Stretch',
+          tier: 'A',
+          intent: 'corrective',
+          categories: ['mobility'],
+          equipment: ['Floor', 'Padding for knees'],
+          primaryMuscles: ['Adductors', 'Groin'],
+          secondaryMuscles: ['Hip capsule'],
+          cues: [
+            'On all fours, knees wide, shins parallel, feet flexed',
+            'Hips stack over knees — not behind them',
+            'Rock slowly back and forth; don\'t sink and hold to start',
+            'After 5–6 rocks, settle into the deepest position',
+            'Diaphragmatic breath — belly drops between the thighs',
+          ],
+          safetyNotes: [
+            'Pad the knees. This stretch is intense; do not bounce.',
+            'Inner-thigh sensation is the target. Sharp knee or groin pain → back out.',
+          ],
+          variants: [
+            { name: 'Half frog', note: 'One leg only; less intense per side, easier to control.' },
+            { name: 'Frog with hip rocks', note: 'Mobility-bias variant: rock without holding.' },
+          ],
+          tags: ['mobility', 'flexibility'],
+        },
+        {
+          id: 'rec-couch-stretch',
+          name: 'Couch Stretch',
+          tier: 'S',
+          intent: 'corrective',
+          categories: ['mobility', 'posture'],
+          equipment: ['Wall or couch', 'Padding for the down knee'],
+          primaryMuscles: ['Hip flexors', 'Quadriceps (rectus femoris)'],
+          secondaryMuscles: ['TFL'],
+          cues: [
+            'Back knee on padding, shin running up the wall',
+            'Front foot flat on the floor, knee over ankle',
+            'Squeeze the back-leg glute hard — that\'s the cue that does the work',
+            'Tuck the tailbone; the lower-back must not arch',
+            'Once braced, walk the torso upright — feel the front of the hip lengthen',
+          ],
+          safetyNotes: [
+            'Pad the knee well; the position is unforgiving on the patella.',
+            'If the lower back is doing the stretching, the glute isn\'t firing. Re-set.',
+          ],
+          variants: [
+            { name: 'Half-kneel hip flexor', note: 'No wall; easier entry, less depth.' },
+            { name: 'Couch stretch with reach', note: 'Same-side arm overhead; layered T-spine extension.' },
+          ],
+          tags: ['mobility', 'posture', 'flexibility'],
+        },
+        {
+          id: 'rec-90-90-hold',
+          name: '90-90 Hip Hold',
+          tier: 'A',
+          intent: 'corrective',
+          categories: ['mobility'],
+          equipment: ['Floor'],
+          primaryMuscles: ['Hip rotators', 'Glute medius'],
+          secondaryMuscles: ['Hip capsule'],
+          cues: [
+            'Front leg 90°, back leg 90° — both shins flat on the floor',
+            'Sit upright; both sit bones grounded if possible',
+            'Lean forward over the front shin slowly',
+            'Hold; then sit back up and pulse for 5 reps',
+            'Switch sides — your "tight" side will surprise you',
+          ],
+          safetyNotes: [
+            'Knee discomfort → reduce the angle to 70–80° rather than forcing 90°.',
+          ],
+          variants: [
+            { name: 'Seated 90-90 transition', note: 'Active variant: sweep between sides without using hands.' },
+            { name: 'Elevated 90-90', note: 'Sit on a cushion if you can\'t ground both sit bones.' },
+          ],
+          tags: ['mobility', 'flexibility'],
+        },
+        {
+          id: 'rec-supine-hamstring',
+          name: 'Supine Hamstring Stretch',
+          tier: 'A',
+          intent: 'corrective',
+          categories: ['mobility'],
+          equipment: ['Floor', 'Strap or towel'],
+          primaryMuscles: ['Hamstrings'],
+          secondaryMuscles: ['Calves', 'Posterior chain'],
+          cues: [
+            'Lie on your back, one leg flat',
+            'Loop a strap around the ball of the lifting foot',
+            'Straight leg lifts toward the ceiling; both hips stay on the floor',
+            'Pull gently — the stretch should be a long line down the back of the leg',
+            'Hold; do not bounce',
+          ],
+          safetyNotes: [
+            'If the hamstring cramps, lower the leg — you\'ve gone past the stretch into a contraction.',
+            'Sciatic-type tingling → back out immediately. This is not a nerve stretch.',
+          ],
+          variants: [
+            { name: 'Doorway hamstring stretch', note: 'Heel on a doorframe; no strap needed.' },
+            { name: 'Banded hamstring stretch', note: 'A band gives a gentle assistive pull.' },
+          ],
+          tags: ['mobility', 'flexibility'],
+        },
+        {
+          id: 'rec-doorway-pec',
+          name: 'Doorway Pec Stretch',
+          tier: 'S',
+          intent: 'corrective',
+          categories: ['posture', 'mobility'],
+          equipment: ['Doorway'],
+          primaryMuscles: ['Pectoralis major', 'Pec minor'],
+          secondaryMuscles: ['Anterior deltoid'],
+          cues: [
+            'Forearm on the doorframe, elbow at shoulder height',
+            'Step the same-side foot through the doorway',
+            'Rotate the torso away from the arm — feel the chest open',
+            'Three heights: elbow low, mid, high — each biases a different fiber',
+            'Hold each height; sink with breath',
+          ],
+          safetyNotes: [
+            'Shoulder pinch or impingement → lower the elbow height.',
+            'If you have a labrum issue, skip this and use a foam roller across the T-spine instead.',
+          ],
+          variants: [
+            { name: 'Single-arm wall pec', note: 'Wall corner; same intent, less torque.' },
+            { name: 'Lying pec stretch over foam roller', note: 'Foam roller along the spine, arms hang wide.' },
+          ],
+          tags: ['posture', 'mobility', 'flexibility'],
+        },
+        {
+          id: 'rec-childs-pose',
+          name: 'Child\'s Pose',
+          tier: 'A',
+          intent: 'corrective',
+          categories: ['mobility', 'spine'],
+          equipment: ['Floor', 'Optional: bolster'],
+          primaryMuscles: ['Lats', 'Spinal erectors'],
+          secondaryMuscles: ['Glutes', 'Hips'],
+          cues: [
+            'Big toes touching, knees wide',
+            'Sit back onto the heels; chest lowers between the thighs',
+            'Arms extend forward, palms down, fingers spread',
+            'Drop the forehead to the floor or a block',
+            'Slow nasal breaths into the back of the ribcage',
+          ],
+          safetyNotes: [
+            'Knee issues → narrow the knees, or place a bolster between the calves and hamstrings.',
+          ],
+          variants: [
+            { name: 'Side-bend child\'s pose', note: 'Walk the hands to one side; bigger lat stretch.' },
+            { name: 'Supported child\'s pose', note: 'Bolster under the torso; restorative variant.' },
+          ],
+          tags: ['mobility', 'spine', 'flexibility'],
+        },
+        {
+          id: 'rec-sun-salutation-flow',
+          name: 'Forward Fold → Down Dog Flow',
+          tier: 'A',
+          intent: 'corrective',
+          categories: ['mobility'],
+          equipment: ['Floor'],
+          primaryMuscles: ['Posterior chain'],
+          secondaryMuscles: ['Shoulders', 'Calves'],
+          cues: [
+            'Stand tall, hinge into a forward fold — hang heavy',
+            'Walk the hands forward to plank',
+            'Push hips back and up into downward dog; press heels toward the floor',
+            'Walk hands back to feet, roll up to standing',
+            'One flow = one round. Move with breath, not speed',
+          ],
+          safetyNotes: [
+            'Wrists tender → stagger the hands or skip plank for a knees-down variant.',
+          ],
+          variants: [
+            { name: 'Add cobra/upward dog', note: 'Lower through plank, press into cobra before pushing back to down dog.' },
+            { name: 'Add a lunge step', note: 'Step one foot forward from down dog into a low lunge; alternate sides.' },
+          ],
+          tags: ['mobility', 'flexibility'],
+        },
+      ],
+    },
+
+    // ─── Posture Practice ─────────────────────────────────────────────────
+    // Standalone postural drills (not corrective lifts). Repeatable cues
+    // the user can do anywhere — at a desk, in line, between sets.
+    {
+      key: 'posture-practice',
+      title: 'Posture Practice',
+      blurb:
+        'Static drills that recalibrate where "neutral" sits. '
+        + 'Two minutes daily beats a single long session.',
+      exercises: [
+        {
+          id: 'rec-wall-posture-check',
+          name: 'Wall Posture Check',
+          tier: 'S',
+          intent: 'corrective',
+          categories: ['posture'],
+          equipment: ['Wall'],
+          primaryMuscles: ['Deep cervical flexors', 'Spinal erectors'],
+          secondaryMuscles: ['Glutes'],
+          cues: [
+            'Heels, butt, upper back, and back of head all touch the wall',
+            'Hand-width gap at the lumbar — natural curve, no more',
+            'Pull the chin back (not down) — back of the neck against the wall',
+            'Soft knees; don\'t lock out and tilt the pelvis',
+            'Step away from the wall, keeping every contact point\'s feeling',
+          ],
+          safetyNotes: [
+            'Head doesn\'t touch the wall easily → you have forward-head posture. Don\'t force it; build up.',
+          ],
+          variants: [
+            { name: 'Wall angels', note: 'Add slow Y-T-W against the wall; same setup, active drill.' },
+            { name: 'Doorway check', note: 'Same drill in a doorway; useful when no flat wall is around.' },
+          ],
+          tags: ['posture', 'corrective'],
+        },
+        {
+          id: 'rec-ribs-down',
+          name: 'Ribs-Down Drill',
+          tier: 'S',
+          intent: 'corrective',
+          categories: ['posture'],
+          equipment: ['None'],
+          primaryMuscles: ['Diaphragm', 'Deep core', 'Obliques'],
+          secondaryMuscles: ['Spinal erectors'],
+          cues: [
+            'Stand tall; place one hand on the sternum, one on the lower belly',
+            'Notice if the bottom ribs flare forward — most people\'s default',
+            'Exhale fully and let the ribs sink down toward the pelvis',
+            'Keep the breath in the belly — no chest rise',
+            'This is your bracing default; use it before every lift and at random through the day',
+          ],
+          safetyNotes: [
+            'This is a position drill, not a strength exercise. No load.',
+          ],
+          variants: [
+            { name: 'Supine ribs-down', note: 'On your back with knees bent — easier to feel.' },
+            { name: '90-90 ribs-down', note: 'Feet on a wall, hips and knees at 90°; classic DNS / PRI position.' },
+          ],
+          tags: ['posture', 'corrective'],
+        },
+        {
+          id: 'rec-desk-reset',
+          name: 'Desk Reset Sequence',
+          tier: 'A',
+          intent: 'corrective',
+          categories: ['posture'],
+          equipment: ['Chair', 'Desk'],
+          primaryMuscles: ['Cervical spine', 'Shoulders', 'Hip flexors'],
+          secondaryMuscles: [],
+          cues: [
+            'Stand up. Hands on hips, gentle backbend — 5 breaths',
+            'Chin tucks against the air — 10 reps',
+            'Roll the shoulders back × 5, then forward × 5',
+            'Step into a doorway pec stretch — 30 sec each side',
+            'Sit back down. Reset the wall-posture cue mentally',
+          ],
+          safetyNotes: [
+            'Move slowly through the backbend — most desk-stiff spines aren\'t ready for full extension.',
+          ],
+          variants: [
+            { name: 'Walking reset', note: 'Walk for 3 minutes between cues — bigger return.' },
+            { name: 'Standing desk transition', note: 'Use as the cue to switch from sit to stand and vice versa.' },
+          ],
+          tags: ['posture', 'corrective', 'healthspan'],
+        },
+      ],
+    },
+
+    // ─── Balance / Proprioception ─────────────────────────────────────────
+    // Single-leg and vestibular drills. Calibrates the joint sensors that
+    // strength training alone doesn't reach. Big returns over time, very
+    // low cost per session.
+    {
+      key: 'balance',
+      title: 'Balance & Proprioception',
+      blurb:
+        'The most under-trained athletic quality. Two minutes a day '
+        + 'compounds into measurable joint stability within a month.',
+      exercises: [
+        {
+          id: 'rec-single-leg-stand',
+          name: 'Single-Leg Stand',
+          tier: 'S',
+          intent: 'corrective',
+          categories: ['imbalance'],
+          equipment: ['Floor'],
+          primaryMuscles: ['Foot intrinsics', 'Glute medius', 'Ankle stabilisers'],
+          secondaryMuscles: ['Core'],
+          cues: [
+            'Bare feet if possible — feedback through the toes',
+            'Stand on one leg, knee soft, foot tripod (big toe, little toe, heel)',
+            'Spread the toes — grip the floor without curling them',
+            'Eyes open first; once 60 sec feels easy, close them',
+            'Switch sides — the harder side is the priority',
+          ],
+          safetyNotes: [
+            'Near a wall the first few times — eyes closed is a different sport.',
+            'Numbness in the foot → you\'re gripping with the toes instead of spreading.',
+          ],
+          variants: [
+            { name: 'Eyes closed', note: 'Removes visual reference; vestibular and proprioceptive only.' },
+            { name: 'Head turns', note: 'Slow head turns while standing — adds vestibular demand.' },
+            { name: 'Foam pad stand', note: 'Unstable surface; advanced.' },
+          ],
+          tags: ['imbalance', 'corrective', 'healthspan'],
+        },
+        {
+          id: 'rec-tandem-walk',
+          name: 'Tandem Walk',
+          tier: 'A',
+          intent: 'corrective',
+          categories: ['imbalance'],
+          equipment: ['Hallway or straight line'],
+          primaryMuscles: ['Ankle stabilisers', 'Hip stabilisers'],
+          secondaryMuscles: ['Core'],
+          cues: [
+            'Heel-to-toe along an imaginary line — one foot directly in front of the other',
+            'Arms out for balance; soft knees',
+            'Go slow — slow is the difficulty knob',
+            'Walk forward 20 steps; turn carefully; walk back',
+            'Once forward is solid, try walking it backward',
+          ],
+          safetyNotes: [
+            'Near a wall the first few times.',
+            'A line of tape on the floor helps with the visual reference.',
+          ],
+          variants: [
+            { name: 'Tandem walk eyes closed', note: 'Advanced. Vestibular system carries the load.' },
+            { name: 'Backward tandem walk', note: 'Easier on balance but harder on proprioception.' },
+          ],
+          tags: ['imbalance', 'corrective', 'healthspan'],
+        },
+        {
+          id: 'rec-vestibular-gaze',
+          name: 'Vestibular Gaze Stabilisation',
+          tier: 'B',
+          intent: 'corrective',
+          categories: ['imbalance'],
+          equipment: ['None'],
+          primaryMuscles: ['Vestibular system', 'Cervical stabilisers'],
+          secondaryMuscles: [],
+          cues: [
+            'Fix gaze on a point at arm\'s length',
+            'Slowly rotate the head left and right while keeping eyes locked on the point',
+            'Then nod yes / no while staying locked on the point',
+            'Slow is the difficulty — fast hides the deficit',
+            '30 seconds each direction is enough to start',
+          ],
+          safetyNotes: [
+            'Dizziness or nausea → stop, sit down, eyes on the horizon.',
+            'Recent concussion → talk to a clinician before doing this.',
+          ],
+          variants: [
+            { name: 'VOR x1', note: 'Head moves, target stays still — gaze locked on target.' },
+            { name: 'VOR x2', note: 'Head and target move in opposite directions; advanced.' },
+          ],
+          tags: ['imbalance', 'corrective', 'healthspan'],
+        },
+        {
+          id: 'rec-rocking-balance',
+          name: 'Rocking Balance Drill',
+          tier: 'B',
+          intent: 'corrective',
+          categories: ['imbalance'],
+          equipment: ['Floor', 'Optional: balance pad'],
+          primaryMuscles: ['Foot intrinsics', 'Ankle stabilisers', 'Core'],
+          secondaryMuscles: [],
+          cues: [
+            'Stand on both feet; shift weight to the balls of the feet, then heels',
+            'Then lateral — shift to outer edges, then inner edges',
+            'Then on one leg: same four directions, smaller amplitude',
+            'Goal is conscious control, not max range',
+            'Two slow minutes is plenty',
+          ],
+          safetyNotes: [
+            'Near a wall or counter; the first time you try this single-leg you\'ll wobble.',
+          ],
+          variants: [
+            { name: 'Balance pad rocker', note: 'Foam pad under the foot — much harder.' },
+            { name: 'Eyes closed rocker', note: 'Remove visual feedback; vestibular only.' },
+          ],
+          tags: ['imbalance', 'corrective'],
+        },
+      ],
+    },
+
+    // ─── Soft Tissue / Recovery ───────────────────────────────────────────
+    // Foam roller and lacrosse ball protocols. The "what to do" of recovery
+    // — held side-tribe of stretching but different mechanism (myofascial,
+    // not lengthening).
+    {
+      key: 'soft-tissue',
+      title: 'Soft Tissue',
+      blurb:
+        'Self-myofascial work. Find the tender spots, breathe, wait. '
+        + 'A foam roller and a lacrosse ball get you 90% of the way.',
+      exercises: [
+        {
+          id: 'rec-foam-roll-tspine',
+          name: 'T-Spine Foam Roll',
+          tier: 'S',
+          intent: 'corrective',
+          categories: ['mobility', 'posture'],
+          equipment: ['Foam roller'],
+          primaryMuscles: ['Thoracic spine', 'Mid/lower trapezius'],
+          secondaryMuscles: ['Lats'],
+          cues: [
+            'Roller across the upper back, perpendicular to the spine',
+            'Hands behind the head — support the cervical spine',
+            'Slow roll from mid-back to upper traps',
+            'Stop on tender spots; arch over the roller for 3 slow breaths',
+            'Then extend backward over the roller at one fixed level',
+          ],
+          safetyNotes: [
+            'Never roll the lumbar spine on a foam roller.',
+            'Sharp pain ≠ "good tightness" — back out.',
+          ],
+          variants: [
+            { name: 'Peanut roller', note: 'Two lacrosse balls taped together; bypasses the spinous processes.' },
+            { name: 'Doorway T-spine extension', note: 'No roller; arms overhead, lean back — gentler.' },
+          ],
+          tags: ['mobility', 'posture', 'corrective'],
+        },
+        {
+          id: 'rec-foam-roll-quads',
+          name: 'Quad Foam Roll',
+          tier: 'A',
+          intent: 'corrective',
+          categories: ['mobility'],
+          equipment: ['Foam roller'],
+          primaryMuscles: ['Quadriceps', 'Hip flexors'],
+          secondaryMuscles: [],
+          cues: [
+            'Plank position over the roller; roller across the front of the thighs',
+            'Forearms support most of the load — don\'t crush yourself',
+            'Slow roll from mid-thigh to top of hip',
+            'Stop on tender spots and bend the knee in / out for 5 reps',
+            'Then switch and target the other thigh, or one leg at a time',
+          ],
+          safetyNotes: [
+            'Avoid rolling directly over the kneecap or hip bone.',
+            'Bruising → reduce pressure with more forearm load.',
+          ],
+          variants: [
+            { name: 'Single-leg quad roll', note: 'Stack the off-leg over the on-leg; doubles the pressure.' },
+            { name: 'Trigger ball quad', note: 'Lacrosse ball into a specific tender spot; precise.' },
+          ],
+          tags: ['mobility', 'corrective'],
+        },
+        {
+          id: 'rec-lacrosse-glute',
+          name: 'Lacrosse Ball Glute / Piriformis',
+          tier: 'S',
+          intent: 'corrective',
+          categories: ['mobility'],
+          equipment: ['Lacrosse ball or trigger ball'],
+          primaryMuscles: ['Glute max', 'Glute med', 'Piriformis'],
+          secondaryMuscles: ['Deep hip rotators'],
+          cues: [
+            'Sit on the floor, ball under one glute, hand support behind you',
+            'Cross the same-side ankle over the opposite knee',
+            'Find the tender spot; hold static, breathe long for 30–45 sec',
+            'Then make small circles, then knee drops in / out × 5',
+            'Move to the next zone; cover the whole glute over 2–3 minutes',
+          ],
+          safetyNotes: [
+            'Sharp pain or shooting nerve sensation → move the ball away from the spot.',
+            'After 90 sec on one spot, move on — diminishing returns.',
+          ],
+          variants: [
+            { name: 'Wall lacrosse glute', note: 'Standing against a wall; lighter pressure, easier control.' },
+            { name: 'Peanut on the SI joint', note: 'Two balls; works both sides of the sacrum at once.' },
+          ],
+          tags: ['mobility', 'corrective', 'healthspan'],
+        },
+        {
+          id: 'rec-foam-roll-lats',
+          name: 'Lat Foam Roll',
+          tier: 'A',
+          intent: 'corrective',
+          categories: ['mobility', 'posture'],
+          equipment: ['Foam roller'],
+          primaryMuscles: ['Latissimus dorsi'],
+          secondaryMuscles: ['Teres major'],
+          cues: [
+            'Lie on your side, roller in the armpit, arm overhead',
+            'Slow roll from armpit down toward the lower ribs',
+            'Stop on tender spots; rotate the torso forward / back to find the fiber',
+            'Holds with breath beat fast rolling',
+            'Switch sides',
+          ],
+          safetyNotes: [
+            'Stay off the ribcage itself — work only in the muscle belly.',
+          ],
+          variants: [
+            { name: 'Lacrosse ball against wall', note: 'Standing — lighter, more precise.' },
+            { name: 'Lat stretch in down-dog', note: 'No tools; reach one hand farther, sink the same-side shoulder.' },
+          ],
+          tags: ['mobility', 'posture', 'corrective'],
+        },
+        {
+          id: 'rec-lacrosse-plantar',
+          name: 'Plantar Fascia Ball Roll',
+          tier: 'A',
+          intent: 'corrective',
+          categories: ['mobility', 'healthspan'],
+          equipment: ['Lacrosse ball or tennis ball'],
+          primaryMuscles: ['Plantar fascia', 'Foot intrinsics'],
+          secondaryMuscles: ['Calves'],
+          cues: [
+            'Standing, roll the ball under one foot, ball-of-foot to heel',
+            'Most of your weight stays on the supporting leg — graduated pressure',
+            'Spend extra time on the arch and the heel pad',
+            'Switch feet; ~60 sec per side is plenty',
+            'Stand up afterward — the calf feel changes too',
+          ],
+          safetyNotes: [
+            'Acute plantar fasciitis → start with a frozen water bottle (cold + soft) instead.',
+          ],
+          variants: [
+            { name: 'Frozen water bottle', note: 'Cold + pressure; gentler entry point.' },
+            { name: 'Lacrosse ball seated', note: 'Sit on a chair; zero bodyweight load.' },
+          ],
+          tags: ['mobility', 'healthspan'],
+        },
+      ],
+    },
+
+    // ─── Mind-Body Flows ──────────────────────────────────────────────────
+    // Choreographed multi-movement sequences. Lower intensity, higher
+    // attention demand. Treats body as a system: breath + movement +
+    // gaze + balance all at once.
+    {
+      key: 'mind-body',
+      title: 'Mind-Body Flows',
+      blurb:
+        'Sequenced movement. Breath leads, body follows. '
+        + 'These compound across years in ways isolated drills do not.',
+      exercises: [
+        {
+          id: 'rec-sun-salutation-a',
+          name: 'Sun Salutation A',
+          tier: 'A',
+          intent: 'main',
+          categories: ['mobility'],
+          equipment: ['Floor'],
+          primaryMuscles: ['Full body'],
+          secondaryMuscles: [],
+          cues: [
+            'Mountain — stand tall, hands at heart center',
+            'Inhale arms overhead, exhale fold forward',
+            'Inhale half-lift (long spine), exhale step or jump back to plank',
+            'Lower through chaturanga, inhale upward dog, exhale downward dog (5 breaths)',
+            'Inhale step / jump forward, exhale fold, inhale rise to mountain',
+          ],
+          safetyNotes: [
+            'Wrists tender → drop knees in chaturanga, or skip up-dog for cobra.',
+            'Move with breath. Speeding up loses the practice.',
+          ],
+          variants: [
+            { name: 'Knees-down Sun A', note: 'Modify chaturanga and up-dog on the knees; the same shapes.' },
+            { name: 'Sun Salutation B', note: 'Adds chair pose and warrior; longer flow, more leg load.' },
+          ],
+          tags: ['mobility', 'flexibility', 'healthspan'],
+        },
+        {
+          id: 'rec-qigong-eight-brocades',
+          name: 'Eight Brocades (Ba Duan Jin)',
+          tier: 'B',
+          intent: 'corrective',
+          categories: ['mobility', 'healthspan'],
+          equipment: ['Floor'],
+          primaryMuscles: ['Full body'],
+          secondaryMuscles: [],
+          cues: [
+            'Eight slow standing movements; classical Chinese health qigong',
+            'Each move repeats 6–12 times; whole sequence is ~10 min',
+            'Breath leads movement — slow nasal in / slow nasal out',
+            'Feel the joints open with each cycle; never force range',
+            'Find a video reference once, then practise alone',
+          ],
+          safetyNotes: [
+            'No safety concerns at standard pace. If a movement aggravates a joint, omit it.',
+          ],
+          variants: [
+            { name: 'Seated brocades', note: 'Each movement done seated; accessible for older adults.' },
+            { name: 'Single brocade focus', note: 'Pick one movement and do it 5 minutes; deeper effect.' },
+          ],
+          tags: ['mobility', 'healthspan', 'flexibility'],
+        },
+        {
+          id: 'rec-tai-chi-opening',
+          name: 'Tai Chi Opening Form',
+          tier: 'B',
+          intent: 'corrective',
+          categories: ['imbalance', 'mobility'],
+          equipment: ['Floor'],
+          primaryMuscles: ['Full body'],
+          secondaryMuscles: [],
+          cues: [
+            'Stand quietly, feet shoulder-width, knees soft, arms hanging',
+            'Slowly raise both arms forward to shoulder height',
+            'Lower the arms while bending the knees — feel the weight settle',
+            'Shift weight side to side, never fully lifting the foot',
+            'Repeat the sequence; the practice is the slowness',
+          ],
+          safetyNotes: [
+            'Knee discomfort → don\'t go as deep. Standing height is fine.',
+          ],
+          variants: [
+            { name: 'Cloud hands', note: 'Single move; hands trace circles, weight shifts. Five minutes is a full session.' },
+            { name: 'Full Yang short form', note: '13 or 24 postures; learn from a video over weeks.' },
+          ],
+          tags: ['mobility', 'imbalance', 'healthspan'],
+        },
+      ],
+    },
   ],
 };
 
