@@ -9,6 +9,7 @@ const TABS = [
   { to: '/',        label: 'Home',    icon: 'home' },
   { to: '/today',   label: 'Today',   icon: 'today' },
   { to: '/library', label: 'Library', icon: 'library' },
+  { to: '/me',      label: 'Me',      icon: 'profile' },
 ];
 
 export function BottomNav() {

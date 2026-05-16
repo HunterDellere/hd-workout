@@ -126,7 +126,7 @@ function RpeRow({ value, onChange, accent }) {
   );
 }
 
-function LoggedSet({ set, isLast, onDiscard, unitDisplay }) {
+function LoggedSet({ set, isLast, onDiscard, unitDisplay, isPR }) {
   return (
     <Stack
       direction="row"
@@ -140,7 +140,15 @@ function LoggedSet({ set, isLast, onDiscard, unitDisplay }) {
       <Text as="span" variant="mono-sm" tone="tertiary" style={{ width: 24, textTransform: 'uppercase' }}>
         {String(set.index).padStart(2, '0')}
       </Text>
-      <Text as="span" variant="mono-lg" tone="primary" style={{ flex: 1 }}>
+      <Text
+        as="span"
+        variant="mono-lg"
+        tone="primary"
+        style={{
+          flex: 1,
+          color: isPR ? 'var(--state-pr-ink, var(--text-primary))' : undefined,
+        }}
+      >
         {set.weight}
         <Text as="span" variant="mono-sm" tone="tertiary" style={{ marginLeft: 4, textTransform: 'uppercase' }}>
           {unitDisplay}
@@ -148,6 +156,24 @@ function LoggedSet({ set, isLast, onDiscard, unitDisplay }) {
         <Text as="span" variant="mono-lg" tone="tertiary" style={{ margin: '0 8px' }}>×</Text>
         {set.reps}
       </Text>
+      {isPR && (
+        <Text
+          as="span"
+          variant="mono-sm"
+          data-testid="pr-badge"
+          style={{
+            padding: '2px 8px',
+            borderRadius: 999,
+            background: 'var(--state-pr-soft, transparent)',
+            color: 'var(--state-pr-ink, var(--text-primary))',
+            border: '1px solid var(--state-pr-ink, var(--border-strong))',
+            textTransform: 'uppercase',
+            letterSpacing: '0.10em',
+          }}
+        >
+          PR
+        </Text>
+      )}
       {set.rpe != null && (
         <Text as="span" variant="mono-sm" tone="secondary">
           RPE {set.rpe}
@@ -174,7 +200,7 @@ function LoggedSet({ set, isLast, onDiscard, unitDisplay }) {
   );
 }
 
-export function SetRow({ performance, prescription, accent, unit, onLogSet, onDiscardSet }) {
+export function SetRow({ performance, prescription, accent, unit, onLogSet, onDiscardSet, prSetIds }) {
   const defaultWeight = performance.sets.at(-1)?.weight ?? '';
   const defaultReps = prescription.kind === 'straight'
     ? (prescription.repsMid ?? prescription.repsHigh ?? '')
@@ -213,6 +239,7 @@ export function SetRow({ performance, prescription, accent, unit, onLogSet, onDi
               isLast={i !== 0}
               onDiscard={onDiscardSet}
               unitDisplay={unit}
+              isPR={prSetIds?.has(`${performance.id}:${set.index}`) ?? false}
             />
           ))}
         </div>

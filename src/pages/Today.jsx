@@ -19,7 +19,7 @@ import { dayLineageAccent } from '../design-system/tokens';
 import { findExerciseAnywhere } from '../data';
 import { parsePrescription } from '../data/prescription';
 import { historyForExercise, lastTopSetForExercise } from '../data/history';
-import { prsFromSession, suggestNextLoad } from '../data/intelligence';
+import { prsFromSession, suggestNextLoad, annotatePRs } from '../data/intelligence';
 import { REST_DAY, ACTIVE_REST_ACTIVITIES } from '../data/rest';
 import { useSettings, dayKeyForToday } from '../state/settings-context.js';
 import { useSession, lastLoggedAt } from '../state/session-context.js';
@@ -28,6 +28,7 @@ import { SetRow } from '../components/SetRow';
 import { RestTimer } from '../components/RestTimer';
 import { SubstituteSheet } from '../components/SubstituteSheet';
 import { SlotPicker } from '../components/SlotPicker';
+import { AddGroupSheet } from '../components/AddGroupSheet';
 
 // Compact mono button style for the pre-start preview affordances
 // (Swap / Remove / + Add / Reset day). All-uppercase, hairline border.
@@ -61,7 +62,7 @@ function suggestionLine(suggestion, unit) {
   }
 }
 
-function PerformanceCard({ performance, accent, unit, restTimerMode, isResting, restStartedAt, restRaw, lastTop, suggestion, onLogSet, onDiscardSet, onSwap, onStopRest, onRemove }) {
+function PerformanceCard({ performance, accent, unit, restTimerMode, isResting, restStartedAt, restRaw, lastTop, suggestion, onLogSet, onDiscardSet, onSwap, onStopRest, onRemove, prSetIds }) {
   const found = findExerciseAnywhere(performance.exerciseId);
   if (!found) return null;
   const ex = found.exercise;
@@ -176,6 +177,7 @@ function PerformanceCard({ performance, accent, unit, restTimerMode, isResting, 
           unit={unit}
           onLogSet={(payload) => onLogSet(performance.id, payload)}
           onDiscardSet={(setIdx) => onDiscardSet(performance.id, setIdx)}
+          prSetIds={prSetIds}
         />
       </div>
 
@@ -260,9 +262,26 @@ export function Today() {
   const [swapPerformanceId, setSwapPerformanceId] = useState(null);
   const [pickerSectionKey, setPickerSectionKey] = useState(null);
   const [pendingSectionTitle, setPendingSectionTitle] = useState(null);
+  const [addGroupOpen, setAddGroupOpen] = useState(false);
   const [endedSummary, setEndedSummary] = useState(null);
   // Dismissal lives on the session blob so it survives reloads.
   const resumeDismissed = Boolean(activeSession?.resumePromptDismissed);
+
+  // Live PR annotations — run annotatePRs against the in-flight session
+  // and the archive so every logged set knows whether it's a PR at log
+  // time. Pure derivation; recomputed when either the session or the
+  // archive shifts.
+  const livePRSetIds = useMemo(() => {
+    if (!activeSession) return new Set();
+    const annotated = annotatePRs(activeSession, archive);
+    const ids = new Set();
+    for (const p of annotated.performances ?? []) {
+      for (const s of p.sets ?? []) {
+        if (s.pr) ids.add(`${p.id}:${s.index}`);
+      }
+    }
+    return ids;
+  }, [activeSession, archive]);
 
   // Group active-session performances by their original section. Preserves
   // the encounter order of section keys so the warmup/main/finisher
@@ -329,7 +348,15 @@ export function Today() {
         <Text as="div" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
           Session complete
         </Text>
-        <Text as="h1" variant="display-lg" style={{ marginTop: 8, fontStyle: 'italic' }}>
+        <Text
+          as="h1"
+          variant="display-lg"
+          style={{
+            marginTop: 8,
+            fontStyle: 'italic',
+            color: prs.length > 0 ? 'var(--state-pr-ink, var(--text-primary))' : undefined,
+          }}
+        >
           {prs.length > 0 ? 'PR day.' : 'Logged.'}
         </Text>
         <Text as="p" variant="body-lg" tone="secondary" style={{ marginTop: 16, maxWidth: 60 * 9 }}>
@@ -362,7 +389,7 @@ export function Today() {
                       {kind}
                     </Text>
                     <Text as="span" variant="title-md">{name}</Text>
-                    <Text as="span" variant="mono-lg" style={{ color: `var(--accent-${accent}-ink)` }}>
+                    <Text as="span" variant="mono-lg" style={{ color: 'var(--state-pr-ink, var(--text-primary))' }}>
                       {pr.set.weight}{pr.set.unit ?? ''} × {pr.set.reps}
                     </Text>
                   </li>
@@ -550,7 +577,7 @@ export function Today() {
               <Text as="p" variant="body-lg" tone="secondary">
                 {day.sections.reduce((n, s) => n + s.exercises.length, 0)} exercises, {day.sections.length} sections.
               </Text>
-              {overlay?.[ 'full-spectrum' ]?.[todayKey] && (
+              {overlay?.[settings.activeProgramKey ?? 'full-spectrum']?.[todayKey] && (
                 <button
                   type="button"
                   onClick={() => resetDay(todayKey)}
@@ -566,7 +593,7 @@ export function Today() {
                 variant="primary"
                 accent={accent}
                 size="lg"
-                onClick={() => startSession(day)}
+                onClick={() => startSession(day, settings.activeProgramKey ?? 'full-spectrum')}
                 data-testid="start-session"
               >
                 Start session
@@ -576,7 +603,7 @@ export function Today() {
             <div>
               {day.sections.map((section) => {
                 const addedIds = new Set(
-                  (overlay?.['full-spectrum']?.[todayKey]?.[section.key]?.__added ?? [])
+                  (overlay?.[settings.activeProgramKey ?? 'full-spectrum']?.[todayKey]?.[section.key]?.__added ?? [])
                     .map((e) => e.id),
                 );
                 return (
@@ -756,6 +783,7 @@ export function Today() {
                     onRemove={perf.addedInSession && perf.sets.length === 0
                       ? () => removePerformance(perf.id)
                       : null}
+                    prSetIds={livePRSetIds}
                   />
                 ))}
                 <div style={{ marginTop: 16 }}>
@@ -789,18 +817,7 @@ export function Today() {
             <button
               type="button"
               data-testid="add-group"
-              onClick={() => {
-                const title = window.prompt(
-                  'New group name (e.g. Cardio, Imbalance):',
-                  '',
-                );
-                if (!title) return;
-                const trimmed = title.trim();
-                if (!trimmed) return;
-                const sectionKey = `custom-${trimmed.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now().toString(36)}`;
-                setPendingSectionTitle(trimmed);
-                setPickerSectionKey(sectionKey);
-              }}
+              onClick={() => setAddGroupOpen(true)}
               style={{
                 all: 'unset',
                 cursor: 'pointer',
@@ -845,6 +862,17 @@ export function Today() {
           </Block>
         </>
       )}
+
+      <AddGroupSheet
+        open={addGroupOpen}
+        onClose={() => setAddGroupOpen(false)}
+        onSubmit={(title) => {
+          const sectionKey = `custom-${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now().toString(36)}`;
+          setPendingSectionTitle(title);
+          setAddGroupOpen(false);
+          setPickerSectionKey(sectionKey);
+        }}
+      />
 
       <SubstituteSheet
         open={Boolean(swapPerformance)}

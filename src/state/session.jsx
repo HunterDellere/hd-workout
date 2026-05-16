@@ -62,11 +62,11 @@ export function SessionProvider({ children }) {
     archive,
     hydrated,
 
-    startSession(day) {
+    startSession(day, programKey = 'full-spectrum') {
       if (session) return;
       setSession({
         id: ulid(),
-        programId: 'full-spectrum',
+        programId: programKey,
         dayKey: day.key,
         startedAt: new Date().toISOString(),
         endedAt: null,

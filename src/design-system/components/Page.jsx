@@ -3,13 +3,12 @@
 // (900 by default), and the vertical rhythm at the page edges. Every screen
 // should compose itself inside a single <Page>.
 //
-// Renders persistent chrome (gear → /me + ThemeToggle) in the top-right so
-// settings and theme are always one tap away. Opt out with `chrome={false}`.
+// Renders persistent chrome (ThemeToggle) in the top-right. The /me
+// gateway lives in the BottomNav now, so the profile chip was removed
+// to keep the page corner uncluttered. Opt out with `chrome={false}`.
 
-import { Link } from 'react-router-dom';
 import { layout } from '../tokens';
 import { ThemeToggle } from './ThemeToggle';
-import { NavIcon } from './NavIcon';
 
 export function Page({
   as: As = 'main',
@@ -55,25 +54,6 @@ export function Page({
             gap: 8,
           }}
         >
-          <Link
-            to="/me"
-            aria-label="Open your profile"
-            data-testid="chrome-profile"
-            style={{
-              width: 36,
-              height: 36,
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              border: '1px solid var(--border-hairline)',
-              borderRadius: 999,
-              color: 'var(--text-secondary)',
-              textDecoration: 'none',
-              transition: 'color 160ms ease, border-color 160ms ease',
-            }}
-          >
-            <NavIcon name="profile" size={16} />
-          </Link>
           <ThemeToggle />
         </div>
       )}
