@@ -95,7 +95,8 @@ test('session bar appears on other routes when a session is active', async ({ pa
   await expect(bar).toBeVisible();
 
   await bar.click();
-  await expect(page).toHaveURL(/#\/today$/);
+  // Session bar routes to / (today owns the cold-open since Wave 2).
+  await expect(page).toHaveURL(/#\/$/);
 });
 
 test('swap an exercise that has no logged sets', async ({ page }) => {

@@ -1,6 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { HashRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
-import { Surface } from './design-system/components';
+import { Surface, Masthead } from './design-system/components';
 import { BottomNav } from './components/BottomNav';
 import { PWAInstallBanner } from './components/PWAInstallBanner';
 import { UpdateBanner } from './components/UpdateBanner';
@@ -40,6 +40,7 @@ function RouteFallback() {
 export default function App() {
   return (
     <HashRouter>
+      <Masthead />
       <Suspense fallback={<RouteFallback />}>
         <Routes>
           {/* Today owns the cold-open. */}

@@ -9,5 +9,7 @@ export { Block } from './Block';
 export { PatternGlyph } from './PatternGlyph';
 export { BrushDivider } from './BrushDivider';
 export { ThemeToggle } from './ThemeToggle';
+export { Logo } from './Logo';
+export { Masthead, MASTHEAD_HEIGHT_PX } from './Masthead';
 export { NavIcon } from './NavIcon';
 export { Sheet } from './Sheet';

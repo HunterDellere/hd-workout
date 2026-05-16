@@ -10,11 +10,13 @@
 // pickable rows — this avoids implying the user can swap to a thing the
 // catalog can't identify.
 
+import { useState } from 'react';
 import { Sheet, Stack, Text, BrushDivider } from '../design-system/components';
 import { exercisesForPattern, patternToExercises } from '../data/derive';
 import { findExerciseAnywhere } from '../data';
 import { isExerciseExcludedByEquipment } from '../data/equipment';
 import { useSettings } from '../state/settings-context.js';
+import { ExerciseSheet } from './ExerciseSheet';
 
 function patternForExercise(exerciseId) {
   const map = patternToExercises();
@@ -24,44 +26,78 @@ function patternForExercise(exerciseId) {
   return null;
 }
 
-function SwapRow({ exercise, onPick, isFirst }) {
+function SwapRow({ exercise, onPick, onDetails, isFirst }) {
   return (
-    <button
-      type="button"
-      data-testid="swap-candidate"
+    <div
+      data-testid="swap-candidate-row"
       data-exercise-id={exercise.id}
-      onClick={() => onPick(exercise.id)}
       style={{
-        all: 'unset',
-        cursor: 'pointer',
         display: 'flex',
         alignItems: 'baseline',
         justifyContent: 'space-between',
-        gap: 16,
+        gap: 12,
         padding: '14px 0',
         borderTop: isFirst ? 'none' : '1px solid var(--border-hairline)',
         width: '100%',
       }}
     >
-      <Stack direction="column" gap={1} style={{ flex: 1, minWidth: 0 }}>
-        <Text as="span" variant="title-md">
-          {exercise.name}
-        </Text>
-        <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
-          {exercise.sets}{exercise.rest ? ` · rest ${exercise.rest}` : ''}
-        </Text>
+      <button
+        type="button"
+        data-testid="swap-candidate"
+        data-exercise-id={exercise.id}
+        onClick={() => onPick(exercise.id)}
+        style={{
+          all: 'unset',
+          cursor: 'pointer',
+          flex: 1,
+          minWidth: 0,
+        }}
+      >
+        <Stack direction="column" gap={1}>
+          <Text as="span" variant="title-md">
+            {exercise.name}
+          </Text>
+          <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
+            {exercise.sets}{exercise.rest ? ` · rest ${exercise.rest}` : ''}
+          </Text>
+        </Stack>
+      </button>
+      <Stack direction="row" gap={2} align="center" style={{ flexShrink: 0 }}>
+        <button
+          type="button"
+          data-testid="swap-candidate-details"
+          data-exercise-id={exercise.id}
+          aria-label={`Details for ${exercise.name}`}
+          onClick={() => onDetails(exercise.id)}
+          style={{
+            all: 'unset',
+            cursor: 'pointer',
+            padding: '6px 10px',
+            borderRadius: 4,
+            border: '1px solid var(--border-hairline)',
+            color: 'var(--text-secondary)',
+            fontFamily: 'var(--font-mono)',
+            fontSize: 11,
+            letterSpacing: '0.10em',
+            textTransform: 'uppercase',
+          }}
+        >
+          Details
+        </button>
+        {exercise.tier && (
+          <Text as="span" variant="mono-sm" tone="tertiary">
+            T{exercise.tier}
+          </Text>
+        )}
       </Stack>
-      {exercise.tier && (
-        <Text as="span" variant="mono-sm" tone="tertiary">
-          Tier {exercise.tier}
-        </Text>
-      )}
-    </button>
+    </div>
   );
 }
 
 export function SubstituteSheet({ open, onClose, currentExerciseId, hasLoggedSets, onPick }) {
   const { settings } = useSettings();
+  const [peekExerciseId, setPeekExerciseId] = useState(null);
+  const peekExercise = peekExerciseId ? findExerciseAnywhere(peekExerciseId)?.exercise : null;
   if (!open) return null;
 
   const excludedEquipment = settings?.excludedEquipment ?? [];
@@ -116,6 +152,7 @@ export function SubstituteSheet({ open, onClose, currentExerciseId, hasLoggedSet
                   <SwapRow
                     exercise={ex}
                     onPick={onPick}
+                    onDetails={setPeekExerciseId}
                     isFirst={i === 0}
                   />
                 </li>
@@ -151,6 +188,11 @@ export function SubstituteSheet({ open, onClose, currentExerciseId, hasLoggedSet
           </>
         )}
       </div>
+      <ExerciseSheet
+        open={Boolean(peekExercise)}
+        onClose={() => setPeekExerciseId(null)}
+        exercise={peekExercise}
+      />
     </Sheet>
   );
 }

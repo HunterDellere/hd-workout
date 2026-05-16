@@ -17,6 +17,7 @@ import {
   DEFAULT_PROGRAM_KEY,
   applyOverlay,
   hydrateProgram,
+  findExerciseById,
 } from '../data';
 
 const EMPTY_PROGRAM_OVERLAY = {};
@@ -43,7 +44,9 @@ function migrateLegacy(value) {
 // Section-add lives outside the slice-2 pure `applyOverlay` because the
 // `__added` entries need to be appended at hydrate time so the catalog
 // metadata is available. Pure-program apply handles `hidden`, `sets`,
-// `rest` overrides; this helper handles `__added`.
+// `rest` overrides; this helper handles `__added` (entries) and
+// `__addedSections` (whole user-named sections that don't exist in the
+// program template — e.g. dropping Cardio onto core day).
 function withAddedEntries(program, overlay) {
   const programOverlay = overlay?.[program.key];
   if (!programOverlay) return program;
@@ -51,11 +54,22 @@ function withAddedEntries(program, overlay) {
   for (const [dayKey, sections] of Object.entries(program.days ?? {})) {
     const dayOverlay = programOverlay[dayKey] ?? {};
     const nextSections = {};
+    // 1) Real program sections — merge `__added` entries in.
     for (const [sectionKey, entries] of Object.entries(sections ?? {})) {
       const added = dayOverlay[sectionKey]?.__added;
       nextSections[sectionKey] = (added && added.length > 0)
         ? [...entries, ...added]
         : entries;
+    }
+    // 2) User-added sections — anything in the overlay that has __added
+    // entries but isn't a real program section key gets surfaced as a
+    // first-class section. Title carried by the overlay.
+    for (const [sectionKey, sectionOverlay] of Object.entries(dayOverlay)) {
+      if (sections?.[sectionKey]) continue; // already merged above
+      const added = sectionOverlay?.__added;
+      if (added && added.length > 0) {
+        nextSections[sectionKey] = added;
+      }
     }
     days[dayKey] = nextSections;
   }
@@ -92,10 +106,46 @@ export function OverlayProvider({ children }) {
   const overlay = overlayByLocation[location] ?? EMPTY_PROGRAM_OVERLAY;
 
   // Effective hydrated days for the active program — re-derived only when
-  // the active-location overlay changes.
+  // the active-location overlay changes. Post-hydration we splice in any
+  // user-added sections (carried on the overlay with a `__title`) since
+  // the catalog-driven hydrator only knows about authored section keys.
   const days = useMemo(() => {
     const merged = applyOverlay(withAddedEntries(activeProgram, overlay), overlay);
-    return hydrateProgram(merged);
+    const hydrated = hydrateProgram(merged);
+    const programOverlay = overlay?.[activeProgram.key];
+    if (!programOverlay) return hydrated;
+    const out = { ...hydrated };
+    for (const [dayKey, dayOverlay] of Object.entries(programOverlay)) {
+      const day = out[dayKey];
+      if (!day) continue;
+      const existingKeys = new Set(day.sections.map((s) => s.key));
+      const extraSections = [];
+      for (const [sectionKey, sectionOverlay] of Object.entries(dayOverlay)) {
+        if (existingKeys.has(sectionKey)) continue;
+        const added = sectionOverlay?.__added;
+        if (!added || added.length === 0) continue;
+        // Hydrate the added entries against the catalog so the row shape
+        // matches authored sections (name, tier, cues, etc.).
+        const hydratedEntries = added
+          .map((e) => {
+            const cat = findExerciseById(e.id);
+            if (!cat) return null;
+            return { ...cat, sets: e.sets, rest: e.rest };
+          })
+          .filter(Boolean);
+        if (hydratedEntries.length === 0) continue;
+        extraSections.push({
+          key: sectionKey,
+          title: sectionOverlay.__title ?? sectionKey,
+          blurb: null,
+          exercises: hydratedEntries,
+        });
+      }
+      if (extraSections.length > 0) {
+        out[dayKey] = { ...day, sections: [...day.sections, ...extraSections] };
+      }
+    }
+    return out;
   }, [overlay, activeProgram]);
 
   // Helper for mutation: applies a (prevProgramOverlay) → nextProgramOverlay
@@ -161,6 +211,22 @@ export function OverlayProvider({ children }) {
     });
   }, [mutateActive, activeProgram.key]);
 
+  // Adds a brand-new user-named section to a day (pre-start), seeded with
+  // a first exercise. `__title` is stamped alongside `__added` so the
+  // hydration step can label the section properly.
+  const addCustomSection = useCallback((dayKey, sectionKey, title, firstEntry) => {
+    if (!sectionKey || !firstEntry) return;
+    mutateActive((prev) => {
+      const programKey = activeProgram.key;
+      const prog = { ...(prev[programKey] ?? {}) };
+      const day = { ...(prog[dayKey] ?? {}) };
+      if (day[sectionKey]) return prev; // already exists
+      day[sectionKey] = { __title: title, __added: [firstEntry] };
+      prog[dayKey] = day;
+      return { ...prev, [programKey]: prog };
+    });
+  }, [mutateActive, activeProgram.key]);
+
   const addExercise = useCallback((dayKey, sectionKey, entry) => {
     // entry: { id, sets, rest }
     mutateActive((prev) => {
@@ -220,6 +286,30 @@ export function OverlayProvider({ children }) {
     });
   }, [mutateActive, activeProgram.key]);
 
+  // Per-section reset: surgical undo for one section's overlay edits
+  // (swaps, hides, adds) without disturbing the rest of the day. Pulled
+  // out of the wholesale resetDay so the user can keep their push-day
+  // experiment while reverting just the warmup, for example.
+  const resetSection = useCallback((dayKey, sectionKey) => {
+    mutateActive((prev) => {
+      const programKey = activeProgram.key;
+      const day = prev[programKey]?.[dayKey];
+      if (!day?.[sectionKey]) return prev;
+      const nextDay = { ...day };
+      delete nextDay[sectionKey];
+      // If the day no longer has any section overlays, drop it entirely
+      // so the overlay tree stays minimal.
+      const dayEmpty = Object.keys(nextDay).length === 0;
+      const nextProg = { ...prev[programKey] };
+      if (dayEmpty) {
+        delete nextProg[dayKey];
+      } else {
+        nextProg[dayKey] = nextDay;
+      }
+      return { ...prev, [programKey]: nextProg };
+    });
+  }, [mutateActive, activeProgram.key]);
+
   // Reset to default routine — wipes BOTH gym and home overlays so the
   // user returns to the seeded programs. Used by /me/settings.
   const resetAllOverlays = useCallback(() => {
@@ -234,12 +324,14 @@ export function OverlayProvider({ children }) {
     hideExercise,
     unhideExercise,
     addExercise,
+    addCustomSection,
     removeAddedExercise,
     swapExerciseOverlay,
     resetDay,
+    resetSection,
     resetAllOverlays,
   }), [overlay, hydrated, days, updateEntry, hideExercise, unhideExercise,
-    addExercise, removeAddedExercise, swapExerciseOverlay, resetDay, resetAllOverlays]);
+    addExercise, addCustomSection, removeAddedExercise, swapExerciseOverlay, resetDay, resetSection, resetAllOverlays]);
 
   return <OverlayContext.Provider value={value}>{children}</OverlayContext.Provider>;
 }

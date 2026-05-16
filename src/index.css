@@ -22,6 +22,14 @@ html, body, #root {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* Anchor scroll: smooth jumps + headroom so anchored content lands below
+   the masthead instead of glued to the top edge. */
+html { scroll-behavior: smooth; }
+:target, [id] { scroll-margin-top: 80px; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
 body {
   min-height: 100vh;
   min-height: 100dvh;

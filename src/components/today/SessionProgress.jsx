@@ -8,7 +8,7 @@
 // every performance.
 
 import { useMemo } from 'react';
-import { Stack, Text } from '../../design-system/components';
+import { Stack, Text, MASTHEAD_HEIGHT_PX } from '../../design-system/components';
 import { parsePrescription } from '../../data/prescription';
 
 export function SessionProgress({ session, accent }) {
@@ -38,7 +38,7 @@ export function SessionProgress({ session, accent }) {
       data-testid="session-progress"
       style={{
         position: 'sticky',
-        top: 0,
+        top: MASTHEAD_HEIGHT_PX,
         zIndex: 2,
         background: 'var(--surface-page)',
         marginTop: -8,

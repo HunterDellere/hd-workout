@@ -126,12 +126,12 @@ function AnchorRail({ anchors }) {
       aria-label="Library sections"
       style={{
         position: 'sticky',
-        top: 24,
+        top: 72,
         alignSelf: 'start',
         display: 'flex',
         flexDirection: 'column',
         gap: 12,
-        paddingTop: 80,
+        paddingTop: 40,
         paddingLeft: 24,
         borderLeft: '1px solid var(--border-hairline)',
       }}

@@ -23,6 +23,8 @@ import { recoveryDebt } from '../../data/intelligence';
 import { patternToExercises } from '../../data/derive';
 import { SubstituteSheet } from '../SubstituteSheet';
 import { SlotPicker } from '../SlotPicker';
+import { AddGroupSheet } from '../AddGroupSheet';
+import { MonoChipButton } from '../../design-system/components';
 import { TodayHero } from './TodayHero';
 import { PreviewSection } from './PreviewSection';
 import { estimateDayMinutes } from './estimateDayMinutes';
@@ -68,12 +70,18 @@ export function DayPlanner({ dayKey, viewMode = 'today' }) {
     hideExercise,
     unhideExercise,
     addExercise,
+    addCustomSection,
     removeAddedExercise,
     resetDay,
+    resetSection,
   } = useOverlay();
 
   const [editSwap, setEditSwap] = useState(null);
   const [editAdd, setEditAdd] = useState(null);
+  // Custom-section flow: AddGroupSheet → SlotPicker(first exercise) → addCustomSection.
+  const [addGroupOpen, setAddGroupOpen] = useState(false);
+  const [pendingSectionKey, setPendingSectionKey] = useState(null);
+  const [pendingSectionTitle, setPendingSectionTitle] = useState(null);
 
   const day = overlayDays[dayKey] ?? null;
 
@@ -119,6 +127,7 @@ export function DayPlanner({ dayKey, viewMode = 'today' }) {
       <TodayHero
         day={day}
         accent={accent}
+        dayKey={dayKey}
         todayKey={heroLabel.split(' · ')[1]}
         labelOverride={heroLabel}
         exerciseCount={exerciseCount}
@@ -173,6 +182,9 @@ export function DayPlanner({ dayKey, viewMode = 'today' }) {
               const hiddenExercises = hiddenIds
                 .map((id) => findExerciseById(id))
                 .filter(Boolean);
+              // Section has overlay edits when its overlay object holds
+              // ANY keys (added entries, hides, sets/rest overrides).
+              const sectionHasOverlay = Object.keys(sectionOverlay).length > 0;
               return (
                 <PreviewSection
                   key={section.key}
@@ -180,6 +192,7 @@ export function DayPlanner({ dayKey, viewMode = 'today' }) {
                   accent={accent}
                   addedIds={addedIds}
                   hiddenExercises={hiddenExercises}
+                  hasOverlay={sectionHasOverlay}
                   onSwapExercise={(sectionKey, exerciseId) =>
                     setEditSwap({ sectionKey, exerciseId })
                   }
@@ -194,9 +207,24 @@ export function DayPlanner({ dayKey, viewMode = 'today' }) {
                     unhideExercise(dayKey, sectionKey, exerciseId)
                   }
                   onAddExercise={(sectionKey) => setEditAdd(sectionKey)}
+                  onResetSection={(sectionKey) => resetSection(dayKey, sectionKey)}
                 />
               );
             })}
+          </div>
+
+          {/* Add a brand-new section to this day (pre-start). Useful for
+              dropping cardio onto core day, mobility onto push day, etc.
+              On mobile this is the only way to add a non-program section. */}
+          <div style={{ marginTop: 24 }}>
+            <MonoChipButton
+              variant="dashed"
+              size="md"
+              data-testid="planner-add-group"
+              onClick={() => setAddGroupOpen(true)}
+            >
+              + Add group
+            </MonoChipButton>
           </div>
         </Stack>
       </Block>
@@ -222,10 +250,18 @@ export function DayPlanner({ dayKey, viewMode = 'today' }) {
       />
 
       <SlotPicker
-        open={Boolean(editAdd)}
-        onClose={() => setEditAdd(null)}
-        sectionKey={editAdd}
-        sectionTitle={editAdd ? (day.sections.find((s) => s.key === editAdd)?.title ?? null) : null}
+        open={Boolean(editAdd) || Boolean(pendingSectionKey)}
+        onClose={() => {
+          setEditAdd(null);
+          setPendingSectionKey(null);
+          setPendingSectionTitle(null);
+        }}
+        sectionKey={editAdd ?? pendingSectionKey}
+        sectionTitle={
+          editAdd
+            ? (day.sections.find((s) => s.key === editAdd)?.title ?? null)
+            : pendingSectionTitle
+        }
         sectionExercises={
           editAdd
             ? (day.sections.find((s) => s.key === editAdd)?.exercises ?? [])
@@ -234,14 +270,32 @@ export function DayPlanner({ dayKey, viewMode = 'today' }) {
         excludeIds={day.sections.flatMap((s) => s.exercises.map((e) => e.id))}
         onPick={(exerciseId) => {
           const ex = findExerciseById(exerciseId);
-          if (ex && editAdd) {
-            addExercise(dayKey, editAdd, {
-              id: exerciseId,
-              sets: ex.sets,
-              rest: ex.rest,
-            });
+          if (!ex) {
+            setEditAdd(null);
+            setPendingSectionKey(null);
+            setPendingSectionTitle(null);
+            return;
           }
-          setEditAdd(null);
+          const entry = { id: exerciseId, sets: ex.sets, rest: ex.rest };
+          if (pendingSectionKey) {
+            addCustomSection(dayKey, pendingSectionKey, pendingSectionTitle, entry);
+            setPendingSectionKey(null);
+            setPendingSectionTitle(null);
+          } else if (editAdd) {
+            addExercise(dayKey, editAdd, entry);
+            setEditAdd(null);
+          }
+        }}
+      />
+
+      <AddGroupSheet
+        open={addGroupOpen}
+        onClose={() => setAddGroupOpen(false)}
+        onSubmit={(title) => {
+          const sectionKey = `custom-${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now().toString(36)}`;
+          setPendingSectionTitle(title);
+          setPendingSectionKey(sectionKey);
+          setAddGroupOpen(false);
         }}
       />
     </>

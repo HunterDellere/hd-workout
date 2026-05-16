@@ -19,9 +19,10 @@
 import { useMemo, useState } from 'react';
 import { Sheet, Stack, Text, BrushDivider } from '../design-system/components';
 import { CATEGORIES, PATTERN_BY_KEY } from '../data/patterns';
-import { rawCatalogList } from '../data';
+import { rawCatalogList, findExerciseAnywhere } from '../data';
 import { isExerciseExcludedByEquipment } from '../data/equipment';
 import { useSettings } from '../state/settings-context.js';
+import { ExerciseSheet } from './ExerciseSheet';
 
 // Section-key → categories that "belong" here. Used only for recovery-day
 // sections whose exercises are tagged with `categories` rather than
@@ -77,39 +78,71 @@ function inferSectionPatterns(sectionExercises) {
   return [...seen];
 }
 
-function PickRow({ exercise, onPick, isFirst }) {
+function PickRow({ exercise, onPick, onDetails, isFirst }) {
   return (
-    <button
-      type="button"
-      data-testid="slot-candidate"
+    <div
+      data-testid="slot-candidate-row"
       data-exercise-id={exercise.id}
-      onClick={() => onPick(exercise.id)}
       style={{
-        all: 'unset',
-        cursor: 'pointer',
         display: 'flex',
         alignItems: 'baseline',
         justifyContent: 'space-between',
-        gap: 16,
+        gap: 12,
         padding: '14px 0',
         borderTop: isFirst ? 'none' : '1px solid var(--border-hairline)',
         width: '100%',
       }}
     >
-      <Stack direction="column" gap={1} style={{ flex: 1, minWidth: 0 }}>
-        <Text as="span" variant="title-md">
-          {exercise.name}
-        </Text>
-        <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
-          {exercise.sets}{exercise.rest && exercise.rest !== '—' ? ` · rest ${exercise.rest}` : ''}
-        </Text>
+      <button
+        type="button"
+        data-testid="slot-candidate"
+        data-exercise-id={exercise.id}
+        onClick={() => onPick(exercise.id)}
+        style={{
+          all: 'unset',
+          cursor: 'pointer',
+          flex: 1,
+          minWidth: 0,
+        }}
+      >
+        <Stack direction="column" gap={1}>
+          <Text as="span" variant="title-md">
+            {exercise.name}
+          </Text>
+          <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
+            {exercise.sets}{exercise.rest && exercise.rest !== '—' ? ` · rest ${exercise.rest}` : ''}
+          </Text>
+        </Stack>
+      </button>
+      <Stack direction="row" gap={2} align="center" style={{ flexShrink: 0 }}>
+        <button
+          type="button"
+          data-testid="slot-candidate-details"
+          data-exercise-id={exercise.id}
+          aria-label={`Details for ${exercise.name}`}
+          onClick={() => onDetails(exercise.id)}
+          style={{
+            all: 'unset',
+            cursor: 'pointer',
+            padding: '6px 10px',
+            borderRadius: 4,
+            border: '1px solid var(--border-hairline)',
+            color: 'var(--text-secondary)',
+            fontFamily: 'var(--font-mono)',
+            fontSize: 11,
+            letterSpacing: '0.10em',
+            textTransform: 'uppercase',
+          }}
+        >
+          Details
+        </button>
+        {exercise.tier && (
+          <Text as="span" variant="mono-sm" tone="tertiary">
+            T{exercise.tier}
+          </Text>
+        )}
       </Stack>
-      {exercise.tier && (
-        <Text as="span" variant="mono-sm" tone="tertiary">
-          Tier {exercise.tier}
-        </Text>
-      )}
-    </button>
+    </div>
   );
 }
 
@@ -151,6 +184,10 @@ export function SlotPicker({
   const [showAll, setShowAll] = useState(false);
   const [activePatterns, setActivePatterns] = useState([]);
   const [activeCategories, setActiveCategories] = useState([]);
+  // Details peek lives inside the picker so opening it doesn't dismiss
+  // the user's filter state.
+  const [peekExerciseId, setPeekExerciseId] = useState(null);
+  const peekExercise = peekExerciseId ? findExerciseAnywhere(peekExerciseId)?.exercise : null;
   const { settings } = useSettings();
   const excludedEquipment = useMemo(
     () => settings?.excludedEquipment ?? [],
@@ -345,7 +382,12 @@ export function SlotPicker({
           >
             {candidates.map((ex, i) => (
               <li key={ex.id}>
-                <PickRow exercise={ex} onPick={onPick} isFirst={i === 0} />
+                <PickRow
+                  exercise={ex}
+                  onPick={onPick}
+                  onDetails={setPeekExerciseId}
+                  isFirst={i === 0}
+                />
               </li>
             ))}
           </ul>
@@ -356,6 +398,11 @@ export function SlotPicker({
           </Text>
         )}
       </div>
+      <ExerciseSheet
+        open={Boolean(peekExercise)}
+        onClose={() => setPeekExerciseId(null)}
+        exercise={peekExercise}
+      />
     </Sheet>
   );
 }

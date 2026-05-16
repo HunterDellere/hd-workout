@@ -8,6 +8,7 @@
 // list of hidden exercises; each row is tappable to un-hide.
 
 import { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { Stack, Text, MonoChipButton } from '../../design-system/components';
 
 export function PreviewSection({
@@ -15,12 +16,15 @@ export function PreviewSection({
   accent,
   addedIds,
   hiddenExercises = [],
+  hasOverlay = false,
   onSwapExercise,
   onRemoveExercise,
   onUnhideExercise,
   onAddExercise,
+  onResetSection,
 }) {
   const [hiddenExpanded, setHiddenExpanded] = useState(false);
+  const { pathname } = useLocation();
   return (
     <div
       data-testid="preview-section"
@@ -43,9 +47,21 @@ export function PreviewSection({
             {section.title}
           </Text>
         </Stack>
-        <Text as="div" variant="mono-sm" tone="tertiary">
-          {section.exercises.length}
-        </Text>
+        <Stack direction="row" align="center" gap={2}>
+          {hasOverlay && onResetSection && (
+            <MonoChipButton
+              data-testid="preview-reset-section"
+              data-section-key={section.key}
+              aria-label={`Reset ${section.title}`}
+              onClick={() => onResetSection(section.key)}
+            >
+              Reset
+            </MonoChipButton>
+          )}
+          <Text as="div" variant="mono-sm" tone="tertiary">
+            {section.exercises.length}
+          </Text>
+        </Stack>
       </Stack>
       {section.blurb && (
         <Text as="p" variant="body-sm" tone="secondary" style={{ marginTop: 8, maxWidth: 60 * 9 }}>
@@ -86,10 +102,37 @@ export function PreviewSection({
                 {ex.tier}
               </Text>
             ) : <span style={{ width: 14 }} />}
-            <Text as="span" variant="body-md" style={{ minWidth: 0, lineHeight: 1.35 }}>
+            <Text
+              as={Link}
+              to={`/library/exercises/${ex.id}`}
+              state={{ from: pathname }}
+              variant="body-md"
+              data-testid="preview-name-link"
+              data-exercise-id={ex.id}
+              style={{
+                minWidth: 0,
+                lineHeight: 1.35,
+                color: 'inherit',
+                textDecoration: 'none',
+                display: 'inline-flex',
+                alignItems: 'baseline',
+                gap: 6,
+              }}
+            >
               {ex.name}
+              <span
+                aria-hidden
+                style={{
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: 10,
+                  color: 'var(--text-tertiary)',
+                  opacity: 0.6,
+                }}
+              >
+                ↗
+              </span>
               {addedIds.has(ex.id) && (
-                <Text as="span" variant="mono-sm" tone="tertiary" style={{ marginLeft: 8, textTransform: 'uppercase' }}>
+                <Text as="span" variant="mono-sm" tone="tertiary" style={{ marginLeft: 4, textTransform: 'uppercase' }}>
                   · added
                 </Text>
               )}

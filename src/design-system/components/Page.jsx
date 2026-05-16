@@ -3,19 +3,18 @@
 // (900 by default), and the vertical rhythm at the page edges. Every screen
 // should compose itself inside a single <Page>.
 //
-// Renders persistent chrome (ThemeToggle) in the top-right. The /me
-// gateway lives in the BottomNav now, so the profile chip was removed
-// to keep the page corner uncluttered. Opt out with `chrome={false}`.
+// The Masthead (wordmark + theme toggle) lives outside Page in App.jsx
+// now, so Page no longer renders absolute-positioned chrome. The
+// `chrome` prop is retained as a no-op for callsite compatibility.
 
 import { layout } from '../tokens';
-import { ThemeToggle } from './ThemeToggle';
 
 export function Page({
   as: As = 'main',
   width = 'reading', // 'reading' | 'dashboard' | 'full'
-  topPad = 32,
+  topPad = 20,
   bottomPad = 168, // room for the BottomNav (~60) + SessionBar (~52) + breathing
-  chrome = true,
+  chrome = true, // eslint-disable-line no-unused-vars
   style,
   children,
   ...rest
@@ -42,21 +41,6 @@ export function Page({
 
   return (
     <As style={computed} {...rest}>
-      {chrome && (
-        <div
-          style={{
-            position: 'absolute',
-            top: topPad,
-            right: `clamp(${layout.gutterMobile}px, 5vw, ${layout.gutterDesktop}px)`,
-            zIndex: 1,
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 8,
-          }}
-        >
-          <ThemeToggle />
-        </div>
-      )}
       {children}
     </As>
   );
