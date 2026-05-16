@@ -189,11 +189,11 @@ describe('frequencyHeatmap', () => {
 describe('suggestNextLoad', () => {
   const RX_5_8 = { kind: 'straight', sets: 4, repsLow: 5, repsHigh: 8, repsMid: 7 };
 
-  const histEntry = (weight, reps, daysAgo) => ({
+  const histEntry = (weight, reps, daysAgo, rpe = null) => ({
     sessionId: `s-${daysAgo}`,
     endedAt: new Date(Date.now() - daysAgo * 24 * 3600 * 1000).toISOString(),
     dayKey: 'push',
-    top: { weight, reps, unit: 'kg' },
+    top: { weight, reps, unit: 'kg', rpe },
     setCount: 3,
   });
 
@@ -248,6 +248,54 @@ describe('suggestNextLoad', () => {
     expect(out.reps).toBe(6);
     expect(out.reason).toMatch(/Reclaim 6 reps \(was 4\)/);
     expect(out.reason.split(/\s+/).length).toBeLessThanOrEqual(6);
+  });
+
+  // ─── RPE-aware branch (Wave 1.4) ─────────────────────────────────────
+  it('RPE ≤ 7 progresses regardless of mid-range reps', () => {
+    // Mid-range reps (6) would normally → hold; RPE 7 says "left reps in tank".
+    const history = [histEntry(100, 6, 7, 7)];
+    const out = suggestNextLoad(history, RX_5_8, 'kg');
+    expect(out.kind).toBe('progress');
+    expect(out.weight).toBe(102.5);
+    expect(out.reason).toMatch(/RPE 7/);
+  });
+
+  it('RPE 8 falls through to range-based logic (hold at mid-range)', () => {
+    const history = [histEntry(100, 6, 7, 8)];
+    const out = suggestNextLoad(history, RX_5_8, 'kg');
+    expect(out.kind).toBe('hold');
+    expect(out.weight).toBe(100);
+    // No RPE reason — the range logic applies, not the RPE branch.
+    expect(out.reason).toBeUndefined();
+  });
+
+  it('RPE ≥ 9 holds even when reps cleared the top of the range', () => {
+    // Reps would normally → progress; RPE 9 says "at or past failure".
+    const history = [histEntry(100, 8, 7, 9)];
+    const out = suggestNextLoad(history, RX_5_8, 'kg');
+    expect(out.kind).toBe('hold');
+    expect(out.weight).toBe(100);
+    expect(out.reason).toMatch(/RPE 9/);
+  });
+
+  it('RPE ≥ 9 with regression at same weight deloads', () => {
+    const history = [
+      histEntry(100, 6, 14, 8),
+      histEntry(100, 4, 7, 10),
+    ];
+    const out = suggestNextLoad(history, RX_5_8, 'kg');
+    expect(out.kind).toBe('deload');
+    expect(out.weight).toBe(90);
+    expect(out.reason).toMatch(/RPE 10/);
+  });
+
+  it('null RPE preserves the legacy range-based heuristic', () => {
+    // Same as the existing "progress when top of range cleared" test —
+    // verifies the RPE branch only fires when RPE is present.
+    const history = [histEntry(100, 8, 7)];
+    const out = suggestNextLoad(history, RX_5_8, 'kg');
+    expect(out.kind).toBe('progress');
+    expect(out.reason).toBeUndefined();
   });
 
   it('progress not triggered by stalled sessions even at top of range', () => {

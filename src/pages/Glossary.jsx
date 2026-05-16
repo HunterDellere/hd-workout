@@ -55,7 +55,7 @@ const TERMS = [
   },
   {
     term: 'RPE',
-    body: 'Rate of Perceived Exertion, 1–10. A set at RPE 7 is three reps from failure; RPE 10 is a grind to failure. The app does not record RPE yet, but the suggestion logic implicitly assumes you stop one or two short of failure on prescribed work.',
+    body: 'Rate of Perceived Exertion, 1–10. A set at RPE 7 is three reps from failure; RPE 10 is a grind to failure. Tap an RPE chip on a logged set and the next-session suggestion uses it: ≤7 progresses, 8 holds, ≥9 holds or deloads.',
   },
 ];
 

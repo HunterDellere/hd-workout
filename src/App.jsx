@@ -5,6 +5,7 @@ import { Surface } from './design-system/components';
 import { BottomNav } from './components/BottomNav';
 import { PWAInstallBanner } from './components/PWAInstallBanner';
 import { SessionBar } from './components/SessionBar';
+import { UpdateBanner } from './components/UpdateBanner';
 
 // Legacy day-rooted exercise URLs redirect to the canonical pattern-first route.
 function LegacyExerciseRedirect() {
@@ -58,6 +59,7 @@ export default function App() {
         </Routes>
       </Suspense>
       <PWAInstallBanner />
+      <UpdateBanner />
       <SessionBar />
       <BottomNav />
     </HashRouter>

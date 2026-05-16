@@ -147,6 +147,14 @@ export function getExercise(dayKey, exerciseId) {
   return null;
 }
 
+// O(1) lookup via the pre-built CATALOG_INDEX. Prefer this for hot render
+// paths over the section/day-aware `findExerciseAnywhere`. Returns the
+// raw exercise (no section/day context); use the latter when you need
+// the encoder.
+export function findExerciseById(exerciseId) {
+  return CATALOG_INDEX.get(exerciseId) ?? null;
+}
+
 export function findExerciseAnywhere(exerciseId) {
   // Walk the RAW catalog (every authored exercise), not the hydrated
   // dayList — which only includes program-referenced entries. Many

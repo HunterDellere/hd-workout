@@ -266,15 +266,19 @@ function increment(unit) {
  *
  *   { kind: 'first-time'        } — no archive entries yet, no suggestion
  *   { kind: 'insufficient-data' } — ≥1 but <3 entries, suggest steady
- *   { kind: 'progress', weight, reps, increment }
- *   { kind: 'hold',     weight, reps }
+ *   { kind: 'progress', weight, reps, increment, reason? }
+ *   { kind: 'hold',     weight, reps, reason? }
  *   { kind: 'deload',   weight, reason }
  *
- * Heuristic:
- *   - last session cleared the top of the rep range → progress (+1 increment)
- *   - last session mid-range → hold (same load, finish the range first)
- *   - last 3 sessions same-or-falling at same weight → deload (–10 %)
- *   - regression on the most recent session → hold (one bad day, not a trend)
+ * Heuristic (in order of precedence):
+ *   1. RPE signal on the last top set:
+ *      - RPE ≤ 7 → progress (+1 increment) — left reps in the tank
+ *      - RPE 8   → hold     — at the working edge; finish the range first
+ *      - RPE ≥ 9 → hold/deload — at or past failure
+ *   2. Stagnation: ≥3 sessions same weight, reps not improving → deload (–10%)
+ *   3. Regression: reps fell at same weight → hold, reclaim
+ *   4. Top of rep range cleared → progress
+ *   5. Default → hold, finish the rep range
  */
 export function suggestNextLoad(history, prescription, unit = 'kg') {
   if (!Array.isArray(history) || history.length === 0) {
@@ -295,8 +299,48 @@ export function suggestNextLoad(history, prescription, unit = 'kg') {
 
   const lastWeight = last.top.weight;
   const lastReps = last.top.reps;
+  const lastRpe = last.top.rpe ?? null;
 
-  // Stagnation check: ≥3 sessions all at the same weight and reps not improving.
+  // ─── 1. RPE-aware branch (only when RPE present on last top set) ────
+  // RPE ≥ 9 is "at or past failure" — even if reps cleared the range, hold.
+  // RPE ≤ 7 is "left reps in the tank" — progress regardless of mid-range.
+  // RPE 8 falls through to the range-based heuristic below.
+  if (lastRpe != null) {
+    if (lastRpe >= 9) {
+      // If reps regressed at the edge, deload; otherwise hold.
+      const prev = recent[recent.length - 2];
+      if (prev?.top && prev.top.weight === lastWeight && lastReps < prev.top.reps) {
+        const deloadWeight = Math.max(
+          step,
+          Math.round((lastWeight * 0.9) / step) * step,
+        );
+        return {
+          kind: 'deload',
+          weight: deloadWeight,
+          reps: repsMid ?? repsLow,
+          reason: `Last set RPE ${lastRpe}, reps fell`,
+        };
+      }
+      return {
+        kind: 'hold',
+        weight: lastWeight,
+        reps: Math.min(repsHigh ?? lastReps + 1, lastReps + 1),
+        reason: `Last set RPE ${lastRpe}`,
+      };
+    }
+    if (lastRpe <= 7) {
+      return {
+        kind: 'progress',
+        weight: lastWeight + step,
+        reps: repsLow ?? repsHigh,
+        increment: step,
+        reason: `Last set RPE ${lastRpe}`,
+      };
+    }
+    // RPE 8: fall through to range-based logic below.
+  }
+
+  // ─── 2. Stagnation: ≥3 sessions all at the same weight, not improving ──
   if (recent.length >= 3) {
     const sameWeight = recent.every((r) => r.top && r.top.weight === lastWeight);
     if (sameWeight) {
@@ -313,28 +357,24 @@ export function suggestNextLoad(history, prescription, unit = 'kg') {
           kind: 'deload',
           weight: deloadWeight,
           reps: repsMid ?? repsLow,
-          // ≤ 6 words. Cite the stall load so the user knows what
-          // the algorithm saw without re-stating reps/sessions.
           reason: `Stalled three sessions at ${lastWeight}${unit}`,
         };
       }
     }
   }
 
-  // Regression check: last session reps fell below the prior session at the
-  // same weight → hold and try to reclaim the lost reps before adding load.
+  // ─── 3. Regression: reps fell at the same weight ──────────────────────
   const prev = recent[recent.length - 2];
   if (prev?.top && prev.top.weight === lastWeight && lastReps < prev.top.reps) {
     return {
       kind: 'hold',
       weight: lastWeight,
       reps: prev.top.reps,
-      // Compact: cite both rep counts so the user can verify quickly.
       reason: `Reclaim ${prev.top.reps} reps (was ${lastReps})`,
     };
   }
 
-  // Progress check: top of rep range cleared → bump weight.
+  // ─── 4. Top of rep range cleared → progress ───────────────────────────
   if (typeof repsHigh === 'number' && lastReps >= repsHigh) {
     return {
       kind: 'progress',
@@ -344,7 +384,7 @@ export function suggestNextLoad(history, prescription, unit = 'kg') {
     };
   }
 
-  // Default: hold and finish the rep range at the current weight.
+  // ─── 5. Default: hold and finish the rep range ────────────────────────
   return {
     kind: 'hold',
     weight: lastWeight,

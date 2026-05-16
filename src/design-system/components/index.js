@@ -3,6 +3,7 @@ export { Text } from './Text';
 export { Stack } from './Stack';
 export { Tag } from './Tag';
 export { Button } from './Button';
+export { MonoChipButton } from './MonoChipButton';
 export { Page } from './Page';
 export { Block } from './Block';
 export { PatternGlyph } from './PatternGlyph';
