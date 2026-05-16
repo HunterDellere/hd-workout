@@ -70,6 +70,8 @@ export function historicalMaxes(archive, exerciseId, referenceTime) {
       if (perf.exerciseId !== exerciseId) continue;
       for (const s of perf.sets ?? []) {
         if (typeof s.weight !== 'number') continue;
+        // Warmups don't count toward PRs (INTELLIGENCE.md working-set rule).
+        if (s.isWarmup) continue;
         if (!weight || s.weight > weight.value) {
           weight = { value: s.weight, unit: s.unit ?? null };
         }
@@ -103,6 +105,8 @@ export function annotatePRs(session, priorArchive) {
     const runningRepsByWeight = new Map(repsByWeight);
     const sets = perf.sets.map((s) => {
       if (typeof s.weight !== 'number') return s;
+      // Warmups never get a PR stamp and don't update running maxes.
+      if (s.isWarmup) return s;
       const pr = {};
       if (runningMaxWeight == null || s.weight > runningMaxWeight) {
         pr.weight = true;
@@ -179,8 +183,9 @@ export function weeklyVolume(archive, now = new Date()) {
     for (const perf of session.performances ?? []) {
       const patterns = patternsForExerciseId(perf.exerciseId);
       if (patterns.length === 0) continue;
+      // Warmups don't count toward weekly volume (working-set definition).
       const vol = (perf.sets ?? []).reduce((acc, s) => (
-        acc + (typeof s.weight === 'number' && typeof s.reps === 'number'
+        acc + (typeof s.weight === 'number' && typeof s.reps === 'number' && !s.isWarmup
           ? s.weight * s.reps
           : 0)
       ), 0);

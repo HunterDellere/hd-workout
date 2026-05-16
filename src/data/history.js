@@ -7,13 +7,16 @@
 
 /**
  * Pick the "top set" from an array of sets: highest weight; ties broken
- * by highest reps. Returns null on an empty array.
+ * by highest reps. Warmups are excluded — the "top set" is a working-set
+ * concept. Returns null on an empty (or warmups-only) array.
  */
 export function topSet(sets) {
   if (!sets || sets.length === 0) return null;
-  let best = sets[0];
-  for (let i = 1; i < sets.length; i++) {
-    const s = sets[i];
+  const working = sets.filter((s) => !s.isWarmup);
+  if (working.length === 0) return null;
+  let best = working[0];
+  for (let i = 1; i < working.length; i++) {
+    const s = working[i];
     if (s.weight > best.weight) best = s;
     else if (s.weight === best.weight && s.reps > best.reps) best = s;
   }
@@ -33,12 +36,18 @@ export function historyForExercise(archive, exerciseId, limit = null) {
     for (const perf of session.performances ?? []) {
       if (perf.exerciseId !== exerciseId) continue;
       if (!perf.sets || perf.sets.length === 0) continue;
+      const top = topSet(perf.sets);
+      // Sessions that contain only warmups for this exercise have no top
+      // working set — skip them rather than emit a ghost entry.
+      if (!top) continue;
+      // Count working sets only — matches the working-set definition.
+      const workingSetCount = perf.sets.filter((s) => !s.isWarmup).length;
       out.push({
         sessionId: session.id,
         endedAt: session.endedAt ?? session.startedAt,
         dayKey: session.dayKey,
-        top: topSet(perf.sets),
-        setCount: perf.sets.length,
+        top,
+        setCount: workingSetCount,
       });
     }
   }

@@ -11,6 +11,7 @@ import {
   DEFAULT_SETTINGS,
 } from './settings-context.js';
 import { loadFromStorage, saveToStorage, STORAGE_KEYS } from '../data/storage';
+import { migrate, stampSchemaVersion } from '../data/migrations';
 
 function mergeSettings(parsed) {
   if (!parsed || typeof parsed !== 'object') return DEFAULT_SETTINGS;
@@ -29,7 +30,7 @@ export function SettingsProvider({ children }) {
     let cancelled = false;
     loadFromStorage(STORAGE_KEYS.settings).then((value) => {
       if (cancelled) return;
-      setSettings(mergeSettings(value));
+      setSettings(mergeSettings(migrate(value, 'settings')));
       setHydrated(true);
     });
     return () => { cancelled = true; };
@@ -37,7 +38,7 @@ export function SettingsProvider({ children }) {
 
   useEffect(() => {
     if (!hydrated) return;
-    saveToStorage(STORAGE_KEYS.settings, settings);
+    saveToStorage(STORAGE_KEYS.settings, stampSchemaVersion(settings));
   }, [settings, hydrated]);
 
   const value = useMemo(() => ({

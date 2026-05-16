@@ -140,13 +140,36 @@ function LoggedSet({ set, isLast, onDiscard, unitDisplay, isPR }) {
       <Text as="span" variant="mono-sm" tone="tertiary" style={{ width: 24, textTransform: 'uppercase' }}>
         {String(set.index).padStart(2, '0')}
       </Text>
+      {set.isWarmup && (
+        <Text
+          as="span"
+          variant="mono-sm"
+          tone="tertiary"
+          data-testid="warmup-badge"
+          style={{ textTransform: 'uppercase', opacity: 0.7 }}
+        >
+          W
+        </Text>
+      )}
+      {set.isDrop && (
+        <Text
+          as="span"
+          variant="mono-sm"
+          tone="tertiary"
+          data-testid="drop-badge"
+          style={{ textTransform: 'uppercase', opacity: 0.7 }}
+        >
+          D
+        </Text>
+      )}
       <Text
         as="span"
         variant="mono-lg"
-        tone="primary"
+        tone={set.isWarmup ? 'tertiary' : 'primary'}
         style={{
           flex: 1,
           color: isPR ? 'var(--state-pr-ink, var(--text-primary))' : undefined,
+          opacity: set.isWarmup ? 0.7 : 1,
         }}
       >
         {set.weight}
@@ -200,6 +223,39 @@ function LoggedSet({ set, isLast, onDiscard, unitDisplay, isPR }) {
   );
 }
 
+// Small toggle chip for set flags (Warmup / Drop set). Mono, hairline,
+// active state fills with text-primary so the flag is unmistakable
+// without borrowing a movement-pattern accent.
+function FlagToggle({ label, active, onToggle, testId }) {
+  return (
+    <button
+      type="button"
+      role="checkbox"
+      aria-checked={active}
+      data-testid={testId}
+      data-active={active ? '1' : '0'}
+      onClick={onToggle}
+      style={{
+        all: 'unset',
+        cursor: 'pointer',
+        padding: '6px 12px',
+        borderRadius: 4,
+        border: '1px solid var(--border-hairline)',
+        background: active ? 'var(--text-primary)' : 'transparent',
+        color: active ? 'var(--surface-page)' : 'var(--text-tertiary)',
+        fontFamily: 'var(--font-mono)',
+        fontSize: 11,
+        letterSpacing: '0.12em',
+        textTransform: 'uppercase',
+        whiteSpace: 'nowrap',
+        transition: 'background 120ms ease, color 120ms ease',
+      }}
+    >
+      {label}
+    </button>
+  );
+}
+
 export function SetRow({ performance, prescription, accent, unit, onLogSet, onDiscardSet, prSetIds }) {
   const defaultWeight = performance.sets.at(-1)?.weight ?? '';
   const defaultReps = prescription.kind === 'straight'
@@ -209,6 +265,8 @@ export function SetRow({ performance, prescription, accent, unit, onLogSet, onDi
   const [weight, setWeight] = useState(defaultWeight);
   const [reps, setReps] = useState(defaultReps);
   const [rpe, setRpe] = useState(null);
+  const [isWarmup, setIsWarmup] = useState(false);
+  const [isDrop, setIsDrop] = useState(false);
   const haptic = useHaptics();
 
   function handleLog() {
@@ -218,10 +276,14 @@ export function SetRow({ performance, prescription, accent, unit, onLogSet, onDi
       reps: Number(reps),
       rpe,
       unit,
+      isWarmup: isWarmup || undefined,
+      isDrop: isDrop || undefined,
     });
     haptic('doubleTap');
     setRpe(null);
-    // Keep weight; reset rpe; nudge reps to prescription default for next set.
+    setIsWarmup(false);
+    setIsDrop(false);
+    // Keep weight; reset rpe + flags; nudge reps default for next set.
   }
 
   const setsRemaining = prescription.setsTotal
@@ -271,6 +333,27 @@ export function SetRow({ performance, prescription, accent, unit, onLogSet, onDi
         </Stack>
 
         <RpeRow value={rpe} onChange={setRpe} accent={accent} />
+
+        <Stack direction="row" gap={2} align="center" wrap>
+          <FlagToggle
+            label="Warmup"
+            active={isWarmup}
+            onToggle={() => {
+              setIsWarmup((v) => !v);
+              if (!isWarmup) setIsDrop(false); // warmup + drop is nonsensical
+            }}
+            testId="flag-warmup"
+          />
+          <FlagToggle
+            label="Drop set"
+            active={isDrop}
+            onToggle={() => {
+              setIsDrop((v) => !v);
+              if (!isDrop) setIsWarmup(false);
+            }}
+            testId="flag-drop"
+          />
+        </Stack>
 
         <Stack direction="row" gap={2} justify="space-between" align="center">
           {setsRemaining != null ? (

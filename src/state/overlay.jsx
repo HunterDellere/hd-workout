@@ -11,6 +11,7 @@ import { useEffect, useMemo, useState, useCallback } from 'react';
 import { OverlayContext } from './overlay-context.js';
 import { useSettings } from './settings-context.js';
 import { loadFromStorage, saveToStorage, STORAGE_KEYS } from '../data/storage';
+import { stampSchemaVersion } from '../data/migrations';
 import {
   getActiveProgram,
   DEFAULT_PROGRAM_KEY,
@@ -84,7 +85,7 @@ export function OverlayProvider({ children }) {
 
   useEffect(() => {
     if (!hydrated) return;
-    saveToStorage(STORAGE_KEYS.programOverlay, overlayByLocation);
+    saveToStorage(STORAGE_KEYS.programOverlay, stampSchemaVersion(overlayByLocation));
   }, [overlayByLocation, hydrated]);
 
   // The active-location slice — what the rest of the app reads as "the overlay".

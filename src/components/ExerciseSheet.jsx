@@ -23,6 +23,7 @@ import { Sheet } from '../design-system';
 import { Stack, Text, BrushDivider } from '../design-system/components';
 import { VariantList } from './VariantList';
 import { HistoryStrip } from './HistoryStrip';
+import { ExerciseArc } from './ExerciseArc';
 
 const TIER_LABEL = {
   S: 'Foundational',
@@ -215,6 +216,7 @@ export function ExerciseSheet({ open, onClose, exercise }) {
           <div style={{ marginTop: 12 }}>
             <HistoryStrip exerciseId={exercise.id} accent={accent} />
           </div>
+          <ExerciseArc exerciseId={exercise.id} accent={accent} />
         </SectionBlock>
 
         {(exercise.equipment?.length > 0

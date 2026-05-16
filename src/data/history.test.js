@@ -45,6 +45,21 @@ describe('topSet', () => {
   it('ties broken by higher reps', () => {
     expect(topSet([{ weight: 70, reps: 6 }, { weight: 70, reps: 7 }])).toMatchObject({ reps: 7 });
   });
+  // Wave 3.2: warmups are not working sets, so they can't be "top".
+  it('skips warmup sets even when heavier', () => {
+    const sets = [
+      { weight: 100, reps: 5, isWarmup: true },
+      { weight: 80, reps: 6 },
+    ];
+    expect(topSet(sets)).toMatchObject({ weight: 80, reps: 6 });
+  });
+  it('returns null when every set is a warmup', () => {
+    const sets = [
+      { weight: 60, reps: 8, isWarmup: true },
+      { weight: 70, reps: 5, isWarmup: true },
+    ];
+    expect(topSet(sets)).toBeNull();
+  });
 });
 
 describe('historyForExercise', () => {

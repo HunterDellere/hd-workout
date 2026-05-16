@@ -11,6 +11,15 @@ import { ulid } from '../data/ulid';
 import { SessionContext } from './session-context.js';
 import { loadFromStorage, saveToStorage, STORAGE_KEYS } from '../data/storage';
 import { annotatePRs } from '../data/intelligence';
+import { migrate, migrateArray, stampSchemaVersion } from '../data/migrations';
+
+// Stamp every archive entry with the current schemaVersion before writing.
+// Keeps the on-disk shape uniform so the load-path migration is a no-op
+// for fresh data.
+async function saveArchive(arr) {
+  const stamped = Array.isArray(arr) ? arr.map(stampSchemaVersion) : arr;
+  await saveToStorage(STORAGE_KEYS.archive, stamped);
+}
 
 function buildPerformances(day) {
   if (!day) return [];
@@ -43,8 +52,9 @@ export function SessionProvider({ children }) {
       loadFromStorage(STORAGE_KEYS.archive, []),
     ]).then(([s, a]) => {
       if (cancelled) return;
-      setSession(s ?? null);
-      setArchive(Array.isArray(a) ? a : []);
+      // Migrate on load so the in-memory shape is always current.
+      setSession(s ? migrate(s, 'session') : null);
+      setArchive(Array.isArray(a) ? migrateArray(a, 'archive') : []);
       setHydrated(true);
     });
     return () => { cancelled = true; };
@@ -52,9 +62,11 @@ export function SessionProvider({ children }) {
 
   // Persist after every change once hydrated. The first post-hydration run
   // writes back the same value we just loaded (harmless idempotent set).
+  // schemaVersion is stamped on every write so future migrations have a
+  // fixed point.
   useEffect(() => {
     if (!hydrated) return;
-    saveToStorage(STORAGE_KEYS.activeSession, session);
+    saveToStorage(STORAGE_KEYS.activeSession, session ? stampSchemaVersion(session) : null);
   }, [session, hydrated]);
 
   const value = useMemo(() => ({
@@ -91,7 +103,7 @@ export function SessionProvider({ children }) {
       // Write archive synchronously then clear the active session so the
       // /today UI can read PRs off the returned blob.
       const next = [...archive, completed];
-      await saveToStorage(STORAGE_KEYS.archive, next);
+      await saveArchive(next);
       setArchive(next);
       setSession(null);
       return completed;
@@ -108,7 +120,7 @@ export function SessionProvider({ children }) {
       if (idx < 0) return false;
       const target = archive[idx];
       const nextArchive = archive.filter((s) => s.id !== sessionId);
-      await saveToStorage(STORAGE_KEYS.archive, nextArchive);
+      await saveArchive(nextArchive);
       setArchive(nextArchive);
       // Strip PR annotations + endedAt so the session reads as in-progress.
       const stripped = {
@@ -163,6 +175,19 @@ export function SessionProvider({ children }) {
           if (p.id !== performanceId) return p;
           return { ...p, sets: p.sets.filter((set) => set.index !== setIndex) };
         });
+        return { ...s, performances };
+      });
+    },
+
+    // Write a freeform note onto a performance. The schema has supported
+    // performance.notes since session creation but no UI ever wrote to it
+    // until Wave 3.1. Empty string is the canonical "no note" state.
+    setPerformanceNote(performanceId, text) {
+      setSession((s) => {
+        if (!s) return s;
+        const performances = s.performances.map((p) => (
+          p.id === performanceId ? { ...p, notes: text ?? '' } : p
+        ));
         return { ...s, performances };
       });
     },
@@ -243,13 +268,13 @@ export function SessionProvider({ children }) {
     },
 
     async replaceAll({ active = null, archive: nextArchive = [] } = {}) {
-      await saveToStorage(STORAGE_KEYS.archive, nextArchive);
+      await saveArchive(nextArchive);
       setArchive(Array.isArray(nextArchive) ? nextArchive : []);
       setSession(active);
     },
 
     async clearAll() {
-      await saveToStorage(STORAGE_KEYS.archive, []);
+      await saveArchive([]);
       setArchive([]);
       setSession(null);
     },
@@ -264,7 +289,7 @@ export function SessionProvider({ children }) {
       const without = archive.filter((s) => s.id !== sessionId);
       const reannotated = annotatePRs(nextSession, without);
       const next = [...archive.slice(0, idx), reannotated, ...archive.slice(idx + 1)];
-      await saveToStorage(STORAGE_KEYS.archive, next);
+      await saveArchive(next);
       setArchive(next);
       return true;
     },
@@ -273,7 +298,7 @@ export function SessionProvider({ children }) {
       const idx = archive.findIndex((s) => s.id === sessionId);
       if (idx < 0) return false;
       const next = archive.filter((s) => s.id !== sessionId);
-      await saveToStorage(STORAGE_KEYS.archive, next);
+      await saveArchive(next);
       setArchive(next);
       return true;
     },

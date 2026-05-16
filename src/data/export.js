@@ -9,6 +9,7 @@
 //   }
 
 import { loadFromStorage, saveToStorage, STORAGE_KEYS } from './storage';
+import { migrate, migrateArray, stampSchemaVersion } from './migrations';
 
 export const SNAPSHOT_VERSION = 1;
 
@@ -43,9 +44,17 @@ export function validateSnapshot(value) {
 export async function applySnapshot(value) {
   const check = validateSnapshot(value);
   if (!check.ok) throw new Error(check.error);
-  await saveToStorage(STORAGE_KEYS.settings, value.settings ?? null);
-  await saveToStorage(STORAGE_KEYS.activeSession, value.activeSession ?? null);
-  await saveToStorage(STORAGE_KEYS.archive, value.archive ?? []);
+  // Run migrations on every blob before writing — old snapshots get
+  // forward-stamped; future-version blobs pass through (with a console
+  // warn) so the user isn't silently downgraded.
+  const settings = value.settings ? stampSchemaVersion(migrate(value.settings, 'settings')) : null;
+  const activeSession = value.activeSession ? stampSchemaVersion(migrate(value.activeSession, 'session')) : null;
+  const archive = Array.isArray(value.archive)
+    ? migrateArray(value.archive, 'archive').map(stampSchemaVersion)
+    : [];
+  await saveToStorage(STORAGE_KEYS.settings, settings);
+  await saveToStorage(STORAGE_KEYS.activeSession, activeSession);
+  await saveToStorage(STORAGE_KEYS.archive, archive);
 }
 
 export async function wipeAll() {

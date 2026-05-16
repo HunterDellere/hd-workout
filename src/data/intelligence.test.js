@@ -121,6 +121,34 @@ describe('annotatePRs', () => {
     expect(out.performances[0].sets[1].pr).toEqual({ weight: true });
     expect(out.performances[0].sets[2].pr).toEqual({ weight: true });
   });
+
+  // ─── Warmup exclusion (Wave 3.2) ──────────────────────────────────────
+  it('warmup sets are never flagged as PRs', () => {
+    const candidate = session('c', '2026-05-15T00:00:00.000Z', 'bench', [
+      { weight: 100, reps: 5, isWarmup: true },
+      { weight: 60, reps: 5 },
+    ]);
+    const out = annotatePRs(candidate, []);
+    // The warmup at 100 kg would have been a weight PR; not stamped.
+    expect(out.performances[0].sets[0].pr).toBeUndefined();
+    // The 60 kg working set IS the first non-warmup → weight PR.
+    expect(out.performances[0].sets[1].pr).toEqual({ weight: true });
+  });
+
+  it('warmup history does not poison subsequent PR detection', () => {
+    // A user logs a warmup at 200kg by mistake — historicalMaxes ignores
+    // it so a real working set at 100kg still reads as a weight PR.
+    const archive = [
+      session('a', '2026-05-01T00:00:00.000Z', 'bench', [
+        { weight: 200, reps: 1, isWarmup: true },
+      ]),
+    ];
+    const candidate = session('c', '2026-05-15T00:00:00.000Z', 'bench', [
+      { weight: 100, reps: 5 },
+    ]);
+    const out = annotatePRs(candidate, archive);
+    expect(out.performances[0].sets[0].pr).toEqual({ weight: true });
+  });
 });
 
 describe('prsFromSession', () => {

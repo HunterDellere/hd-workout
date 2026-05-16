@@ -8,6 +8,7 @@ import { findExerciseById } from '../../data';
 import { parsePrescription } from '../../data/prescription';
 import { SetRow } from '../SetRow';
 import { RestTimer } from '../RestTimer';
+import { NoteField } from './NoteField';
 
 function suggestionLine(suggestion, unit) {
   if (!suggestion) return null;
@@ -39,6 +40,7 @@ export function PerformanceCard({
   onSwap,
   onStopRest,
   onRemove,
+  onSetNote,
   prSetIds,
 }) {
   const ex = findExerciseById(performance.exerciseId);
@@ -130,6 +132,14 @@ export function PerformanceCard({
           prSetIds={prSetIds}
         />
       </div>
+
+      {onSetNote && (
+        <NoteField
+          value={performance.notes}
+          onSave={(text) => onSetNote(performance.id, text)}
+          testIdPrefix={`note-${performance.id}`}
+        />
+      )}
 
       {isResting && hasLogged && (
         <div style={{ marginTop: 20 }}>

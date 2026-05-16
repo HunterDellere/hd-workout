@@ -57,6 +57,7 @@ export function Today() {
     clearRestTimer,
     dismissResumePrompt,
     resumeArchivedSession,
+    setPerformanceNote,
   } = useSession();
 
   const {
@@ -377,6 +378,7 @@ export function Today() {
                     onRemove={perf.addedInSession && perf.sets.length === 0
                       ? () => removePerformance(perf.id)
                       : null}
+                    onSetNote={setPerformanceNote}
                     prSetIds={livePRSetIds}
                   />
                 ))}
