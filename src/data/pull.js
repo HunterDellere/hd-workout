@@ -656,32 +656,8 @@ export const pull = {
           ],
           tags: ['isolation', 'forearms', 'prehab'],
         },
-        {
-          id: 'pull-rice-bucket',
-          name: 'Rice Bucket',
-          tier: 'A',
-          equipment: ['5-gallon bucket', '20+ lb of dry rice (long grain)'],
-          primaryMuscles: ['Forearm flexors', 'Forearm extensors', 'Hand intrinsics'],
-          secondaryMuscles: ['Wrist stabilizers', 'Finger flexors'],
-          cues: [
-            'Bury hand and forearm in the rice up to the elbow',
-            'Open and close the fist — grip and release through full ROM, slow',
-            'Twist the wrist clockwise then counter — like opening a tight jar',
-            'Spread the fingers wide against the resistance, return',
-            'Pronate-supinate: rotate the forearm palm-up to palm-down repeatedly',
-          ],
-          safetyNotes: [
-            'The neglected rehab tool — wrist tendinopathy, elbow tendinosis, post-injury rebuilding all benefit',
-            'Resistance is omnidirectional — no joint takes a sudden load',
-            'Daily-frequency friendly; 2–5 min per session is the dose',
-          ],
-          variants: [
-            { name: 'Rice bucket fist holds', note: 'Make a fist deep in the rice, hold 10-20 sec.' },
-            { name: 'Rice bucket finger walks', note: 'Walk fingertips across the rice surface — finger isolation.' },
-            { name: 'Rice bucket scoops', note: 'Cup the rice and lift; mimics a heavy pinch grip.' },
-          ],
-          tags: ['isolation', 'forearms', 'prehab', 'rehab'],
-        },
+        // Rice bucket lives in recovery (rec-rice-bucket) — it's a
+        // rehab / daily-frequency tool, not a strength lift.
         {
           id: 'pull-grip-trainer',
           name: 'Grip Trainer (Adjustable Spring)',
@@ -814,32 +790,9 @@ export const pull = {
           ],
           tags: ['compound', 'forearms', 'grip', 'thick-bar'],
         },
-        {
-          id: 'pull-finger-extension-band',
-          name: 'Finger Extension (Rubber Band)',
-          tier: 'A',
-          equipment: ['Small rubber band (orthodontic-style) OR hair tie'],
-          primaryMuscles: ['Finger extensors', 'Hand intrinsics'],
-          secondaryMuscles: ['Forearm extensors'],
-          cues: [
-            'Bundle all fingers and thumb together; loop the band around them',
-            'Spread the fingers apart against the band',
-            'Slow open, slow close — both directions matter',
-            'Light tension; 15-25 reps per set',
-            'The neglected counterpart to all the crushing grip work',
-          ],
-          safetyNotes: [
-            'Most lifters train flexors heavily and extensors not at all — the imbalance drives elbow tendinopathy',
-            'Daily-frequency friendly; this is rehab + maintenance',
-            'Hair ties work just as well as fancy bands',
-          ],
-          variants: [
-            { name: 'Single-finger extension', note: 'Band between thumb and one finger at a time; isolation.' },
-            { name: 'Layered band extension', note: 'Two or three bands stacked for more resistance.' },
-            { name: 'Rice bucket finger spread', note: 'Spread fingers wide deep in a rice bucket — omnidirectional.' },
-          ],
-          tags: ['isolation', 'forearms', 'prehab', 'corrective', 'finger-extensors'],
-        },
+        // Finger extension band lives in recovery (rec-finger-extension) —
+        // it's the corrective counterpart to all the crushing grip work,
+        // not a strength lift.
       ],
     },
   ],

@@ -195,31 +195,8 @@ export const legs = {
           ],
           tags: ['compound', 'foundational', 'bilateral', 'quad-dominant'],
         },
-        {
-          id: 'legs-cossack-squat',
-          name: 'Cossack Squat',
-          tier: 'A',
-          equipment: ['Open floor (optional: KB or DB at chest for counterbalance)'],
-          primaryMuscles: ['Adductors', 'Quadriceps', 'Gluteus maximus'],
-          secondaryMuscles: ['Hamstrings', 'Hip mobility'],
-          cues: [
-            'Wide stance, toes turned slightly out',
-            'Shift weight to one side; that knee bends while the other leg stays straight',
-            'Sink deep into the bent side — heel stays flat',
-            'Hold the bottom for a second; feel the adductor stretch on the straight side',
-            'Drive back to center; alternate sides',
-          ],
-          safetyNotes: [
-            'A mobility + strength lift — start unloaded; build into a KB at chest',
-            'If the heel pops up, work ankle mobility separately',
-          ],
-          variants: [
-            { name: 'Loaded cossack', note: 'KB or DB at chest (goblet style) for counterbalance.' },
-            { name: 'Cossack with rotation', note: 'Rotate the torso at the bottom — adds T-spine work.' },
-            { name: 'Static cossack hold', note: '20-30 sec each side; deep adductor stretch under load.' },
-          ],
-          tags: ['unilateral', 'compound', 'mobility', 'adductor'],
-        },
+        // Cossack squat lives in the adductors section (legs-cossack-squat)
+        // — primary muscle is the adductors with a deep stretch component.
         {
           id: 'legs-step-up',
           name: 'Step-Up',
@@ -616,6 +593,31 @@ export const legs = {
             { name: 'Short Copenhagen', note: 'Knee on the bench, foot off — entry point.' },
           ],
           tags: ['isolation', 'adductor', 'prehab'],
+        },
+        {
+          id: 'legs-cossack-squat',
+          name: 'Cossack Squat',
+          tier: 'A',
+          equipment: ['Open floor (optional: KB or DB at chest for counterbalance)'],
+          primaryMuscles: ['Adductors', 'Quadriceps', 'Gluteus maximus'],
+          secondaryMuscles: ['Hamstrings', 'Hip mobility'],
+          cues: [
+            'Wide stance, toes turned slightly out',
+            'Shift weight to one side; that knee bends while the other leg stays straight',
+            'Sink deep into the bent side — heel stays flat',
+            'Hold the bottom for a second; feel the adductor stretch on the straight side',
+            'Drive back to center; alternate sides',
+          ],
+          safetyNotes: [
+            'A mobility + strength lift — start unloaded; build into a KB at chest',
+            'If the heel pops up, work ankle mobility separately',
+          ],
+          variants: [
+            { name: 'Loaded cossack', note: 'KB or DB at chest (goblet style) for counterbalance.' },
+            { name: 'Cossack with rotation', note: 'Rotate the torso at the bottom — adds T-spine work.' },
+            { name: 'Static cossack hold', note: '20-30 sec each side; deep adductor stretch under load.' },
+          ],
+          tags: ['unilateral', 'compound', 'mobility', 'adductor'],
         },
       ],
     },
