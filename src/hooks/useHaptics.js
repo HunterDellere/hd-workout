@@ -90,3 +90,24 @@ export const HAPTIC_MODES = [
   { value: 'standard', label: 'Standard', hint: 'Clearly felt in hand.' },
   { value: 'strong',   label: 'Strong',   hint: 'Felt through a pocket.' },
 ];
+
+// Imperative variant for preview UIs that need to fire at a chosen intensity
+// without waiting for the settings store to round-trip. The Settings page
+// calls this on tap so the *just-picked* mode plays back immediately rather
+// than the previously-active one (the useHaptics hook closes over `scale`
+// derived from current settings, so it lags by one render after a switch).
+export function fireHapticAt(mode, name = 'tap') {
+  if (typeof navigator === 'undefined' || !navigator.vibrate) return false;
+  const scale = INTENSITY_SCALE[mode] ?? 1;
+  if (scale === 0) return false;
+  const key = ALIAS[name] ?? name;
+  const base = BASE_PATTERNS[key] ?? BASE_PATTERNS.tap;
+  const scaled = scalePattern(base, scale);
+  if (scaled == null) return false;
+  try {
+    navigator.vibrate(scaled);
+    return true;
+  } catch {
+    return false;
+  }
+}

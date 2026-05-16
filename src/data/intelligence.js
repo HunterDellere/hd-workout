@@ -313,7 +313,9 @@ export function suggestNextLoad(history, prescription, unit = 'kg') {
           kind: 'deload',
           weight: deloadWeight,
           reps: repsMid ?? repsLow,
-          reason: `Stalled at ${lastWeight}${unit} × ${lastReps} for three sessions`,
+          // ≤ 6 words. Cite the stall load so the user knows what
+          // the algorithm saw without re-stating reps/sessions.
+          reason: `Stalled three sessions at ${lastWeight}${unit}`,
         };
       }
     }
@@ -327,7 +329,8 @@ export function suggestNextLoad(history, prescription, unit = 'kg') {
       kind: 'hold',
       weight: lastWeight,
       reps: prev.top.reps,
-      reason: `Last time was ${lastReps}; previous was ${prev.top.reps}`,
+      // Compact: cite both rep counts so the user can verify quickly.
+      reason: `Reclaim ${prev.top.reps} reps (was ${lastReps})`,
     };
   }
 

@@ -7,6 +7,7 @@ import { useSettings } from '../state/settings-context.js';
 
 const BASE_ITEMS = [
   { to: '/me/settings', label: 'Settings', hint: 'Split, rest timer, units, haptics, data' },
+  { to: '/me/glossary', label: 'Glossary', hint: 'What the words mean' },
   { to: '/me/about',    label: 'About',    hint: 'Install instructions' },
 ];
 

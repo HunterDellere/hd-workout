@@ -206,6 +206,12 @@ export function SessionProvider({ children }) {
       ));
     },
 
+    // Survives reloads: stamped on the session blob so the long-gap prompt
+    // doesn't reappear after the user has explicitly dismissed it.
+    dismissResumePrompt() {
+      setSession((s) => (s ? { ...s, resumePromptDismissed: true } : s));
+    },
+
     async replaceAll({ active = null, archive: nextArchive = [] } = {}) {
       await saveToStorage(STORAGE_KEYS.archive, nextArchive);
       setArchive(Array.isArray(nextArchive) ? nextArchive : []);

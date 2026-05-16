@@ -268,6 +268,42 @@ export function Insights() {
           </ul>
         )}
       </Block>
+
+      <BrushDivider style={{ marginTop: 40 }} />
+
+      <Block gapTop={24} eyebrow="How this is computed">
+        <ul
+          data-testid="insights-explainer"
+          style={{ listStyle: 'none', padding: 0, margin: 0 }}
+        >
+          {[
+            ['Records', 'A set breaks a record when its weight exceeds your prior heaviest at this exercise, or its reps exceed your prior best at the same weight.'],
+            ['Volume', 'Σ (weight × reps) across logged sets. When an exercise belongs to two movement patterns, its volume is split evenly between them.'],
+            ['Frequency', 'One mark per completed session, placed on the day it ended. Last 8 weeks.'],
+            ['Suggestions', 'Cleared the top of the rep range last session → bump weight. Mid-range → hold. Three sessions at the same load with no improvement → deload 10%.'],
+          ].map(([title, body], i) => (
+            <li
+              key={title}
+              style={{
+                padding: '12px 0',
+                borderTop: i === 0 ? 'none' : '1px solid var(--border-hairline)',
+              }}
+            >
+              <Text
+                as="div"
+                variant="mono-sm"
+                tone="tertiary"
+                style={{ textTransform: 'uppercase' }}
+              >
+                {title}
+              </Text>
+              <Text as="p" variant="body-sm" tone="secondary" style={{ marginTop: 6, maxWidth: 60 * 9 }}>
+                {body}
+              </Text>
+            </li>
+          ))}
+        </ul>
+      </Block>
     </Page>
   );
 }

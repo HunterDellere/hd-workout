@@ -93,8 +93,11 @@ test('today suggestion line surfaces when intelligence is on', async ({ page }) 
 });
 
 test('slot picker opens, filters, picks, removes', async ({ page }) => {
-  // No seed archive needed for picker basics — just a started session.
+  // Seed an all-push split so `/today` shows a session regardless of the
+  // weekday CI happens to run on (the default split parks rest on weekends).
+  await seedIdb(page, { archive: [] });
   await page.goto('./#/today');
+  await page.reload();
   await page.getByTestId('start-session').click();
 
   // Click the first add-to-section button.

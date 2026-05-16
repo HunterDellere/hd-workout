@@ -15,7 +15,7 @@ import {
 } from '../design-system/components';
 import { useSettings, DAY_OPTIONS, WEEKDAYS } from '../state/settings-context.js';
 import { useSession } from '../state/session-context.js';
-import { useHaptics, HAPTIC_MODES } from '../hooks/useHaptics';
+import { HAPTIC_MODES, fireHapticAt } from '../hooks/useHaptics';
 import { buildSnapshot, applySnapshot, wipeAll } from '../data/export';
 
 function Radio({ value, current, onSelect, label, hint }) {
@@ -177,7 +177,6 @@ function DataBlock() {
 
 export function Settings() {
   const { settings, setSplit, setRestTimerMode, setUnits, setHaptics, setIntelligenceEnabled, resetSplit } = useSettings();
-  const haptic = useHaptics();
 
   return (
     <Page>
@@ -297,9 +296,10 @@ export function Settings() {
               current={settings.haptics}
               onSelect={(v) => {
                 setHaptics(v);
-                // Fire after the state-set so the new intensity is in effect.
-                // useHaptics reads settings, so we wait a tick.
-                setTimeout(() => haptic('doubleTap'), 0);
+                // Fire at the *just-picked* intensity. Using the
+                // settings-bound haptic() would play back the previous
+                // mode because it closes over the prior render's scale.
+                fireHapticAt(v, 'doubleTap');
               }}
               label={m.label}
               hint={m.hint}
@@ -312,7 +312,7 @@ export function Settings() {
 
       <Block gapTop={24} eyebrow="Insights">
         <Text as="p" variant="body-md" tone="secondary" style={{ marginBottom: 12 }}>
-          PR detection, weekly volume, and a frequency heatmap. Off by default while the math settles in.
+          PR detection, weekly volume, a frequency heatmap, and per-exercise load suggestions.
         </Text>
         <div role="radiogroup" aria-label="Intelligence">
           <Radio

@@ -49,6 +49,7 @@ const A11Y_ROUTES = [
   { name: 'exercise detail (canonical)', hash: '#/library/exercises/push-bb-bench' },
   { name: 'day (push)', hash: '#/push' },
   { name: 'about', hash: '#/me/about' },
+  { name: 'glossary', hash: '#/me/glossary' },
   { name: 'me index', hash: '#/me' },
   { name: 'me settings', hash: '#/me/settings' },
   { name: 'today', hash: '#/today' },

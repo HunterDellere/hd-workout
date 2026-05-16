@@ -234,7 +234,8 @@ describe('suggestNextLoad', () => {
     const out = suggestNextLoad(history, RX_5_8, 'kg');
     expect(out.kind).toBe('deload');
     expect(out.weight).toBe(90); // 100 × 0.9 rounded to 2.5 → 90
-    expect(out.reason).toMatch(/Stalled/);
+    expect(out.reason).toMatch(/Stalled three sessions at 100kg/);
+    expect(out.reason.split(/\s+/).length).toBeLessThanOrEqual(6);
   });
 
   it('hold (not deload) after a single regression', () => {
@@ -245,7 +246,8 @@ describe('suggestNextLoad', () => {
     const out = suggestNextLoad(history, RX_5_8, 'kg');
     expect(out.kind).toBe('hold');
     expect(out.reps).toBe(6);
-    expect(out.reason).toMatch(/Last time was 4/);
+    expect(out.reason).toMatch(/Reclaim 6 reps \(was 4\)/);
+    expect(out.reason.split(/\s+/).length).toBeLessThanOrEqual(6);
   });
 
   it('progress not triggered by stalled sessions even at top of range', () => {

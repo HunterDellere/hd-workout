@@ -191,6 +191,7 @@ export function Today() {
     addPerformance,
     removePerformance,
     clearRestTimer,
+    dismissResumePrompt,
   } = useSession();
 
   const todayKey = activeSession?.dayKey ?? dayKeyForToday(settings.split);
@@ -200,8 +201,9 @@ export function Today() {
 
   const [swapPerformanceId, setSwapPerformanceId] = useState(null);
   const [pickerSectionKey, setPickerSectionKey] = useState(null);
-  const [resumeDismissed, setResumeDismissed] = useState(false);
   const [endedSummary, setEndedSummary] = useState(null);
+  // Dismissal lives on the session blob so it survives reloads.
+  const resumeDismissed = Boolean(activeSession?.resumePromptDismissed);
 
   // Group active-session performances by their original section. Preserves
   // the encounter order of section keys so the warmup/main/finisher
@@ -539,7 +541,7 @@ export function Today() {
                   accent={accent}
                   size="sm"
                   data-testid="resume-continue"
-                  onClick={() => setResumeDismissed(true)}
+                  onClick={() => dismissResumePrompt()}
                 >
                   Continue
                 </Button>
