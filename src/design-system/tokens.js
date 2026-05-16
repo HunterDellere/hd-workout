@@ -7,39 +7,44 @@
 // the raw hex tables at the top of this file.
 
 // Raw palette (do not consume directly from UI).
-// Paper cooled from #FAF7F2 → #F6F4EF in Session 10 (less creamy, more neutral).
+// Session 18 refresh: warmer paper (a half-step back from the Session 10
+// cool-neutral, but still firmly off-white), deeper ink for dark mode,
+// and a new "raised" surface tier so cards can subtly lift off the page.
 const paper = {
-  0: '#F6F4EF', // page background
-  1: '#EEEBE4', // sunken (inputs, search-bar rest)
-  2: '#E4E0D7', // borders, hairlines (used at alpha)
+  0: '#F7F3EA', // page background — slightly warmer, washi-leaning
+  1: '#EFEAE0', // sunken (inputs, search-bar rest)
+  2: '#E4DED1', // borders, hairlines (used at alpha)
+  raised: '#FBF8F1', // cards/sheets that sit above page (subtle lift)
 };
 const ink = {
-  0: '#13110E', // dark page background
-  1: '#1B1916', // dark sunken
-  2: '#262320', // dark raised
+  0: '#0F0D0A', // dark page background — deeper than Session 10
+  1: '#161412', // dark sunken
+  2: '#221F1B', // dark raised
+  3: '#2C2823', // dark elevated (sheets/modals)
   text0: '#1A1814', // light-mode primary text
   text1: '#4A453E', // light-mode secondary text
-  // text2: tertiary. Lifted from #6E6A61 — mono-sm eyebrows were fading at the
-  // old value; new value still clears AA on paper (#F6F4EF) at ≥ 4.5:1.
-  text2: '#5C5851',
-  textDark0: '#EDE8DF', // dark-mode primary text
-  textDark1: '#A8A299', // dark-mode secondary text
-  // textDark2: lifted from #8E887D so dark-mode eyebrows match the new
-  // light-mode contrast.
+  text2: '#5C5851', // light-mode tertiary
+  textDark0: '#F0EBE0', // dark-mode primary text — slight lift for contrast
+  textDark1: '#ADA79D',
   textDark2: '#9E988D',
 };
 
-// Accents — Session 10 rework. Cooler, less brown; stone / sky / sea family.
-// Names map to semantic roles: rust (push), sea (pull), sand (legs), sky (core).
-// stone is the neutral, signal is the warn, moss is success.
+// Accents — Session 18 refresh. Slightly more confident saturation on the
+// day-lineage hues; new `ember` token for the PR/celebration role
+// previously borrowing from signal. Semantic split:
+//   day:      rust (push), sea (pull), sand (legs), sky (core), stone (recovery)
+//   states:   moss (success), amber (warn), signal (danger), sky (info)
+//   accents:  ember (PR / celebrate)
 export const accents = {
-  rust:   '#B96247', // push lineage
-  sea:    '#4A8B8C', // pull lineage
-  sand:   '#B89968', // legs lineage
-  sky:    '#4F7AAA', // core lineage
-  stone:  '#7A828C', // neutral / mobility
-  signal: '#C44A2F', // warn
-  moss:   '#6E9078', // success
+  rust:   '#B65A40', // push lineage  (a hair more saturated)
+  sea:    '#3E8485', // pull lineage  (deepened)
+  sand:   '#B59560', // legs lineage  (more golden)
+  sky:    '#4574A8', // core lineage  (slightly bluer)
+  stone:  '#7B838C', // neutral / mobility
+  moss:   '#6F9078', // success
+  amber:  '#D89B3C', // warn — new dedicated token, distinct from danger
+  signal: '#C04428', // danger — slightly cooler red for legibility on warm paper
+  ember:  '#D17A4A', // PR / celebrate
 };
 
 // Per-hue ink variants for legible chip text on the accent wash. The wash is
@@ -52,8 +57,10 @@ const accentInkLight = {
   sand:   '#5A4520',
   sky:    '#264168',
   stone:  '#3A4048',
-  signal: '#6A2613',
   moss:   '#324B3A',
+  amber:  '#6F4A0F',
+  signal: '#6A2613',
+  ember:  '#6D3517',
 };
 // Dark mode inverts: ink is a *light* variant of each hue.
 const accentInkDark = {
@@ -62,8 +69,10 @@ const accentInkDark = {
   sand:   '#D9C39A',
   sky:    '#A2B7D2',
   stone:  '#BBC2CA',
-  signal: '#EBA194',
   moss:   '#B6CDB9',
+  amber:  '#ECC58B',
+  signal: '#EBA194',
+  ember:  '#E9B393',
 };
 
 // Movement pattern → accent token name. Single source of truth.
@@ -153,25 +162,31 @@ function lightVars() {
   const vars = {
     '--surface-page':    paper[0],
     '--surface-sunken':  paper[1],
-    '--surface-raised':  paper[0],
-    '--surface-overlay': paper[0],
+    '--surface-raised':  paper.raised,
+    '--surface-overlay': paper.raised,
     '--surface-scrim':   withAlpha(ink.text0, 0.45),
     '--text-primary':    ink.text0,
     '--text-secondary':  ink.text1,
     '--text-tertiary':   ink.text2,
-    '--text-on-accent':  paper[0],
+    '--text-on-accent':  paper.raised,
     '--border-hairline': withAlpha(ink.text0, 0.08),
     '--border-strong':   withAlpha(ink.text0, 0.18),
     '--shadow-1':        '0 1px 0 rgba(0,0,0,0.04)',
     '--shadow-2':        '0 1px 1px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.06)',
-    '--state-warn':      accents.signal,
-    '--state-warn-ink':  accentInkLight.signal,
-    '--state-success':   accents.moss,
+    // Semantic state tokens. `warn` now resolves to amber; `danger` is the
+    // old signal red (deload, errors). `pr` is ember for PR celebration.
+    '--state-warn':        accents.amber,
+    '--state-warn-ink':    accentInkLight.amber,
+    '--state-danger':      accents.signal,
+    '--state-danger-ink':  accentInkLight.signal,
+    '--state-success':     accents.moss,
     '--state-success-ink': accentInkLight.moss,
-    '--state-info':      accents.stone,
-    '--font-serif':      fontFamilies.serif,
-    '--font-sans':       fontFamilies.sans,
-    '--font-mono':       fontFamilies.mono,
+    '--state-info':        accents.stone,
+    '--state-pr':          accents.ember,
+    '--state-pr-ink':      accentInkLight.ember,
+    '--font-serif':        fontFamilies.serif,
+    '--font-sans':         fontFamilies.sans,
+    '--font-mono':         fontFamilies.mono,
   };
   for (const [name, hex] of Object.entries(accents)) {
     vars[`--accent-${name}-solid`] = hex;
@@ -187,24 +202,28 @@ function darkVars() {
     '--surface-page':    ink[0],
     '--surface-sunken':  ink[1],
     '--surface-raised':  ink[2],
-    '--surface-overlay': ink[2],
-    '--surface-scrim':   withAlpha('#000000', 0.6),
+    '--surface-overlay': ink[3],
+    '--surface-scrim':   withAlpha('#000000', 0.65),
     '--text-primary':    ink.textDark0,
     '--text-secondary':  ink.textDark1,
     '--text-tertiary':   ink.textDark2,
-    '--text-on-accent':  paper[0],
+    '--text-on-accent':  paper.raised,
     '--border-hairline': withAlpha(ink.textDark0, 0.08),
     '--border-strong':   withAlpha(ink.textDark0, 0.18),
     '--shadow-1':        '0 1px 0 rgba(0,0,0,0.4)',
     '--shadow-2':        '0 1px 1px rgba(0,0,0,0.35), 0 6px 24px rgba(0,0,0,0.45)',
-    '--state-warn':      accents.signal,
-    '--state-warn-ink':  accentInkDark.signal,
-    '--state-success':   accents.moss,
+    '--state-warn':        accents.amber,
+    '--state-warn-ink':    accentInkDark.amber,
+    '--state-danger':      accents.signal,
+    '--state-danger-ink':  accentInkDark.signal,
+    '--state-success':     accents.moss,
     '--state-success-ink': accentInkDark.moss,
-    '--state-info':      accents.stone,
-    '--font-serif':      fontFamilies.serif,
-    '--font-sans':       fontFamilies.sans,
-    '--font-mono':       fontFamilies.mono,
+    '--state-info':        accents.stone,
+    '--state-pr':          accents.ember,
+    '--state-pr-ink':      accentInkDark.ember,
+    '--font-serif':        fontFamilies.serif,
+    '--font-sans':         fontFamilies.sans,
+    '--font-mono':         fontFamilies.mono,
   };
   for (const [name, hex] of Object.entries(accents)) {
     vars[`--accent-${name}-solid`] = hex;

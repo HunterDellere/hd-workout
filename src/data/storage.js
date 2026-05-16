@@ -60,4 +60,7 @@ export const STORAGE_KEYS = {
   activeSession: 'hdw:session:active',
   settings: 'hdw:settings',
   archive: 'hdw:sessions:archive',
+  // Phase 4 slice 2 scaffold: per-user overrides on top of a program
+  // template. Read-only until the fork-and-edit UI lands.
+  programOverlay: 'hdw:program:overlay',
 };

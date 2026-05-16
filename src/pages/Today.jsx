@@ -16,17 +16,34 @@ import {
   BrushDivider,
 } from '../design-system/components';
 import { dayLineageAccent } from '../design-system/tokens';
-import { getDay, findExerciseAnywhere } from '../data';
+import { findExerciseAnywhere } from '../data';
 import { parsePrescription } from '../data/prescription';
 import { historyForExercise, lastTopSetForExercise } from '../data/history';
 import { prsFromSession, suggestNextLoad } from '../data/intelligence';
 import { REST_DAY, ACTIVE_REST_ACTIVITIES } from '../data/rest';
 import { useSettings, dayKeyForToday } from '../state/settings-context.js';
 import { useSession, lastLoggedAt } from '../state/session-context.js';
+import { useOverlay } from '../state/overlay-context.js';
 import { SetRow } from '../components/SetRow';
 import { RestTimer } from '../components/RestTimer';
 import { SubstituteSheet } from '../components/SubstituteSheet';
 import { SlotPicker } from '../components/SlotPicker';
+
+// Compact mono button style for the pre-start preview affordances
+// (Swap / Remove / + Add / Reset day). All-uppercase, hairline border.
+const previewMonoBtnStyle = {
+  all: 'unset',
+  cursor: 'pointer',
+  padding: '6px 10px',
+  border: '1px solid var(--border-hairline)',
+  borderRadius: 4,
+  color: 'var(--text-secondary)',
+  fontFamily: 'var(--font-mono)',
+  fontSize: 11,
+  textTransform: 'uppercase',
+  letterSpacing: '0.12em',
+  whiteSpace: 'nowrap',
+};
 
 function suggestionLine(suggestion, unit) {
   if (!suggestion) return null;
@@ -194,10 +211,24 @@ export function Today() {
     dismissResumePrompt,
   } = useSession();
 
+  const { overlay, days: overlayDays, swapExerciseOverlay, hideExercise, addExercise, removeAddedExercise, resetDay } = useOverlay();
+
   const todayKey = activeSession?.dayKey ?? dayKeyForToday(settings.split);
   const isRest = todayKey === 'rest';
-  const day = useMemo(() => (todayKey && !isRest ? getDay(todayKey) : null), [todayKey, isRest]);
+  // Pre-start preview reads the overlay-applied day so user edits show up;
+  // active sessions read the snapshot the session was started with via
+  // `activeSession.performances` directly, so overlay edits during a
+  // session don't perturb in-flight work.
+  const day = useMemo(
+    () => (todayKey && !isRest ? overlayDays[todayKey] : null),
+    [todayKey, isRest, overlayDays],
+  );
   const accent = todayKey ? (dayLineageAccent[todayKey] ?? 'stone') : 'stone';
+
+  // Pre-start UI state — independent of the SubstituteSheet/SlotPicker
+  // we already use mid-session (those flow through useSession).
+  const [editSwap, setEditSwap] = useState(null);   // { sectionKey, exerciseId }
+  const [editAdd, setEditAdd] = useState(null);     // sectionKey
 
   const [swapPerformanceId, setSwapPerformanceId] = useState(null);
   const [pickerSectionKey, setPickerSectionKey] = useState(null);
@@ -461,9 +492,21 @@ export function Today() {
       {!activeSession ? (
         <Block gapTop={24}>
           <Stack direction="column" gap={4}>
-            <Text as="p" variant="body-lg" tone="secondary">
-              {day.sections.reduce((n, s) => n + s.exercises.length, 0)} exercises, {day.sections.length} sections.
-            </Text>
+            <Stack direction="row" align="baseline" justify="space-between" gap={3}>
+              <Text as="p" variant="body-lg" tone="secondary">
+                {day.sections.reduce((n, s) => n + s.exercises.length, 0)} exercises, {day.sections.length} sections.
+              </Text>
+              {overlay?.[ 'full-spectrum' ]?.[todayKey] && (
+                <button
+                  type="button"
+                  onClick={() => resetDay(todayKey)}
+                  data-testid="reset-day"
+                  style={previewMonoBtnStyle}
+                >
+                  Reset day
+                </button>
+              )}
+            </Stack>
             <div>
               <Button
                 variant="primary"
@@ -477,44 +520,97 @@ export function Today() {
             </div>
             <BrushDivider />
             <div>
-              {day.sections.map((section) => (
-                <div key={section.key} data-testid="preview-section" style={{ marginTop: 24 }}>
-                  <Stack direction="row" align="baseline" justify="space-between" gap={2}>
-                    <Text as="div" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
-                      {section.title}
-                    </Text>
-                    <Text as="div" variant="mono-sm" tone="tertiary">
-                      {section.exercises.length}
-                    </Text>
-                  </Stack>
-                  {section.blurb && (
-                    <Text as="p" variant="body-sm" tone="secondary" style={{ marginTop: 8, maxWidth: 60 * 9 }}>
-                      {section.blurb}
-                    </Text>
-                  )}
-                  <ul style={{ listStyle: 'none', padding: 0, margin: '12px 0 0' }}>
-                    {section.exercises.map((ex, i) => (
-                      <li
-                        key={ex.id}
+              {day.sections.map((section) => {
+                const addedIds = new Set(
+                  (overlay?.['full-spectrum']?.[todayKey]?.[section.key]?.__added ?? [])
+                    .map((e) => e.id),
+                );
+                return (
+                  <div key={section.key} data-testid="preview-section" data-section-key={section.key} style={{ marginTop: 24 }}>
+                    <Stack direction="row" align="baseline" justify="space-between" gap={2}>
+                      <Text as="div" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
+                        {section.title}
+                      </Text>
+                      <Text as="div" variant="mono-sm" tone="tertiary">
+                        {section.exercises.length}
+                      </Text>
+                    </Stack>
+                    {section.blurb && (
+                      <Text as="p" variant="body-sm" tone="secondary" style={{ marginTop: 8, maxWidth: 60 * 9 }}>
+                        {section.blurb}
+                      </Text>
+                    )}
+                    <ul style={{ listStyle: 'none', padding: 0, margin: '12px 0 0' }}>
+                      {section.exercises.map((ex, i) => (
+                        <li
+                          key={ex.id}
+                          data-testid="preview-row"
+                          data-exercise-id={ex.id}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'baseline',
+                            gap: 12,
+                            padding: '10px 0',
+                            borderTop: i === 0 ? 'none' : '1px solid var(--border-hairline)',
+                          }}
+                        >
+                          <Text as="span" variant="body-md" style={{ flex: 1, minWidth: 0 }}>
+                            {ex.name}
+                            {addedIds.has(ex.id) && (
+                              <Text as="span" variant="mono-sm" tone="tertiary" style={{ marginLeft: 8, textTransform: 'uppercase' }}>
+                                · added
+                              </Text>
+                            )}
+                          </Text>
+                          <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
+                            {ex.sets}
+                          </Text>
+                          <button
+                            type="button"
+                            data-testid="preview-swap"
+                            data-exercise-id={ex.id}
+                            aria-label={`Swap ${ex.name}`}
+                            onClick={() => setEditSwap({ sectionKey: section.key, exerciseId: ex.id })}
+                            style={previewMonoBtnStyle}
+                          >
+                            Swap
+                          </button>
+                          <button
+                            type="button"
+                            data-testid="preview-remove"
+                            data-exercise-id={ex.id}
+                            aria-label={`Remove ${ex.name}`}
+                            onClick={() => {
+                              if (addedIds.has(ex.id)) {
+                                removeAddedExercise(todayKey, section.key, ex.id);
+                              } else {
+                                hideExercise(todayKey, section.key, ex.id);
+                              }
+                            }}
+                            style={previewMonoBtnStyle}
+                          >
+                            Remove
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                    <div style={{ marginTop: 10 }}>
+                      <button
+                        type="button"
+                        data-testid="preview-add"
+                        data-section-key={section.key}
+                        onClick={() => setEditAdd(section.key)}
                         style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          gap: 16,
-                          padding: '10px 0',
-                          borderTop: i === 0 ? 'none' : '1px solid var(--border-hairline)',
+                          ...previewMonoBtnStyle,
+                          border: '1px dashed var(--border-hairline)',
                         }}
                       >
-                        <Text as="span" variant="body-md" style={{ flex: 1 }}>
-                          {ex.name}
-                        </Text>
-                        <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
-                          {ex.sets}
-                        </Text>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
+                        + Add to {section.title}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </Stack>
         </Block>
@@ -685,6 +781,46 @@ export function Today() {
             addPerformance(pickerSectionKey, found.exercise);
           }
           setPickerSectionKey(null);
+        }}
+      />
+
+      {/* Pre-start (overlay) editing sheets */}
+      <SubstituteSheet
+        open={Boolean(editSwap)}
+        onClose={() => setEditSwap(null)}
+        currentExerciseId={editSwap?.exerciseId}
+        hasLoggedSets={false}
+        onPick={(newId) => {
+          if (editSwap) {
+            const found = findExerciseAnywhere(newId);
+            if (found) {
+              swapExerciseOverlay(todayKey, editSwap.sectionKey, editSwap.exerciseId, {
+                id: newId,
+                sets: found.exercise.sets,
+                rest: found.exercise.rest,
+              });
+            }
+          }
+          setEditSwap(null);
+        }}
+      />
+
+      <SlotPicker
+        open={Boolean(editAdd)}
+        onClose={() => setEditAdd(null)}
+        sectionKey={editAdd}
+        sectionTitle={editAdd && day ? (day.sections.find((s) => s.key === editAdd)?.title ?? null) : null}
+        excludeIds={day ? day.sections.flatMap((s) => s.exercises.map((e) => e.id)) : []}
+        onPick={(exerciseId) => {
+          const found = findExerciseAnywhere(exerciseId);
+          if (found && editAdd) {
+            addExercise(todayKey, editAdd, {
+              id: exerciseId,
+              sets: found.exercise.sets,
+              rest: found.exercise.rest,
+            });
+          }
+          setEditAdd(null);
         }}
       />
     </Page>

@@ -17,7 +17,13 @@ import pullCatalog from './pull';
 import legsCatalog from './legs';
 import coreCatalog from './core';
 import recoveryCatalog from './recovery';
-import { fullSpectrum } from './programs/full-spectrum';
+import {
+  PROGRAMS,
+  DEFAULT_PROGRAM_KEY,
+  getActiveProgram,
+  fullSpectrum,
+} from './programs/index';
+import { validateProgram } from './programs/validate';
 import { principles, injuryPrevention } from './principles';
 
 const CATALOG_BY_DAY = {
@@ -28,7 +34,28 @@ const CATALOG_BY_DAY = {
   recovery: recoveryCatalog,
 };
 
+// Slice 2: default to Full Spectrum. A future slice will read the active
+// program from settings.activeProgramKey at the React layer and re-hydrate
+// when the user switches. Module-scope hydration stays cheap and stable.
 const ACTIVE_PROGRAM = fullSpectrum;
+
+// Dev-mode sanity check: log validation issues once at boot. In production
+// the call short-circuits (the function is pure and cheap, but the warn
+// path is dead code under Vite's import.meta.env.DEV).
+if (typeof import.meta !== 'undefined' && import.meta.env?.DEV) {
+  for (const program of Object.values(PROGRAMS)) {
+    const issues = validateProgram(program, {
+      push: pushCatalog,
+      pull: pullCatalog,
+      legs: legsCatalog,
+      core: coreCatalog,
+      recovery: recoveryCatalog,
+    });
+    for (const issue of issues) {
+      console.warn(`[programs:${program.key}] ${issue.message}`);
+    }
+  }
+}
 
 // Build a {id: exercise} lookup across all day catalogs for O(1) hydration.
 function buildCatalogIndex() {
@@ -45,24 +72,16 @@ function buildCatalogIndex() {
 
 const CATALOG_INDEX = buildCatalogIndex();
 
-// Resolve a single (dayKey, sectionKey, exerciseId) → the combined exercise
-// object the rest of the app expects: catalog fields + the program's
-// prescription stamped on as `sets` and `rest`.
-function hydrateExercise(dayKey, sectionKey, programEntry) {
+function hydrateExerciseEntry(programEntry) {
   const ex = CATALOG_INDEX.get(programEntry.id);
   if (!ex) return null;
   return { ...ex, sets: programEntry.sets, rest: programEntry.rest };
 }
 
-// Hydrate an entire day: pulls section metadata (title, blurb) from the
-// catalog day file and section ordering + exercise ordering + prescription
-// from the program template. Sections present in the catalog but absent
-// from the program are dropped (cleanly: a future PPL program can omit a
-// catalog section without ripping it out of the catalog).
-function hydrateDay(dayKey) {
+function hydrateDayFrom(program, dayKey) {
   const catalog = CATALOG_BY_DAY[dayKey];
   if (!catalog) return null;
-  const programDay = ACTIVE_PROGRAM.days[dayKey];
+  const programDay = program?.days?.[dayKey];
   if (!programDay) return null;
 
   const sections = [];
@@ -70,7 +89,7 @@ function hydrateDay(dayKey) {
     const programSection = programDay[catalogSection.key];
     if (!programSection) continue;
     const exercises = programSection
-      .map((entry) => hydrateExercise(dayKey, catalogSection.key, entry))
+      .map(hydrateExerciseEntry)
       .filter(Boolean);
     sections.push({
       key: catalogSection.key,
@@ -89,12 +108,18 @@ function hydrateDay(dayKey) {
   };
 }
 
-// Pre-compute hydrated days so consumers (and React renders) see stable
-// object references across calls — important because PerformanceCard and
-// friends key on identity in some paths.
-const HYDRATED = Object.fromEntries(
-  Object.keys(CATALOG_BY_DAY).map((k) => [k, hydrateDay(k)]),
-);
+// Pure: hydrate every day of a program. Used by the React layer to compute
+// a fresh days-map when the user switches program or edits the overlay.
+export function hydrateProgram(program) {
+  return Object.fromEntries(
+    Object.keys(CATALOG_BY_DAY).map((k) => [k, hydrateDayFrom(program, k)]),
+  );
+}
+
+// Module-level default hydration — Full Spectrum, no overlay. Stable
+// object identity for consumers that haven't opted into overlay-aware
+// hydration yet.
+const HYDRATED = hydrateProgram(ACTIVE_PROGRAM);
 
 export const days = HYDRATED;
 export const dayList = Object.values(HYDRATED).filter(Boolean);
@@ -140,4 +165,5 @@ export const core = HYDRATED.core;
 export const recovery = HYDRATED.recovery;
 
 export { principles, injuryPrevention };
-export { fullSpectrum };
+export { fullSpectrum, PROGRAMS, DEFAULT_PROGRAM_KEY, getActiveProgram };
+export { applyOverlay } from './programs/overlay';

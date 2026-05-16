@@ -5,6 +5,7 @@ import App from './App.jsx';
 import { applyTheme, initTheme } from './design-system/applyTheme';
 import { SettingsProvider } from './state/settings.jsx';
 import { SessionProvider } from './state/session.jsx';
+import { OverlayProvider } from './state/overlay.jsx';
 
 // Inject theme tokens (CSS vars) once, before first paint.
 applyTheme();
@@ -13,9 +14,11 @@ initTheme();
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <SettingsProvider>
-      <SessionProvider>
-        <App />
-      </SessionProvider>
+      <OverlayProvider>
+        <SessionProvider>
+          <App />
+        </SessionProvider>
+      </OverlayProvider>
     </SettingsProvider>
   </StrictMode>,
 );
