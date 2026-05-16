@@ -43,6 +43,9 @@ export function PerformanceCard({
   onRemove,
   onSetNote,
   prSetIds,
+  barWeight,
+  plateInventory,
+  plateCalculatorEnabled,
 }) {
   const ex = findExerciseById(performance.exerciseId);
   if (!ex) return null;
@@ -162,6 +165,10 @@ export function PerformanceCard({
           prescription={prescription}
           accent={accent}
           unit={unit}
+          lastTop={lastTop}
+          barWeight={barWeight}
+          plateInventory={plateInventory}
+          plateCalculatorEnabled={plateCalculatorEnabled}
           onLogSet={(payload) => onLogSet(performance.id, payload)}
           onDiscardSet={(setIdx) => onDiscardSet(performance.id, setIdx)}
           prSetIds={prSetIds}

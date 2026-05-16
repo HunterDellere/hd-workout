@@ -5,6 +5,7 @@ import { BottomNav } from './components/BottomNav';
 import { PWAInstallBanner } from './components/PWAInstallBanner';
 import { UpdateBanner } from './components/UpdateBanner';
 import { SessionBar } from './components/SessionBar';
+import { Onboarding } from './components/Onboarding';
 
 // Legacy day-rooted exercise URLs redirect to the canonical pattern-first route.
 function LegacyExerciseRedirect() {
@@ -75,6 +76,7 @@ export default function App() {
       <UpdateBanner />
       <SessionBar />
       <BottomNav />
+      <Onboarding />
     </HashRouter>
   );
 }

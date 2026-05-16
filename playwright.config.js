@@ -28,6 +28,22 @@ export default defineConfig({
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
+    // Onboarding overlay would otherwise block every E2E. Mark all test
+    // sessions as onboarded by default; specs that seed their own
+    // settings blob include onboarded:true alongside their fields so
+    // legacy seeding paths keep working unchanged. New installs in
+    // production still see the flow.
+    storageState: {
+      cookies: [],
+      origins: [
+        {
+          origin: `http://localhost:${PORT}`,
+          localStorage: [
+            { name: 'hdw:settings', value: '{"onboarded":true}' },
+          ],
+        },
+      ],
+    },
   },
   projects: [
     {

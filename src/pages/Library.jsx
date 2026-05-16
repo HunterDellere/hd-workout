@@ -5,6 +5,7 @@
 // right-side anchor strip so the desktop view stops reading as a centered
 // column floating in a void.
 
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Page,
@@ -12,10 +13,11 @@ import {
   Text,
   PatternGlyph,
   BrushDivider,
+  MASTHEAD_HEIGHT_PX,
 } from '../design-system/components';
 import { patternAccent, dayLineageAccent, space as spaceScale } from '../design-system/tokens';
 import { PATTERNS } from '../data/patterns';
-import { dayList } from '../data';
+import { dayList, rawCatalogList } from '../data';
 
 function GroupHeader({ id, label, count }) {
   return (
@@ -165,7 +167,76 @@ function AnchorRail({ anchors }) {
   );
 }
 
+// Substring + tag-keyword search over the raw catalog. Case-insensitive;
+// multiple space-separated terms AND together so "incline db" finds
+// dumbbell incline variants.
+function searchCatalog(query) {
+  const q = query.trim().toLowerCase();
+  if (!q) return [];
+  const terms = q.split(/\s+/).filter(Boolean);
+  const list = rawCatalogList();
+  return list.filter((ex) => {
+    const hay = [
+      ex.name,
+      ex.id,
+      ...(ex.tags ?? []),
+      ...(ex.equipment ?? []),
+      ...(ex.primaryMuscles ?? []),
+    ].join(' ').toLowerCase();
+    return terms.every((t) => hay.includes(t));
+  });
+}
+
+function SearchHitRow({ exercise, isFirst }) {
+  const day = exercise._day;
+  const accent = dayLineageAccent[day] ?? 'stone';
+  return (
+    <li>
+      <Link
+        to={`/library/exercises/${exercise.id}`}
+        data-testid="library-search-hit"
+        data-exercise-id={exercise.id}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: spaceScale[3],
+          padding: `${spaceScale[3]}px 0`,
+          borderTop: isFirst ? 'none' : '1px solid var(--border-hairline)',
+          textDecoration: 'none',
+          color: 'var(--text-primary)',
+        }}
+      >
+        <span
+          aria-hidden
+          style={{
+            width: 6,
+            height: 6,
+            background: `var(--accent-${accent}-solid)`,
+            borderRadius: 1,
+            flexShrink: 0,
+          }}
+        />
+        <Stack direction="column" gap={1} style={{ flex: 1, minWidth: 0 }}>
+          <Text as="span" variant="title-md">{exercise.name}</Text>
+          <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
+            {day} · {exercise._section?.title ?? ''}
+          </Text>
+        </Stack>
+        {exercise.tier && (
+          <Text as="span" variant="mono-sm" tone="tertiary">
+            T{exercise.tier}
+          </Text>
+        )}
+      </Link>
+    </li>
+  );
+}
+
 export function Library() {
+  const [query, setQuery] = useState('');
+  const hits = useMemo(() => searchCatalog(query), [query]);
+  const searching = query.trim().length > 0;
+
   const anchors = [
     { id: 'library-days', label: 'Days', count: dayList.length },
     { id: 'library-movements', label: 'Movements', count: PATTERNS.length },
@@ -204,6 +275,63 @@ export function Library() {
           >
             Browse by day, or by movement.
           </Text>
+
+          {/* Sticky search input. Calmly positioned; clears on Esc. */}
+          <div
+            style={{
+              position: 'sticky',
+              top: MASTHEAD_HEIGHT_PX,
+              zIndex: 3,
+              marginTop: 24,
+              background: 'var(--surface-page)',
+              paddingTop: 8,
+              paddingBottom: 8,
+            }}
+          >
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Escape') setQuery(''); }}
+              placeholder="Search exercises…"
+              aria-label="Search exercises"
+              data-testid="library-search"
+              style={{
+                width: '100%',
+                padding: '12px 16px',
+                background: 'var(--surface-sunken)',
+                border: '1px solid var(--border-hairline)',
+                borderRadius: 8,
+                color: 'var(--text-primary)',
+                fontFamily: 'var(--font-sans)',
+                fontSize: 15,
+                outline: 'none',
+                boxSizing: 'border-box',
+              }}
+            />
+          </div>
+
+          {searching ? (
+            <section data-testid="library-search-results" style={{ marginTop: 16 }}>
+              <Stack direction="row" align="baseline" justify="space-between" gap={3} style={{ padding: '8px 0 12px' }}>
+                <Text as="h2" variant="title-lg">Results</Text>
+                <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
+                  {hits.length}
+                </Text>
+              </Stack>
+              {hits.length === 0 ? (
+                <Text as="p" variant="body-md" tone="secondary" style={{ padding: '16px 0' }}>
+                  No matches. Try a shorter term, or browse below.
+                </Text>
+              ) : (
+                <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+                  {hits.slice(0, 80).map((ex, i) => (
+                    <SearchHitRow key={ex.id} exercise={ex} isFirst={i === 0} />
+                  ))}
+                </ul>
+              )}
+            </section>
+          ) : null}
 
           <BrushDivider style={{ marginTop: 40 }} />
 

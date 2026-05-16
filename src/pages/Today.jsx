@@ -292,6 +292,13 @@ export function Today() {
                     restStartedAt={activeSession.restStartedAt}
                     restRaw={perf.prescription?.rest}
                     lastTop={lastTopSetForExercise(archive, perf.exerciseId)}
+                    barWeight={settings.units === 'lb'
+                      ? (settings.barWeightLb ?? null)
+                      : (settings.barWeightKg ?? null)}
+                    plateInventory={settings.units === 'lb'
+                      ? (settings.platesLb ?? null)
+                      : (settings.platesKg ?? null)}
+                    plateCalculatorEnabled={settings.plateCalculatorEnabled !== false}
                     suggestion={settings.intelligenceEnabled
                       ? suggestNextLoad(
                         historyForExercise(archive, perf.exerciseId),

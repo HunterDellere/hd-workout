@@ -5,9 +5,14 @@
 // Designed mid-set, eyes-up: mono-lg numerals, generous tap targets,
 // the load value carries the most visual weight.
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Stack, Text, Button } from '../design-system/components';
 import { useHaptics } from '../hooks/useHaptics';
+import {
+  platesPerSide,
+  formatPlateList,
+  defaultBarFor,
+} from '../data/plates';
 
 function Stepper({ label, value, step, onDelta, onChange, suffix }) {
   return (
@@ -134,16 +139,86 @@ function RpeRow({ value, onChange, accent }) {
 }
 
 function LoggedSet({ set, isLast, onDiscard, unitDisplay, isPR }) {
+  // Swipe-to-discard: pointer-driven horizontal drag reveals a Delete
+  // affordance under the row. Threshold is 56px (matches the visible
+  // pull-tab); beyond that, releasing fires onDiscard. Keyboard / mouse
+  // path still uses the explicit button so no accessibility regression.
+  const [offset, setOffset] = useState(0);
+  const [tracking, setTracking] = useState(false);
+  const startX = useRef(0);
+  const PULL_WIDTH = 80;
+
+  function onPointerDown(e) {
+    if (e.pointerType === 'mouse') return; // pointer-touch only
+    setTracking(true);
+    startX.current = e.clientX;
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+  }
+  function onPointerMove(e) {
+    if (!tracking) return;
+    const dx = e.clientX - startX.current;
+    // Only allow leftward drag; clamp to PULL_WIDTH.
+    setOffset(Math.max(-PULL_WIDTH, Math.min(0, dx)));
+  }
+  function onPointerUp() {
+    if (!tracking) return;
+    setTracking(false);
+    if (offset <= -PULL_WIDTH * 0.7) {
+      onDiscard(set.index);
+      setOffset(0);
+    } else {
+      setOffset(0); // snap back
+    }
+  }
+
   return (
-    <Stack
-      direction="row"
-      align="center"
-      gap={3}
+    <div
       style={{
-        padding: '8px 0',
+        position: 'relative',
+        overflow: 'hidden',
         borderTop: isLast ? '1px solid var(--border-hairline)' : 'none',
       }}
     >
+      {/* Reveal layer — only visible mid-swipe. */}
+      <div
+        aria-hidden
+        style={{
+          position: 'absolute',
+          right: 0,
+          top: 0,
+          bottom: 0,
+          width: PULL_WIDTH,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'var(--state-warn-soft, var(--surface-sunken))',
+          color: 'var(--state-warn-ink, var(--text-secondary))',
+          fontFamily: 'var(--font-mono)',
+          fontSize: 11,
+          textTransform: 'uppercase',
+          letterSpacing: '0.10em',
+          opacity: Math.min(1, Math.abs(offset) / PULL_WIDTH),
+        }}
+      >
+        Discard
+      </div>
+      <Stack
+        direction="row"
+        align="center"
+        gap={3}
+        data-testid="logged-set-row"
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
+        style={{
+          padding: '8px 0',
+          background: 'var(--surface-page)',
+          transform: `translateX(${offset}px)`,
+          transition: tracking ? 'none' : 'transform 180ms ease',
+          touchAction: 'pan-y',
+        }}
+      >
       <Text as="span" variant="mono-sm" tone="tertiary" style={{ width: 24, textTransform: 'uppercase' }}>
         {String(set.index).padStart(2, '0')}
       </Text>
@@ -226,7 +301,8 @@ function LoggedSet({ set, isLast, onDiscard, unitDisplay, isPR }) {
       >
         Discard
       </button>
-    </Stack>
+      </Stack>
+    </div>
   );
 }
 
@@ -263,11 +339,33 @@ function FlagToggle({ label, active, onToggle, testId }) {
   );
 }
 
-export function SetRow({ performance, prescription, accent, unit, onLogSet, onDiscardSet, prSetIds }) {
-  const defaultWeight = performance.sets.at(-1)?.weight ?? '';
-  const defaultReps = prescription.kind === 'straight'
-    ? (prescription.repsMid ?? prescription.repsHigh ?? '')
-    : (performance.sets.at(-1)?.reps ?? '');
+export function SetRow({
+  performance,
+  prescription,
+  accent,
+  unit,
+  onLogSet,
+  onDiscardSet,
+  prSetIds,
+  // Last working top-set from the archive for this exercise — used to
+  // pre-fill the first set's weight/reps when nothing's been logged yet
+  // in the current performance. Subsequent sets carry within-session.
+  lastTop,
+  // Plate calculator inputs. null/undefined values fall back to
+  // unit-aware defaults via src/data/plates.js.
+  barWeight,
+  plateInventory,
+  plateCalculatorEnabled = true,
+}) {
+  // Defaults: within-session prior > archive prior > prescription mid > ''.
+  const withinSessionPrior = performance.sets.at(-1);
+  const archivePriorWeight = lastTop?.top?.weight ?? '';
+  const archivePriorReps = lastTop?.top?.reps ?? '';
+  const defaultWeight = withinSessionPrior?.weight ?? archivePriorWeight;
+  const defaultReps = withinSessionPrior?.reps
+    ?? (prescription.kind === 'straight'
+      ? (prescription.repsMid ?? prescription.repsHigh ?? archivePriorReps ?? '')
+      : (archivePriorReps ?? ''));
 
   const [weight, setWeight] = useState(defaultWeight);
   const [reps, setReps] = useState(defaultReps);
@@ -275,6 +373,17 @@ export function SetRow({ performance, prescription, accent, unit, onLogSet, onDi
   const [isWarmup, setIsWarmup] = useState(false);
   const [isDrop, setIsDrop] = useState(false);
   const haptic = useHaptics();
+
+  // Plate breakdown derives from the current weight input, the bar, and
+  // the plate inventory. Suppressed for empty/zero, for warmups (often
+  // not loaded as plates), and when the user has disabled it.
+  const plateBreakdown = (() => {
+    if (!plateCalculatorEnabled || isWarmup) return null;
+    const n = typeof weight === 'number' ? weight : Number(weight);
+    if (!Number.isFinite(n) || n <= 0) return null;
+    const bar = Number.isFinite(barWeight) ? barWeight : defaultBarFor(unit);
+    return platesPerSide(n, { barWeight: bar, plates: plateInventory });
+  })();
 
   function handleLog() {
     if (weight === '' || reps === '') return;
@@ -338,6 +447,29 @@ export function SetRow({ performance, prescription, accent, unit, onLogSet, onDi
             onChange={setReps}
           />
         </Stack>
+
+        {plateBreakdown && (plateBreakdown.perSide.length > 0 || plateBreakdown.residual > 0) && (
+          <Text
+            as="div"
+            variant="mono-sm"
+            tone="tertiary"
+            data-testid="plate-breakdown"
+            style={{
+              textTransform: 'uppercase',
+              letterSpacing: '0.10em',
+              marginTop: -8,
+            }}
+          >
+            {plateBreakdown.perSide.length > 0
+              ? <>Per side · {formatPlateList(plateBreakdown.perSide)}</>
+              : <>Per side · —</>}
+            {plateBreakdown.residual > 0 && (
+              <Text as="span" variant="mono-sm" style={{ color: 'var(--state-warn-ink)', marginLeft: 8 }}>
+                · {plateBreakdown.residual}{unit} short
+              </Text>
+            )}
+          </Text>
+        )}
 
         <RpeRow value={rpe} onChange={setRpe} accent={accent} />
 

@@ -15,9 +15,16 @@ import { migrate, stampSchemaVersion } from '../data/migrations';
 
 function mergeSettings(parsed) {
   if (!parsed || typeof parsed !== 'object') return DEFAULT_SETTINGS;
+  // If the persisted blob predates the onboarded flag, treat the user as
+  // already onboarded so the first-launch flow doesn't appear for
+  // existing installs. Brand-new installs hit the default-only branch
+  // above and keep onboarded:false.
+  const inferOnboarded = parsed.onboarded === true
+    || (parsed.onboarded == null && Object.keys(parsed).length > 0);
   return {
     ...DEFAULT_SETTINGS,
     ...parsed,
+    onboarded: inferOnboarded,
     split: { ...DEFAULT_SETTINGS.split, ...(parsed.split ?? {}) },
   };
 }
@@ -86,6 +93,19 @@ export function SettingsProvider({ children }) {
     })),
     resetSplit: () => setSettings((s) => ({ ...s, split: DEFAULT_SETTINGS.split })),
     replaceAll: (next) => setSettings(mergeSettings(next)),
+    setOnboarded: (v) => setSettings((s) => ({ ...s, onboarded: !!v })),
+    setBarWeight: (unit, value) => setSettings((s) => ({
+      ...s,
+      [unit === 'lb' ? 'barWeightLb' : 'barWeightKg']: value,
+    })),
+    setPlateInventory: (unit, plates) => setSettings((s) => ({
+      ...s,
+      [unit === 'lb' ? 'platesLb' : 'platesKg']: plates,
+    })),
+    setPlateCalculatorEnabled: (v) => setSettings((s) => ({
+      ...s,
+      plateCalculatorEnabled: !!v,
+    })),
   }), [settings]);
 
   return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;

@@ -218,6 +218,8 @@ export function Settings() {
     applyProgramSplit,
     toggleExcludedEquipment,
     resetSplit,
+    setPlateCalculatorEnabled,
+    setBarWeight,
   } = useSettings();
   const activeProgramKey = settings.activeProgramKey ?? DEFAULT_PROGRAM_KEY;
   const isHome = settings.location === 'home';
@@ -413,6 +415,69 @@ export function Settings() {
         </div>
       </Block>
 
+
+      <Block gapTop={56} eyebrow="Plate calculator">
+        <Text as="p" variant="body-md" tone="secondary" style={{ marginBottom: 12 }}>
+          Shows the per-side plate breakdown under the load input mid-set.
+          Suppressed on warmup sets.
+        </Text>
+        <div role="radiogroup" aria-label="Plate calculator">
+          <Radio
+            value="on"
+            current={settings.plateCalculatorEnabled === false ? 'off' : 'on'}
+            onSelect={() => setPlateCalculatorEnabled(true)}
+            label="On"
+            hint="Default. Quiet mono line below the load stepper."
+            isFirst
+            groupValues={['on', 'off']}
+          />
+          <Radio
+            value="off"
+            current={settings.plateCalculatorEnabled === false ? 'off' : 'on'}
+            onSelect={() => setPlateCalculatorEnabled(false)}
+            label="Off"
+            hint="Hide the breakdown."
+            groupValues={['on', 'off']}
+          />
+        </div>
+        {settings.plateCalculatorEnabled !== false && (
+          <Stack direction="row" gap={3} align="center" style={{ marginTop: 16, flexWrap: 'wrap' }}>
+            <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
+              Bar weight
+            </Text>
+            <input
+              type="number"
+              data-testid="bar-weight-input"
+              aria-label="Bar weight"
+              value={settings.units === 'lb'
+                ? (settings.barWeightLb ?? 45)
+                : (settings.barWeightKg ?? 20)}
+              onChange={(e) => {
+                const v = Number(e.target.value);
+                if (!Number.isFinite(v)) return;
+                setBarWeight(settings.units, v);
+              }}
+              min={0}
+              step={settings.units === 'lb' ? 5 : 1}
+              style={{
+                width: 80,
+                padding: '8px 10px',
+                background: 'var(--surface-page)',
+                border: '1px solid var(--border-strong)',
+                borderRadius: 6,
+                color: 'var(--text-primary)',
+                fontFamily: 'var(--font-mono)',
+                fontSize: 14,
+                textAlign: 'center',
+                outline: 'none',
+              }}
+            />
+            <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
+              {settings.units}
+            </Text>
+          </Stack>
+        )}
+      </Block>
 
       <Block gapTop={56} eyebrow="Equipment I don't have">
         <Text as="p" variant="body-md" tone="secondary" style={{ marginBottom: 12 }}>

@@ -45,6 +45,18 @@ export const DEFAULT_SETTINGS = {
   // which overlay bucket is active, excludedEquipment narrows the candidate
   // pool for any swap/add operation regardless of location.
   excludedEquipment: [],
+  // Onboarding: dismissed forever after the first-launch flow completes
+  // or is explicitly skipped. New installs start at false → flow renders.
+  onboarded: false,
+  // Plate calculator: bar weight + plate inventory. null falls back to
+  // defaults from src/data/plates.js (20kg / 45lb bar, standard
+  // pyramid of plates). Per-unit so the user can carry separate kg/lb
+  // setups if they train across units.
+  barWeightKg: null,
+  barWeightLb: null,
+  platesKg: null, // null = use defaults
+  platesLb: null,
+  plateCalculatorEnabled: true,
 };
 
 export const DAY_OPTIONS = ['push', 'pull', 'legs', 'core', 'recovery', 'rest'];
