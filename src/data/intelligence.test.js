@@ -1,0 +1,186 @@
+import { describe, it, expect } from 'vitest';
+import {
+  annotatePRs,
+  prsFromSession,
+  historicalMaxes,
+  weeklyVolume,
+  frequencyHeatmap,
+  isoWeekKey,
+} from './intelligence';
+
+const session = (id, endedAt, exerciseId, sets) => ({
+  id,
+  dayKey: 'push',
+  startedAt: endedAt,
+  endedAt,
+  performances: [{ exerciseId, sets, sectionKey: 'main' }],
+});
+
+describe('startOfIsoWeek / isoWeekKey', () => {
+  it('returns Monday of the same week', () => {
+    // 2026-05-15 is a Friday — Monday is 2026-05-11.
+    const d = new Date('2026-05-15T12:00:00.000Z');
+    expect(isoWeekKey(d)).toBe('2026-05-11');
+  });
+  it('Monday returns itself', () => {
+    const d = new Date('2026-05-11T08:00:00.000Z');
+    expect(isoWeekKey(d)).toBe('2026-05-11');
+  });
+  it('Sunday belongs to the preceding Monday', () => {
+    const d = new Date('2026-05-17T23:00:00.000Z');
+    expect(isoWeekKey(d)).toBe('2026-05-11');
+  });
+});
+
+describe('historicalMaxes', () => {
+  it('returns null/empty when archive has nothing for the exercise', () => {
+    const out = historicalMaxes([], 'bench', '2026-05-15T00:00:00.000Z');
+    expect(out.weight).toBeNull();
+    expect(out.repsByWeight.size).toBe(0);
+  });
+
+  it('finds heaviest weight and best reps at each weight', () => {
+    const archive = [
+      session('a', '2026-05-01T00:00:00.000Z', 'bench', [
+        { weight: 60, reps: 8, unit: 'kg' },
+        { weight: 70, reps: 5, unit: 'kg' },
+      ]),
+      session('b', '2026-05-08T00:00:00.000Z', 'bench', [
+        { weight: 70, reps: 6, unit: 'kg' },
+      ]),
+    ];
+    const { weight, repsByWeight } = historicalMaxes(archive, 'bench', '2026-05-15T00:00:00.000Z');
+    expect(weight).toMatchObject({ value: 70 });
+    expect(repsByWeight.get(60)).toBe(8);
+    expect(repsByWeight.get(70)).toBe(6);
+  });
+
+  it('ignores sessions at or after the reference time', () => {
+    const archive = [
+      session('a', '2026-05-15T00:00:00.000Z', 'bench', [{ weight: 100, reps: 1 }]),
+    ];
+    const { weight } = historicalMaxes(archive, 'bench', '2026-05-15T00:00:00.000Z');
+    expect(weight).toBeNull();
+  });
+});
+
+describe('annotatePRs', () => {
+  it('flags a weight PR when no prior weight exists', () => {
+    const candidate = session('c', '2026-05-15T00:00:00.000Z', 'bench', [
+      { weight: 60, reps: 5 },
+    ]);
+    const out = annotatePRs(candidate, []);
+    expect(out.performances[0].sets[0].pr).toEqual({ weight: true });
+  });
+
+  it('flags a weight PR when surpassing historical max', () => {
+    const archive = [session('a', '2026-05-01T00:00:00.000Z', 'bench', [{ weight: 70, reps: 5 }])];
+    const candidate = session('c', '2026-05-15T00:00:00.000Z', 'bench', [
+      { weight: 75, reps: 3 },
+    ]);
+    const out = annotatePRs(candidate, archive);
+    expect(out.performances[0].sets[0].pr).toEqual({ weight: true });
+  });
+
+  it('flags a rep PR when beating prior reps at a previously-lifted weight', () => {
+    const archive = [session('a', '2026-05-01T00:00:00.000Z', 'bench', [{ weight: 70, reps: 5 }])];
+    const candidate = session('c', '2026-05-15T00:00:00.000Z', 'bench', [
+      { weight: 70, reps: 7 },
+    ]);
+    const out = annotatePRs(candidate, archive);
+    expect(out.performances[0].sets[0].pr).toEqual({ reps: { atWeight: 70, beat: 5 } });
+  });
+
+  it('does not flag rep PR for a fresh weight (already covered by weight PR)', () => {
+    const archive = [session('a', '2026-05-01T00:00:00.000Z', 'bench', [{ weight: 70, reps: 5 }])];
+    const candidate = session('c', '2026-05-15T00:00:00.000Z', 'bench', [
+      { weight: 75, reps: 10 },
+    ]);
+    const out = annotatePRs(candidate, archive);
+    expect(out.performances[0].sets[0].pr).toEqual({ weight: true });
+  });
+
+  it('does not flag a regression', () => {
+    const archive = [session('a', '2026-05-01T00:00:00.000Z', 'bench', [{ weight: 70, reps: 7 }])];
+    const candidate = session('c', '2026-05-15T00:00:00.000Z', 'bench', [
+      { weight: 70, reps: 5 },
+    ]);
+    const out = annotatePRs(candidate, archive);
+    expect(out.performances[0].sets[0].pr).toBeUndefined();
+  });
+
+  it('flags successive PRs within the same session', () => {
+    const candidate = session('c', '2026-05-15T00:00:00.000Z', 'bench', [
+      { weight: 60, reps: 5 },
+      { weight: 70, reps: 5 },
+      { weight: 80, reps: 3 },
+    ]);
+    const out = annotatePRs(candidate, []);
+    expect(out.performances[0].sets[0].pr).toEqual({ weight: true });
+    expect(out.performances[0].sets[1].pr).toEqual({ weight: true });
+    expect(out.performances[0].sets[2].pr).toEqual({ weight: true });
+  });
+});
+
+describe('prsFromSession', () => {
+  it('returns empty for sessions with no PRs', () => {
+    expect(prsFromSession(session('a', '2026-05-15T00:00:00.000Z', 'bench', [{ weight: 60, reps: 5 }]))).toEqual([]);
+  });
+  it('extracts only PR-stamped sets', () => {
+    const s = annotatePRs(
+      session('c', '2026-05-15T00:00:00.000Z', 'bench', [
+        { weight: 60, reps: 5 },
+        { weight: 70, reps: 5 },
+      ]),
+      [],
+    );
+    const prs = prsFromSession(s);
+    expect(prs).toHaveLength(2);
+    expect(prs[0].kinds).toContain('weight');
+  });
+});
+
+describe('weeklyVolume', () => {
+  it('returns empty weeks on empty archive', () => {
+    expect(weeklyVolume([])).toEqual({ weeks: [] });
+  });
+
+  it('groups by ISO week and splits across patterns', () => {
+    // push-bb-bench is in horizontal-press only — full volume to that pattern.
+    const archive = [
+      session('a', '2026-05-12T12:00:00.000Z', 'push-bb-bench', [
+        { weight: 100, reps: 5 },
+        { weight: 100, reps: 5 },
+      ]),
+    ];
+    const { weeks } = weeklyVolume(archive, new Date('2026-05-15T12:00:00.000Z'));
+    expect(weeks.length).toBeGreaterThanOrEqual(1);
+    const wk = weeks.find((w) => w.key === '2026-05-11');
+    expect(wk.perPattern['horizontal-press']).toBe(1000);
+  });
+});
+
+describe('frequencyHeatmap', () => {
+  it('produces an 8×7 grid by default', () => {
+    const out = frequencyHeatmap([], { now: new Date('2026-05-15T12:00:00.000Z') });
+    expect(out.weeks).toHaveLength(8);
+    expect(out.grid).toHaveLength(8);
+    expect(out.grid[0]).toHaveLength(7);
+    expect(out.max).toBe(0);
+  });
+
+  it('places a Friday session in the Friday column', () => {
+    // 2026-05-15 is a Friday → column 4 (Mon=0, Fri=4).
+    const archive = [session('a', '2026-05-15T12:00:00.000Z', 'bench', [{ weight: 50, reps: 5 }])];
+    const out = frequencyHeatmap(archive, { now: new Date('2026-05-15T12:00:00.000Z') });
+    const lastRow = out.grid[out.grid.length - 1];
+    expect(lastRow[4]).toBe(1);
+    expect(out.max).toBe(1);
+  });
+
+  it('drops sessions older than the window', () => {
+    const archive = [session('a', '2025-01-01T00:00:00.000Z', 'bench', [{ weight: 50, reps: 5 }])];
+    const out = frequencyHeatmap(archive, { now: new Date('2026-05-15T12:00:00.000Z') });
+    expect(out.max).toBe(0);
+  });
+});

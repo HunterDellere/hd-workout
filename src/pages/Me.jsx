@@ -1,15 +1,24 @@
-// /me — index of personal pages. Currently: Settings, About.
+// /me — index of personal pages. Currently: Settings, About, Insights (flagged).
 // Hairline-row list, same shape as the Library index.
 
 import { Link } from 'react-router-dom';
 import { Page, Text, BrushDivider, Button } from '../design-system/components';
+import { useSettings } from '../state/settings-context.js';
 
-const ITEMS = [
-  { to: '/me/settings', label: 'Settings', hint: 'Split, rest timer, units, haptics' },
+const BASE_ITEMS = [
+  { to: '/me/settings', label: 'Settings', hint: 'Split, rest timer, units, haptics, data' },
   { to: '/me/about',    label: 'About',    hint: 'Install instructions' },
 ];
 
 export function Me() {
+  const { settings } = useSettings();
+  const items = settings.intelligenceEnabled
+    ? [
+      { to: '/insights', label: 'Insights', hint: 'PRs, weekly volume, frequency' },
+      ...BASE_ITEMS,
+    ]
+    : BASE_ITEMS;
+
   return (
     <Page>
       <Button as={Link} to="/" variant="bare" size="sm" style={{ padding: 0 }}>
@@ -23,7 +32,7 @@ export function Me() {
       </Text>
       <BrushDivider style={{ marginTop: 32 }} />
       <ul style={{ listStyle: 'none', margin: '24px 0 0', padding: 0 }}>
-        {ITEMS.map((item, i) => (
+        {items.map((item, i) => (
           <li key={item.to}>
             <Link
               to={item.to}

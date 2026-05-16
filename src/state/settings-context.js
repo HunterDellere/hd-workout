@@ -28,6 +28,7 @@ export const DEFAULT_SETTINGS = {
   restTimerMode: 'count-up',
   units: 'kg',
   haptics: 'standard', // off | standard | strong
+  intelligenceEnabled: false, // Phase 3 surface: PRs, volume, heatmap.
 };
 
 export const DAY_OPTIONS = ['push', 'pull', 'legs', 'core', 'recovery', 'rest'];

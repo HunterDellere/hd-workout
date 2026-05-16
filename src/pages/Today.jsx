@@ -19,6 +19,7 @@ import { dayLineageAccent } from '../design-system/tokens';
 import { getDay, findExerciseAnywhere } from '../data';
 import { parsePrescription } from '../data/prescription';
 import { lastTopSetForExercise } from '../data/history';
+import { prsFromSession } from '../data/intelligence';
 import { REST_DAY, ACTIVE_REST_ACTIVITIES } from '../data/rest';
 import { useSettings, dayKeyForToday } from '../state/settings-context.js';
 import { useSession, lastLoggedAt } from '../state/session-context.js';
@@ -168,6 +169,7 @@ export function Today() {
   const [swapPerformanceId, setSwapPerformanceId] = useState(null);
   const [pickerSectionKey, setPickerSectionKey] = useState(null);
   const [resumeDismissed, setResumeDismissed] = useState(false);
+  const [endedSummary, setEndedSummary] = useState(null);
 
   // Group active-session performances by their original section. Preserves
   // the encounter order of section keys so the warmup/main/finisher
@@ -220,6 +222,91 @@ export function Today() {
   const swapPerformance = swapPerformanceId
     ? activeSession?.performances.find((p) => p.id === swapPerformanceId)
     : null;
+
+  if (endedSummary) {
+    const prs = prsFromSession(endedSummary);
+    const totalSets = endedSummary.performances.reduce((n, p) => n + p.sets.length, 0);
+    return (
+      <Page>
+        <Text as="div" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
+          Session complete
+        </Text>
+        <Text as="h1" variant="display-lg" style={{ marginTop: 8, fontStyle: 'italic' }}>
+          {prs.length > 0 ? 'PR day.' : 'Logged.'}
+        </Text>
+        <Text as="p" variant="body-lg" tone="secondary" style={{ marginTop: 16, maxWidth: 60 * 9 }}>
+          {totalSets} sets across {endedSummary.performances.filter((p) => p.sets.length > 0).length} exercises.
+        </Text>
+        <BrushDivider style={{ marginTop: 32 }} />
+        {prs.length > 0 ? (
+          <Block gapTop={24} eyebrow="Personal records">
+            <ul data-testid="pr-list" style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+              {prs.map((pr, i) => {
+                const found = findExerciseAnywhere(pr.exerciseId);
+                const name = found?.exercise?.name ?? pr.exerciseId;
+                const kind = pr.kinds.includes('weight') && pr.kinds.includes('reps')
+                  ? 'Weight + reps'
+                  : pr.kinds.includes('weight') ? 'Weight' : 'Reps';
+                return (
+                  <li
+                    key={i}
+                    data-testid="pr-row"
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'auto 1fr auto',
+                      gap: 16,
+                      padding: '12px 0',
+                      borderTop: i === 0 ? 'none' : '1px solid var(--border-hairline)',
+                      alignItems: 'baseline',
+                    }}
+                  >
+                    <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
+                      {kind}
+                    </Text>
+                    <Text as="span" variant="title-md">{name}</Text>
+                    <Text as="span" variant="mono-lg" style={{ color: `var(--accent-${accent}-ink)` }}>
+                      {pr.set.weight}{pr.set.unit ?? ''} × {pr.set.reps}
+                    </Text>
+                  </li>
+                );
+              })}
+            </ul>
+          </Block>
+        ) : (
+          <Block gapTop={24}>
+            <Text as="p" variant="body-md" tone="secondary">
+              No new records this time. Stacking volume is its own kind of progress.
+            </Text>
+          </Block>
+        )}
+        <Block gapTop={32}>
+          <Stack direction="row" gap={2}>
+            <Button
+              variant="primary"
+              accent={accent}
+              size="md"
+              data-testid="summary-done"
+              onClick={() => { setEndedSummary(null); navigate('/'); }}
+            >
+              Done
+            </Button>
+            {settings.intelligenceEnabled && (
+              <Button
+                as={Link}
+                to="/insights"
+                variant="soft"
+                accent={accent}
+                size="md"
+                onClick={() => setEndedSummary(null)}
+              >
+                Insights
+              </Button>
+            )}
+          </Stack>
+        </Block>
+      </Page>
+    );
+  }
 
   if (isRest) {
     return (
@@ -518,9 +605,13 @@ export function Today() {
                 accent={accent}
                 size="md"
                 data-testid="end-session"
-                onClick={() => {
-                  endSession();
-                  navigate('/');
+                onClick={async () => {
+                  const completed = await endSession();
+                  if (completed && settings.intelligenceEnabled) {
+                    setEndedSummary(completed);
+                  } else {
+                    navigate('/');
+                  }
                 }}
               >
                 End session

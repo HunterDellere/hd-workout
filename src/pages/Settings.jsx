@@ -176,7 +176,7 @@ function DataBlock() {
 }
 
 export function Settings() {
-  const { settings, setSplit, setRestTimerMode, setUnits, setHaptics, resetSplit } = useSettings();
+  const { settings, setSplit, setRestTimerMode, setUnits, setHaptics, setIntelligenceEnabled, resetSplit } = useSettings();
   const haptic = useHaptics();
 
   return (
@@ -305,6 +305,30 @@ export function Settings() {
               hint={m.hint}
             />
           ))}
+        </div>
+      </Block>
+
+      <BrushDivider style={{ marginTop: 40 }} />
+
+      <Block gapTop={24} eyebrow="Insights">
+        <Text as="p" variant="body-md" tone="secondary" style={{ marginBottom: 12 }}>
+          PR detection, weekly volume, and a frequency heatmap. Off by default while the math settles in.
+        </Text>
+        <div role="radiogroup" aria-label="Intelligence">
+          <Radio
+            value={true}
+            current={settings.intelligenceEnabled}
+            onSelect={() => setIntelligenceEnabled(true)}
+            label="On"
+            hint="Adds an Insights tile to /me."
+          />
+          <Radio
+            value={false}
+            current={settings.intelligenceEnabled}
+            onSelect={() => setIntelligenceEnabled(false)}
+            label="Off"
+            hint="Hides the surface entirely."
+          />
         </div>
       </Block>
     </Page>

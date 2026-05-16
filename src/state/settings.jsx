@@ -49,6 +49,7 @@ export function SettingsProvider({ children }) {
     setRestTimerMode: (mode) => setSettings((s) => ({ ...s, restTimerMode: mode })),
     setUnits: (units) => setSettings((s) => ({ ...s, units })),
     setHaptics: (haptics) => setSettings((s) => ({ ...s, haptics })),
+    setIntelligenceEnabled: (enabled) => setSettings((s) => ({ ...s, intelligenceEnabled: !!enabled })),
     resetSplit: () => setSettings((s) => ({ ...s, split: DEFAULT_SETTINGS.split })),
     replaceAll: (next) => setSettings(mergeSettings(next)),
   }), [settings]);

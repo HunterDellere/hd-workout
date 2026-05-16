@@ -66,6 +66,25 @@ export function HistoryStrip({ exerciseId, limit = 6, accent = 'stone' }) {
             <Text as="span" variant="mono-sm" tone="secondary">
               × {row.top?.reps ?? '—'}
             </Text>
+            {row.top?.pr && (
+              <span
+                data-testid="pr-chip"
+                style={{
+                  display: 'inline-block',
+                  padding: '2px 6px',
+                  borderRadius: 3,
+                  background: `var(--accent-${accent}-soft)`,
+                  color: `var(--accent-${accent}-ink)`,
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: 10,
+                  letterSpacing: '0.12em',
+                  textTransform: 'uppercase',
+                  fontWeight: 600,
+                }}
+              >
+                PR
+              </span>
+            )}
           </Stack>
           <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
             {row.setCount} set{row.setCount === 1 ? '' : 's'}

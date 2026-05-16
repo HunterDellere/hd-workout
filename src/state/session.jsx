@@ -10,6 +10,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { ulid } from '../data/ulid';
 import { SessionContext } from './session-context.js';
 import { loadFromStorage, saveToStorage, STORAGE_KEYS } from '../data/storage';
+import { annotatePRs } from '../data/intelligence';
 
 function buildPerformances(day) {
   if (!day) return [];
@@ -28,12 +29,6 @@ function buildPerformances(day) {
     }
   }
   return out;
-}
-
-async function appendArchive(session) {
-  const list = (await loadFromStorage(STORAGE_KEYS.archive, [])) ?? [];
-  const next = [...list, { ...session, endedAt: new Date().toISOString() }];
-  await saveToStorage(STORAGE_KEYS.archive, next);
 }
 
 export function SessionProvider({ children }) {
@@ -83,14 +78,23 @@ export function SessionProvider({ children }) {
     },
 
     async endSession() {
-      if (!session) return;
+      if (!session) return null;
       const totalSets = session.performances.reduce((n, p) => n + p.sets.length, 0);
-      if (totalSets > 0) {
-        const completed = { ...session, endedAt: new Date().toISOString() };
-        await appendArchive(completed);
-        setArchive((prev) => [...prev, completed]);
+      if (totalSets === 0) {
+        setSession(null);
+        return null;
       }
+      const completed = annotatePRs(
+        { ...session, endedAt: new Date().toISOString() },
+        archive,
+      );
+      // Write archive synchronously then clear the active session so the
+      // /today UI can read PRs off the returned blob.
+      const next = [...archive, completed];
+      await saveToStorage(STORAGE_KEYS.archive, next);
+      setArchive(next);
       setSession(null);
+      return completed;
     },
 
     logSet(performanceId, { weight, reps, rpe, unit }) {
