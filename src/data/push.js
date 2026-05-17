@@ -9,6 +9,18 @@ export const push = {
     'Horizontal and vertical pressing patterns, lateral / medial deltoid isolation, '
     + 'mandatory rotator cuff work, and tricep finishers. Rotator cuff training is '
     + 'non-negotiable for long-term pressing capacity.',
+  // Render order: rotator activation primes the shoulder, then the
+  // heaviest pressing pattern of the day (overhead), then horizontal
+  // compounds, accessory chest work, lateral isolation, triceps as
+  // a finisher.
+  defaultSectionOrder: [
+    'shoulders-rotator',
+    'shoulders-ohp',
+    'chest-horizontal',
+    'chest-incline',
+    'shoulders-lateral',
+    'triceps',
+  ],
   sections: [
     {
       key: 'chest-horizontal',

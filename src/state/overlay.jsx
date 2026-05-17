@@ -141,8 +141,32 @@ export function OverlayProvider({ children }) {
           exercises: hydratedEntries,
         });
       }
-      if (extraSections.length > 0) {
-        out[dayKey] = { ...day, sections: [...day.sections, ...extraSections] };
+      const combined = extraSections.length > 0
+        ? [...day.sections, ...extraSections]
+        : day.sections;
+
+      // Apply user section order if one is set. Sections present in the
+      // override list move into that order; unknown sections (added since
+      // the order was saved) keep their original relative position at the
+      // tail so they're never silently lost.
+      const order = dayOverlay.__sectionOrder;
+      let nextSections = combined;
+      if (Array.isArray(order) && order.length > 0) {
+        const byKey = new Map(combined.map((s) => [s.key, s]));
+        const ordered = [];
+        const used = new Set();
+        for (const key of order) {
+          const s = byKey.get(key);
+          if (s) { ordered.push(s); used.add(key); }
+        }
+        for (const s of combined) {
+          if (!used.has(s.key)) ordered.push(s);
+        }
+        nextSections = ordered;
+      }
+
+      if (nextSections !== day.sections) {
+        out[dayKey] = { ...day, sections: nextSections };
       }
     }
     return out;
@@ -286,6 +310,31 @@ export function OverlayProvider({ children }) {
     });
   }, [mutateActive, activeProgram.key]);
 
+  // Persist a custom section order for a day. Pass an array of section
+  // keys in the desired order. Sections not in the list are kept in their
+  // original relative order at the tail during hydration, so partial
+  // orderings are safe.
+  const setSectionOrder = useCallback((dayKey, sectionKeys) => {
+    if (!dayKey || !Array.isArray(sectionKeys)) return;
+    mutateActive((prev) => {
+      const programKey = activeProgram.key;
+      const prog = { ...(prev[programKey] ?? {}) };
+      const day = { ...(prog[dayKey] ?? {}) };
+      // Empty list clears the override (back to catalog default).
+      if (sectionKeys.length === 0) {
+        delete day.__sectionOrder;
+      } else {
+        day.__sectionOrder = sectionKeys;
+      }
+      if (Object.keys(day).length === 0) {
+        delete prog[dayKey];
+      } else {
+        prog[dayKey] = day;
+      }
+      return { ...prev, [programKey]: prog };
+    });
+  }, [mutateActive, activeProgram.key]);
+
   // Per-section reset: surgical undo for one section's overlay edits
   // (swaps, hides, adds) without disturbing the rest of the day. Pulled
   // out of the wholesale resetDay so the user can keep their push-day
@@ -329,9 +378,11 @@ export function OverlayProvider({ children }) {
     swapExerciseOverlay,
     resetDay,
     resetSection,
+    setSectionOrder,
     resetAllOverlays,
   }), [overlay, hydrated, days, updateEntry, hideExercise, unhideExercise,
-    addExercise, addCustomSection, removeAddedExercise, swapExerciseOverlay, resetDay, resetSection, resetAllOverlays]);
+    addExercise, addCustomSection, removeAddedExercise, swapExerciseOverlay,
+    resetDay, resetSection, setSectionOrder, resetAllOverlays]);
 
   return <OverlayContext.Provider value={value}>{children}</OverlayContext.Provider>;
 }

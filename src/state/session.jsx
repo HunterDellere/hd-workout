@@ -280,6 +280,40 @@ export function SessionProvider({ children }) {
       });
     },
 
+    // Mid-session section reorder. The session blob holds performances
+    // in their authored order; this restacks them so a given sectionKey
+    // group moves up or down in the list while preserving each section's
+    // internal exercise order. Sections not in the supplied order keep
+    // their original relative position at the tail.
+    reorderSections(sectionKeys) {
+      if (!Array.isArray(sectionKeys)) return;
+      setSession((s) => {
+        if (!s) return s;
+        const groups = new Map();
+        const originalOrder = [];
+        for (const perf of s.performances) {
+          if (!groups.has(perf.sectionKey)) {
+            groups.set(perf.sectionKey, []);
+            originalOrder.push(perf.sectionKey);
+          }
+          groups.get(perf.sectionKey).push(perf);
+        }
+        const seen = new Set();
+        const orderedKeys = [];
+        for (const k of sectionKeys) {
+          if (groups.has(k) && !seen.has(k)) {
+            orderedKeys.push(k);
+            seen.add(k);
+          }
+        }
+        for (const k of originalOrder) {
+          if (!seen.has(k)) orderedKeys.push(k);
+        }
+        const performances = orderedKeys.flatMap((k) => groups.get(k));
+        return { ...s, performances };
+      });
+    },
+
     clearRestTimer() {
       setSession((s) => (
         s ? { ...s, restStartedAt: null, restTargetSec: null, restPerformanceId: null } : s

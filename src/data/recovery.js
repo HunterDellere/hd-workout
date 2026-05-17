@@ -20,6 +20,29 @@ const recovery = {
     + 'modern desk loads, side-to-side imbalances, joint healthspan, '
     + 'cervical strength, and a spine-safe core. Light loads, deliberate '
     + 'execution, big returns over years.',
+  // Render order tuned for a standalone recovery session:
+  //   1. Posture practice — wake up neutral, set the frame
+  //   2. Soft tissue — release before lengthening
+  //   3. Stretching — earned ROM under length
+  //   4. Posture (corrective) — pull-aparts / Ys against the daily curl
+  //   5. Balance & proprioception — joint sensors, calm but engaged
+  //   6. Imbalance — unilateral asymmetry work
+  //   7. Spine health — McGill big-3 bracing
+  //   8. Mind-body flows — sequenced movement
+  //   9. Healthspan — cardio/VO2 + grip
+  //  10. Facial & cervical — small finisher work
+  defaultSectionOrder: [
+    'posture-practice',
+    'soft-tissue',
+    'stretching',
+    'posture',
+    'balance',
+    'imbalance',
+    'spine-health',
+    'mind-body',
+    'healthspan',
+    'facial-cervical',
+  ],
   sections: [
 
     // ─── Posture ──────────────────────────────────────────────────────────

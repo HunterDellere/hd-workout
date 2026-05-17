@@ -4,13 +4,19 @@
 // this performance is resting.
 
 import { Link } from 'react-router-dom';
-import { Stack, Text, MonoChipButton } from '../../design-system/components';
+import { Stack, Text, MonoChipButton, MASTHEAD_HEIGHT_PX } from '../../design-system/components';
 import { findExerciseById } from '../../data';
 import { parsePrescription } from '../../data/prescription';
 import { SetRow } from '../SetRow';
 import { DurationSetRow } from '../DurationSetRow';
 import { RestTimer } from '../RestTimer';
 import { NoteField } from './NoteField';
+
+// Sticky offset: masthead (56) + SessionProgress (~44 with rule + pad).
+// Together they crown the page during a session, so the rest timer sticks
+// just below them when scrolled.
+const SESSION_PROGRESS_HEIGHT_PX = 44;
+const STICKY_TOP_PX = MASTHEAD_HEIGHT_PX + SESSION_PROGRESS_HEIGHT_PX;
 
 function suggestionLine(suggestion, unit) {
   if (!suggestion) return null;
@@ -160,6 +166,34 @@ export function PerformanceCard({
         </Stack>
       </Stack>
 
+      {/* Rest timer: lives ABOVE the set inputs (between header and
+          stepper) so when you're resting you see the countdown right
+          next to the next set you're about to log. Sticky so as you
+          scroll inside the card it pins to the top. */}
+      {isResting && hasLogged && (
+        <div
+          style={{
+            position: 'sticky',
+            top: STICKY_TOP_PX,
+            zIndex: 3,
+            marginTop: 16,
+            // Bleed slightly into the page background so the sticky
+            // edge reads as a real layer above content scrolling under it.
+            paddingTop: 4,
+            paddingBottom: 4,
+            background: 'var(--surface-page)',
+          }}
+        >
+          <RestTimer
+            startedAt={restStartedAt}
+            restRaw={restRaw}
+            mode={restTimerMode}
+            accent={accent}
+            onStop={onStopRest}
+          />
+        </div>
+      )}
+
       <div style={{ marginTop: 20 }}>
         {prescription.kind === 'duration' || prescription.kind === 'rounds' ? (
           <DurationSetRow
@@ -192,18 +226,6 @@ export function PerformanceCard({
           onSave={(text) => onSetNote(performance.id, text)}
           testIdPrefix={`note-${performance.id}`}
         />
-      )}
-
-      {isResting && hasLogged && (
-        <div style={{ marginTop: 20 }}>
-          <RestTimer
-            startedAt={restStartedAt}
-            restRaw={restRaw}
-            mode={restTimerMode}
-            accent={accent}
-            onStop={onStopRest}
-          />
-        </div>
       )}
     </div>
   );

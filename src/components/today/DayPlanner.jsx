@@ -24,6 +24,7 @@ import { patternToExercises } from '../../data/derive';
 import { SubstituteSheet } from '../SubstituteSheet';
 import { SlotPicker } from '../SlotPicker';
 import { AddGroupSheet } from '../AddGroupSheet';
+import { ReorderSectionsSheet } from '../ReorderSectionsSheet';
 import { MonoChipButton } from '../../design-system/components';
 import { TodayHero } from './TodayHero';
 import { PreviewSection } from './PreviewSection';
@@ -74,6 +75,7 @@ export function DayPlanner({ dayKey, viewMode = 'today' }) {
     removeAddedExercise,
     resetDay,
     resetSection,
+    setSectionOrder,
   } = useOverlay();
 
   const [editSwap, setEditSwap] = useState(null);
@@ -82,6 +84,7 @@ export function DayPlanner({ dayKey, viewMode = 'today' }) {
   const [addGroupOpen, setAddGroupOpen] = useState(false);
   const [pendingSectionKey, setPendingSectionKey] = useState(null);
   const [pendingSectionTitle, setPendingSectionTitle] = useState(null);
+  const [reorderOpen, setReorderOpen] = useState(false);
 
   const day = overlayDays[dayKey] ?? null;
 
@@ -213,10 +216,22 @@ export function DayPlanner({ dayKey, viewMode = 'today' }) {
             })}
           </div>
 
+          {/* Section-level controls: reorder + add group. Tucked under the
+              section list so they live near the work they affect. */}
+          <Stack direction="row" gap={2} style={{ marginTop: 24, flexWrap: 'wrap', rowGap: 8 }}>
+            <MonoChipButton
+              data-testid="planner-reorder"
+              onClick={() => setReorderOpen(true)}
+              disabled={day.sections.length < 2}
+            >
+              Reorder sections
+            </MonoChipButton>
+          </Stack>
+
           {/* Add a brand-new section to this day (pre-start). Useful for
               dropping cardio onto core day, mobility onto push day, etc.
               On mobile this is the only way to add a non-program section. */}
-          <div style={{ marginTop: 24 }}>
+          <div style={{ marginTop: 16 }}>
             <MonoChipButton
               variant="dashed"
               size="md"
@@ -297,6 +312,13 @@ export function DayPlanner({ dayKey, viewMode = 'today' }) {
           setPendingSectionKey(sectionKey);
           setAddGroupOpen(false);
         }}
+      />
+
+      <ReorderSectionsSheet
+        open={reorderOpen}
+        onClose={() => setReorderOpen(false)}
+        sections={day.sections}
+        onSave={(orderedKeys) => setSectionOrder(dayKey, orderedKeys)}
       />
     </>
   );

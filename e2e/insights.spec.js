@@ -104,8 +104,12 @@ test('today suggestion line surfaces when intelligence is on', async ({ page }) 
   await page.goto('./#/today');
   await page.reload();
   await page.getByTestId('start-session').click();
-  // The bench performance should carry a hold suggestion (100 × 5 mid-range).
-  const benchCard = page.locator('[data-testid="performance-card"]').first();
+  // The bench performance carries a hold suggestion (100 × 5 mid-range).
+  // Find it by name link rather than positional index — section order
+  // is configurable per defaultSectionOrder on the catalog day.
+  const benchCard = page.locator('[data-testid="performance-card"]', {
+    has: page.locator('[data-testid="performance-name-link"]', { hasText: /bench/i }),
+  }).first();
   await expect(benchCard.getByTestId('suggestion-line')).toBeVisible();
 });
 

@@ -8,6 +8,17 @@ export const pull = {
     'Vertical and horizontal pulling, spinal erectors, dedicated biceps work, '
     + 'rear-delt isolation, and grip / forearm carries. Posterior balance is the '
     + 'antidote to a press-heavy life.',
+  // Render order: rear-delt activation primes the upper back, then
+  // vertical pulling (heaviest pattern), horizontal pulling, erectors,
+  // biceps accessory, grip/forearm finisher.
+  defaultSectionOrder: [
+    'rear-delt',
+    'lats-vertical',
+    'back-horizontal',
+    'back-erectors',
+    'biceps',
+    'grip-forearms',
+  ],
   sections: [
     {
       key: 'lats-vertical',

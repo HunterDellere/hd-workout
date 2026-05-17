@@ -51,10 +51,20 @@ describe('getDay', () => {
   it('returns hydrated push with prescription', () => {
     const push = getDay('push');
     expect(push.key).toBe('push');
-    const bench = push.sections[0].exercises[0];
-    expect(bench.id).toBe('push-bb-bench');
+    // Look up the bench by id rather than positional index — section
+    // order is configurable via defaultSectionOrder on the catalog day.
+    const bench = push.sections
+      .flatMap((s) => s.exercises)
+      .find((e) => e.id === 'push-bb-bench');
+    expect(bench).toBeDefined();
     expect(bench.sets).toBe('4 × 5–8');
     expect(bench.rest).toBe('2:30–3:00');
+  });
+
+  it('honours defaultSectionOrder when set', () => {
+    // Push has shoulders-rotator first per the catalog override.
+    const push = getDay('push');
+    expect(push.sections[0].key).toBe('shoulders-rotator');
   });
 });
 

@@ -31,6 +31,7 @@ import { useOverlay } from '../state/overlay-context.js';
 import { SubstituteSheet } from '../components/SubstituteSheet';
 import { SlotPicker } from '../components/SlotPicker';
 import { AddGroupSheet } from '../components/AddGroupSheet';
+import { ReorderSectionsSheet } from '../components/ReorderSectionsSheet';
 import { PerformanceCard } from '../components/today/PerformanceCard';
 import { RestDay } from '../components/today/RestDay';
 import { SessionSummary } from '../components/today/SessionSummary';
@@ -55,6 +56,7 @@ export function Today() {
     dismissResumePrompt,
     resumeArchivedSession,
     setPerformanceNote,
+    reorderSections,
   } = useSession();
 
   const {
@@ -78,6 +80,7 @@ export function Today() {
   const [pickerSectionKey, setPickerSectionKey] = useState(null);
   const [pendingSectionTitle, setPendingSectionTitle] = useState(null);
   const [addGroupOpen, setAddGroupOpen] = useState(false);
+  const [reorderOpen, setReorderOpen] = useState(false);
   const [endedSummary, setEndedSummary] = useState(null);
   // Dismissal lives on the session blob so it survives reloads.
   const resumeDismissed = Boolean(activeSession?.resumePromptDismissed);
@@ -332,7 +335,7 @@ export function Today() {
             );
           })}
 
-          <div style={{ marginTop: 32 }}>
+          <Stack direction="row" gap={2} style={{ marginTop: 32, flexWrap: 'wrap', rowGap: 8 }}>
             <MonoChipButton
               variant="dashed"
               size="md"
@@ -341,7 +344,15 @@ export function Today() {
             >
               + Add custom group
             </MonoChipButton>
-          </div>
+            <MonoChipButton
+              size="md"
+              data-testid="session-reorder"
+              onClick={() => setReorderOpen(true)}
+              disabled={performancesBySection.length < 2}
+            >
+              Reorder sections
+            </MonoChipButton>
+          </Stack>
 
           {/* Wave 5.2: end-session rail. Lives at the bottom of the doc
               flow so it doesn't overlap the BottomNav, but with extra
@@ -430,6 +441,22 @@ export function Today() {
           }
           setPickerSectionKey(null);
         }}
+      />
+
+      {/* Mid-session reorder. Pulls a section list from the live
+          performancesBySection grouping so user-added sections show up
+          alongside program sections. Commits via session.reorderSections
+          (not the overlay), since the session is the source of truth
+          once started. */}
+      <ReorderSectionsSheet
+        open={reorderOpen}
+        onClose={() => setReorderOpen(false)}
+        sections={performancesBySection.map(({ key, performances }) => ({
+          key,
+          title: sectionMeta(key).title,
+          exercises: performances,
+        }))}
+        onSave={(orderedKeys) => reorderSections(orderedKeys)}
       />
 
       {/* Pre-start overlay-editing sheets are owned by DayPlanner now. */}

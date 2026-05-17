@@ -87,8 +87,29 @@ function hydrateDayFrom(program, dayKey) {
   const programDay = program?.days?.[dayKey];
   if (!programDay) return null;
 
+  // Section render order = catalog's optional `defaultSectionOrder` if
+  // present, otherwise the catalog's authored order. The override lets us
+  // tune the session flow (warmups/activation first, finishers last)
+  // without physically reshuffling huge blocks of authored content.
+  const orderedSections = (() => {
+    const all = catalog.sections ?? [];
+    const order = catalog.defaultSectionOrder;
+    if (!Array.isArray(order) || order.length === 0) return all;
+    const byKey = new Map(all.map((s) => [s.key, s]));
+    const seen = new Set();
+    const out = [];
+    for (const key of order) {
+      const s = byKey.get(key);
+      if (s) { out.push(s); seen.add(key); }
+    }
+    for (const s of all) {
+      if (!seen.has(s.key)) out.push(s);
+    }
+    return out;
+  })();
+
   const sections = [];
-  for (const catalogSection of catalog.sections ?? []) {
+  for (const catalogSection of orderedSections) {
     const programSection = programDay[catalogSection.key];
     if (!programSection) continue;
     const exercises = programSection

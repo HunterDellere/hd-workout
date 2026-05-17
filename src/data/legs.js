@@ -8,6 +8,18 @@ export const legs = {
     'Bilateral and unilateral compound work, dedicated hamstring + glute development, '
     + 'adductor strengthening (the prevention lift nobody does), full calf complex, '
     + 'and loaded carries for global posterior chain work.',
+  // Render order: heavy quad compound first, then hamstring/glute work
+  // (CNS-demanding), quad isolation, lateral (adductor) work, calves,
+  // loaded carries as a conditioning finisher.
+  defaultSectionOrder: [
+    'quads-compound',
+    'hamstrings',
+    'glutes',
+    'quads-iso',
+    'adductors',
+    'calves',
+    'carries',
+  ],
   sections: [
     {
       key: 'quads-compound',
