@@ -18,6 +18,7 @@ import {
 import { patternAccent, dayLineageAccent, space as spaceScale } from '../design-system/tokens';
 import { PATTERNS } from '../data/patterns';
 import { dayList, rawCatalogList, findExerciseById } from '../data';
+import { exercisesForPattern } from '../data/derive';
 import { useSettings } from '../state/settings-context.js';
 
 function GroupHeader({ id, label, count }) {
@@ -81,6 +82,9 @@ function DayRow({ day, isFirst }) {
 
 function PatternRow({ pattern, isFirst }) {
   const accent = patternAccent[pattern.key];
+  // Trailing count of exercises that train this pattern — the slug was
+  // technical noise (HORIZONTAL-PRESS); count is genuinely informative.
+  const count = exercisesForPattern(pattern.key).length;
   return (
     <li>
       <Link
@@ -113,9 +117,8 @@ function PatternRow({ pattern, isFirst }) {
           as="span"
           variant="mono-sm"
           tone="tertiary"
-          style={{ textTransform: 'uppercase' }}
         >
-          {pattern.key}
+          {count}
         </Text>
       </Link>
     </li>

@@ -407,15 +407,17 @@ export function Insights() {
         </Block>
       )}
 
-      <BrushDivider style={{ marginTop: 40 }} />
-
-      <Block gapTop={24} eyebrow="Frequency · last 8 weeks">
-        {hydrated ? (
-          <Heatmap archive={archive} />
-        ) : (
-          <Text as="p" variant="body-sm" tone="tertiary">Loading…</Text>
-        )}
-      </Block>
+      {/* Suppress the entire frequency block when there are no sessions
+          to plot — an 8-row empty grid is just dead space. The page
+          already says "log a few and the picture sharpens" up top. */}
+      {hydrated && archive.length > 0 && (
+        <>
+          <BrushDivider style={{ marginTop: 40 }} />
+          <Block gapTop={24} eyebrow="Frequency · last 8 weeks">
+            <Heatmap archive={archive} />
+          </Block>
+        </>
+      )}
 
 
       {/* Volume block: only renders when there's actual data. The single
