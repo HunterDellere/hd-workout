@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import { Stack, Text, MonoChipButton, MASTHEAD_HEIGHT_PX } from '../../design-system/components';
 import { findExerciseById } from '../../data';
 import { parsePrescription } from '../../data/prescription';
+import { warmupLadder } from '../../data/warmup';
 import { SetRow } from '../SetRow';
 import { DurationSetRow } from '../DurationSetRow';
 import { RestTimer } from '../RestTimer';
@@ -17,6 +18,115 @@ import { NoteField } from './NoteField';
 // just below them when scrolled.
 const SESSION_PROGRESS_HEIGHT_PX = 44;
 const STICKY_TOP_PX = MASTHEAD_HEIGHT_PX + SESSION_PROGRESS_HEIGHT_PX;
+
+// Warmup is only auto-suggested for the canonical heavy compounds
+// (tagged 'foundational' in the catalog). Bench, squat, deadlift,
+// front squat, OHP, etc. For everything else the lifter is unlikely
+// to need a structured ramp — we'd just be adding noise.
+function isFoundational(exercise) {
+  return Array.isArray(exercise?.tags) && exercise.tags.includes('foundational');
+}
+
+// Derive the working weight to ramp toward. Priority:
+//   1. The suggestion (today's intelligent target, if computed)
+//   2. The last top set from history
+// If neither exists, no ladder — we don't guess.
+function workingWeightFor(suggestion, lastTop) {
+  if (suggestion && typeof suggestion.weight === 'number') return suggestion.weight;
+  if (lastTop?.top && typeof lastTop.top.weight === 'number') return lastTop.top.weight;
+  return null;
+}
+
+function WarmupLadderBlock({ exercise, suggestion, lastTop, unit, accent, hasLogged }) {
+  // Auto-suppress once the user is into working sets — the warmup is
+  // over by then and we shouldn't keep advertising it.
+  if (hasLogged) return null;
+  if (!isFoundational(exercise)) return null;
+  const workingWeight = workingWeightFor(suggestion, lastTop);
+  if (workingWeight == null) return null;
+  const ladder = warmupLadder(workingWeight, { unit });
+  if (ladder.length === 0) return null;
+  return (
+    <div
+      data-testid="warmup-ladder"
+      style={{
+        marginTop: 16,
+        padding: '12px 14px',
+        border: '1px solid var(--border-hairline)',
+        borderRadius: 8,
+        // A whisper of the day's accent so the block reads as part of
+        // the lift's identity, not a generic info panel. Same idiom as
+        // the hero's left-edge rule.
+        borderLeft: `2px solid var(--accent-${accent}-solid)`,
+      }}
+    >
+      <Stack direction="row" justify="space-between" align="baseline" gap={2}>
+        <Text
+          as="div"
+          variant="mono-sm"
+          tone="tertiary"
+          style={{ textTransform: 'uppercase', letterSpacing: '0.14em' }}
+        >
+          Warmup ramp
+        </Text>
+        <Text
+          as="div"
+          variant="mono-sm"
+          tone="tertiary"
+          style={{ opacity: 0.7 }}
+        >
+          → {workingWeight}{unit}
+        </Text>
+      </Stack>
+      <ul
+        style={{
+          listStyle: 'none',
+          padding: 0,
+          margin: '8px 0 0',
+          display: 'grid',
+          gridTemplateColumns: 'auto auto auto 1fr',
+          columnGap: 14,
+          rowGap: 4,
+          alignItems: 'baseline',
+        }}
+      >
+        {ladder.map((rung) => (
+          <li
+            key={rung.percent}
+            data-testid="warmup-rung"
+            data-percent={rung.percent}
+            style={{ display: 'contents' }}
+          >
+            <Text
+              as="span"
+              variant="mono-sm"
+              tone="tertiary"
+              style={{ opacity: 0.6 }}
+            >
+              {Math.round(rung.percent * 100)}%
+            </Text>
+            <Text
+              as="span"
+              variant="body-md"
+              style={{ fontFamily: 'var(--font-mono)' }}
+            >
+              {rung.weight}{unit}
+            </Text>
+            <Text
+              as="span"
+              variant="mono-sm"
+              tone="tertiary"
+              style={{ opacity: 0.85 }}
+            >
+              × {rung.reps}
+            </Text>
+            <span />
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
 
 function suggestionLine(suggestion, unit) {
   if (!suggestion) return null;
@@ -166,6 +276,15 @@ export function PerformanceCard({
           )}
         </Stack>
       </Stack>
+
+      <WarmupLadderBlock
+        exercise={ex}
+        suggestion={suggestion}
+        lastTop={lastTop}
+        unit={unit}
+        accent={accent}
+        hasLogged={hasLogged}
+      />
 
       {/* Rest timer: lives ABOVE the set inputs (between header and
           stepper) so when you're resting you see the countdown right
