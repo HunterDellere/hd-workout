@@ -63,8 +63,8 @@ export function About() {
         HDW
       </Text>
       <Text as="p" variant="body-lg" tone="secondary" style={{ marginTop: 16, maxWidth: 60 * 9 }}>
-        A training notebook. Push, pull, legs, core — written down. No
-        account, no subscription, no analytics watching over your shoulder.
+        A training notebook. Push, pull, legs, core, recovery — written down.
+        No account, no subscription, no analytics watching over your shoulder.
       </Text>
 
       <BrushDivider style={{ marginTop: 40 }} />

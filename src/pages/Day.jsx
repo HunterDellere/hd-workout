@@ -149,34 +149,45 @@ export function Day() {
         ← Library
       </Button>
 
-      <Stack direction="row" align="center" gap={2} style={{ marginTop: 24 }}>
-        <span
-          aria-hidden
-          style={{
-            width: 8,
-            height: 8,
-            background: `var(--accent-${accent}-solid)`,
-            borderRadius: 1,
-          }}
-        />
-        <Text as="div" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
-          {isToday ? `Today · ${day.key}` : `Day · ${day.key}`}
-        </Text>
-      </Stack>
+      {/* The DayPlanner renders a TodayHero with the eyebrow, italic
+          title, voice line, and stats — surfacing a duplicate page
+          header above it (which used to live here) produced two
+          stacked identical heroes within 400px. Description is woven
+          into the hero's voice + section blurbs, so the dedicated
+          page-level description block was also redundant.
 
-      <Text as="h1" variant="display-lg" style={{ marginTop: 8, fontStyle: 'italic' }}>
-        {day.name}
-      </Text>
-      {day.description && (
-        <Text as="p" variant="body-lg" tone="secondary" style={{ marginTop: 16, maxWidth: 60 * 9 }}>
-          {day.description}
-        </Text>
-      )}
-
-      {showPlanner && (
+          When the planner is suppressed (a session for this day is
+          already in-flight on /), fall back to a quiet inline
+          eyebrow so the page still announces what it is. */}
+      {showPlanner ? (
         <div style={{ marginTop: 8 }}>
           <DayPlanner dayKey={dayKey} viewMode={isToday ? 'today' : 'ahead'} />
         </div>
+      ) : (
+        <>
+          <Stack direction="row" align="center" gap={2} style={{ marginTop: 24 }}>
+            <span
+              aria-hidden
+              style={{
+                width: 8,
+                height: 8,
+                background: `var(--accent-${accent}-solid)`,
+                borderRadius: 1,
+              }}
+            />
+            <Text as="div" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
+              {isToday ? `Today · ${day.key}` : `Day · ${day.key}`}
+            </Text>
+          </Stack>
+          <Text as="h1" variant="display-lg" style={{ marginTop: 8, fontStyle: 'italic' }}>
+            {day.name}
+          </Text>
+          {day.description && (
+            <Text as="p" variant="body-lg" tone="secondary" style={{ marginTop: 16, maxWidth: 60 * 9 }}>
+              {day.description}
+            </Text>
+          )}
+        </>
       )}
 
       {showPlanner && (

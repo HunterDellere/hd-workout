@@ -68,8 +68,8 @@ function WelcomeStep({ onNext, onSkip }) {
       </Text>
 
       <Text as="p" variant="body-lg" tone="secondary" style={{ lineHeight: 1.55 }}>
-        Push, pull, legs, core — written down. No account, no analytics,
-        no clutter. Your data stays on this device.
+        Push, pull, legs, core, recovery — written down. No account, no
+        analytics, no clutter. Your data stays on this device.
       </Text>
 
       <BrushDivider />
