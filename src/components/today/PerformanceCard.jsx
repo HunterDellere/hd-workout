@@ -213,6 +213,7 @@ export function PerformanceCard({
             unit={unit}
             lastTop={lastTop}
             autoProgression={autoProgression}
+            suggestion={suggestion}
             barWeight={barWeight}
             plateInventory={plateInventory}
             plateCalculatorEnabled={plateCalculatorEnabled}

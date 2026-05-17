@@ -355,28 +355,45 @@ export function SetRow({
   // rep range on every working set in their last session — the first
   // set's default load bumps by one increment (2.5kg / 5lb).
   autoProgression,
+  // RPE-aware suggestion from the intelligence engine. When this says
+  // 'hold' or 'deload', it OVERRIDES auto-progression — the engine has
+  // more signal (stagnation, regression, RPE 9 on the top set) than the
+  // top-of-range check alone.
+  suggestion,
   // Plate calculator inputs. null/undefined values fall back to
   // unit-aware defaults via src/data/plates.js.
   barWeight,
   plateInventory,
   plateCalculatorEnabled = true,
 }) {
-  // Defaults: within-session prior > auto-progression bump > archive top set
-  //           > prescription mid > ''.
+  // Reconcile auto-progression with the suggestion engine. The engine
+  // sees the full RPE + stagnation history; auto-progression only sees
+  // the most recent session. When the engine vetoes a bump (hold or
+  // deload), it wins.
+  const suggestionVetoesBump = suggestion?.kind === 'hold'
+    || suggestion?.kind === 'deload';
+  const effectiveProgression = suggestionVetoesBump ? null : autoProgression;
+
+  // Defaults: within-session prior > suggestion weight > auto-progression
+  //           bump > archive top set > prescription mid > ''.
   const withinSessionPrior = performance.sets.at(-1);
   const archivePriorWeight = lastTop?.top?.weight ?? '';
   const archivePriorReps = lastTop?.top?.reps ?? '';
-  const bumpedWeight = autoProgression?.to ?? null;
+  const bumpedWeight = effectiveProgression?.to ?? null;
+  // If suggestion has a concrete weight (hold/deload/progress), prefer it
+  // over the raw archive prior when there's no within-session prior.
+  const suggestionWeight = suggestion?.weight ?? null;
   const defaultWeight = withinSessionPrior?.weight
-    ?? (bumpedWeight !== null ? bumpedWeight : archivePriorWeight);
+    ?? (bumpedWeight !== null ? bumpedWeight : (suggestionWeight ?? archivePriorWeight));
   // When we bump weight, drop reps to the low end of the range (a real
   // working set at the new load isn't going to hit the top again).
+  // When suggestion has reps, prefer those.
   const defaultReps = withinSessionPrior?.reps
     ?? (prescription.kind === 'straight'
       ? (bumpedWeight !== null
         ? (prescription.repsLow ?? prescription.repsMid ?? '')
-        : (prescription.repsMid ?? prescription.repsHigh ?? archivePriorReps ?? ''))
-      : (archivePriorReps ?? ''));
+        : (suggestion?.reps ?? prescription.repsMid ?? prescription.repsHigh ?? archivePriorReps ?? ''))
+      : (suggestion?.reps ?? archivePriorReps ?? ''));
 
   const [weight, setWeight] = useState(defaultWeight);
   const [reps, setReps] = useState(defaultReps);
@@ -460,9 +477,10 @@ export function SetRow({
         </Stack>
 
         {/* Auto-progression nudge: only shows when this is the first set
-            of the performance and the user hit the top of the rep range
-            on every working set last session. Quiet mono line, accent ink. */}
-        {autoProgression && performance.sets.length === 0 && (
+            of the performance, the user hit the top of the rep range
+            last session, AND the suggestion engine hasn't vetoed the
+            bump (hold/deload). Quiet mono line, accent ink. */}
+        {effectiveProgression && performance.sets.length === 0 && (
           <Text
             as="div"
             variant="mono-sm"
@@ -474,7 +492,7 @@ export function SetRow({
               color: `var(--accent-${accent}-ink)`,
             }}
           >
-            +{autoProgression.increment}{unit} ▲ · cleared the top rep last session
+            +{effectiveProgression.increment}{unit} ▲ · cleared the top rep last session
           </Text>
         )}
 

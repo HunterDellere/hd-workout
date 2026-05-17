@@ -24,6 +24,7 @@ import { Stack, Text, BrushDivider } from '../design-system/components';
 import { VariantList } from './VariantList';
 import { HistoryStrip } from './HistoryStrip';
 import { ExerciseArc } from './ExerciseArc';
+import { FavoriteStar } from './FavoriteStar';
 import { useSession } from '../state/session-context.js';
 
 const TIER_LABEL = {
@@ -189,29 +190,32 @@ export function ExerciseSheet({ open, onClose, exercise }) {
               {exercise.name}
             </Text>
           </Stack>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close"
-            style={{
-              flexShrink: 0,
-              width: 36,
-              height: 36,
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              background: 'transparent',
-              border: '1px solid var(--border-hairline)',
-              color: 'var(--text-secondary)',
-              borderRadius: 999,
-              cursor: 'pointer',
-              fontFamily: 'var(--font-mono)',
-              fontSize: 14,
-              lineHeight: 1,
-            }}
-          >
-            ✕
-          </button>
+          <Stack direction="row" gap={2} align="center" style={{ flexShrink: 0 }}>
+            <FavoriteStar exerciseId={exercise.id} />
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close"
+              style={{
+                flexShrink: 0,
+                width: 36,
+                height: 36,
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'transparent',
+                border: '1px solid var(--border-hairline)',
+                color: 'var(--text-secondary)',
+                borderRadius: 999,
+                cursor: 'pointer',
+                fontFamily: 'var(--font-mono)',
+                fontSize: 14,
+                lineHeight: 1,
+              }}
+            >
+              ✕
+            </button>
+          </Stack>
         </Stack>
 
         <SectionBlock>

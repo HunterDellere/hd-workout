@@ -1,5 +1,6 @@
 // /insights — Phase 3 surface: PR roll-up, weekly volume per pattern,
-// frequency heatmap. Gated behind settings.intelligenceEnabled.
+// frequency heatmap, summary callout, top movements, trend arrows.
+// Gated behind settings.intelligenceEnabled.
 
 import { useMemo } from 'react';
 import { Link, Navigate } from 'react-router-dom';
@@ -13,18 +14,125 @@ import {
 } from '../design-system/components';
 import { useSettings } from '../state/settings-context.js';
 import { useSession } from '../state/session-context.js';
+import { useBodyweight } from '../state/bodyweight-context.js';
 import { voiceFor } from '../data/voice';
 import {
   weeklyVolume,
   frequencyHeatmap,
   prsFromSession,
 } from '../data/intelligence';
+import {
+  sessionStreak,
+  topExercises,
+  weeklyVolumeDelta,
+  patternTrends,
+  prsThisMonth,
+} from '../data/insights';
 import { PATTERNS, PATTERN_BY_KEY } from '../data/patterns';
 import { findExerciseAnywhere } from '../data';
 
 const WEEKDAY_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
-function VolumeRow({ patternKey, weeks, max }) {
+function SummaryStat({ label, value, sub, accent }) {
+  // accent: 'up' | 'down' | null — tints the value when it's notable.
+  const color = accent === 'up' ? 'var(--state-moss-ink, var(--text-primary))'
+    : accent === 'down' ? 'var(--state-warn-ink, var(--text-primary))'
+    : 'var(--text-primary)';
+  return (
+    <Stack direction="column" gap={1} style={{ flex: 1, minWidth: 100 }}>
+      <Text as="div" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase', letterSpacing: '0.12em' }}>
+        {label}
+      </Text>
+      <Text as="div" variant="display-lg" style={{ color, fontStyle: 'normal', fontWeight: 500 }}>
+        {value}
+      </Text>
+      {sub && (
+        <Text as="div" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase', opacity: 0.85 }}>
+          {sub}
+        </Text>
+      )}
+    </Stack>
+  );
+}
+
+function BodyweightSpark({ entries, unit }) {
+  // 90-day window — same as the dedicated bodyweight page sparkline,
+  // here it lives as a small Block above PRs so the user can see if
+  // their progress aligns with weight changes.
+  if (!entries || entries.length < 2) return null;
+  const points = entries
+    .filter((e) => e.unit === unit)
+    .slice(-30);
+  if (points.length < 2) return null;
+  const W = 600;
+  const H = 60;
+  const PAD = 4;
+  const values = points.map((p) => p.value);
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = Math.max(0.5, max - min);
+  const coords = points.map((p, i) => {
+    const x = PAD + (i / (points.length - 1)) * (W - PAD * 2);
+    const y = H - PAD - ((p.value - min) / range) * (H - PAD * 2);
+    return [x, y];
+  });
+  const path = coords
+    .map(([x, y], i) => `${i === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)}`)
+    .join(' ');
+  const first = points[0];
+  const last = points[points.length - 1];
+  const delta = last.value - first.value;
+  const sign = delta >= 0 ? '+' : '';
+  return (
+    <div data-testid="insights-bw-spark">
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        width="100%"
+        height="auto"
+        preserveAspectRatio="none"
+        aria-label="Bodyweight trend"
+        style={{ display: 'block' }}
+      >
+        <path
+          d={path}
+          fill="none"
+          stroke="var(--text-secondary)"
+          strokeWidth="1.5"
+          strokeLinejoin="round"
+          strokeLinecap="round"
+        />
+      </svg>
+      <Stack direction="row" justify="space-between" align="baseline" style={{ marginTop: 6 }}>
+        <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
+          {first.date} → {last.date}
+        </Text>
+        <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
+          {first.value}{unit} → {last.value}{unit} ({sign}{delta.toFixed(1)})
+        </Text>
+      </Stack>
+    </div>
+  );
+}
+
+function TrendArrow({ direction }) {
+  if (direction === 'up') {
+    return (
+      <Text as="span" variant="mono-sm" style={{ color: 'var(--state-moss-ink, var(--text-primary))', marginLeft: 6 }}>
+        ▲
+      </Text>
+    );
+  }
+  if (direction === 'down') {
+    return (
+      <Text as="span" variant="mono-sm" style={{ color: 'var(--state-warn-ink, var(--text-secondary))', marginLeft: 6 }}>
+        ▼
+      </Text>
+    );
+  }
+  return null;
+}
+
+function VolumeRow({ patternKey, weeks, max, trend }) {
   const meta = PATTERN_BY_KEY[patternKey];
   const series = weeks.map((w) => w.perPattern[patternKey] ?? 0);
   const total = series.reduce((a, b) => a + b, 0);
@@ -39,7 +147,10 @@ function VolumeRow({ patternKey, weeks, max }) {
       }}
     >
       <Stack direction="row" align="baseline" justify="space-between" gap={2}>
-        <Text as="span" variant="title-md">{meta?.label ?? patternKey}</Text>
+        <Stack direction="row" align="baseline" gap={1}>
+          <Text as="span" variant="title-md">{meta?.label ?? patternKey}</Text>
+          {trend && <TrendArrow direction={trend.direction} />}
+        </Stack>
         <Text as="span" variant="mono-sm" tone="tertiary">
           {Math.round(total).toLocaleString()} tot
         </Text>
@@ -144,6 +255,7 @@ function ReactRow({ label, counts, max }) {
 export function Insights() {
   const { settings } = useSettings();
   const { archive, hydrated } = useSession();
+  const { log: bodyweightLog } = useBodyweight();
 
   const volume = useMemo(() => weeklyVolume(archive), [archive]);
   const maxAcrossPatterns = useMemo(() => {
@@ -155,6 +267,12 @@ export function Insights() {
     }
     return m;
   }, [volume]);
+
+  const weeklyDelta = useMemo(() => weeklyVolumeDelta(volume), [volume]);
+  const trendsByPattern = useMemo(() => patternTrends(volume), [volume]);
+  const streak = useMemo(() => sessionStreak(archive), [archive]);
+  const top5 = useMemo(() => topExercises(archive, { days: 30, limit: 5 }), [archive]);
+  const monthPRs = useMemo(() => prsThisMonth(archive), [archive]);
 
   // PR roll-up across all archived sessions.
   const allPRs = useMemo(() => {
@@ -174,6 +292,8 @@ export function Insights() {
     return <Navigate to="/me" replace />;
   }
 
+  const hasData = volume.weeks.length > 0 || streak.longest > 0;
+
   return (
     <Page>
       <Button as={Link} to="/log" variant="bare" size="sm" style={{ padding: 0 }}>
@@ -188,7 +308,7 @@ export function Insights() {
       <Text as="p" variant="body-lg" tone="secondary" style={{ marginTop: 16, maxWidth: 60 * 9 }}>
         Personal records, weekly volume, and how often you actually show up.
       </Text>
-      {volume.weeks.length === 0 && (
+      {!hasData && (
         <Text
           as="p"
           variant="title-md"
@@ -204,6 +324,82 @@ export function Insights() {
         >
           {voiceFor('insights-empty') ?? 'Numbers want sets. Log a few and the picture sharpens.'}
         </Text>
+      )}
+
+      {/* Summary callout: streak, weekly delta, monthly PRs. Reads at a
+          glance — "where am I right now?" rather than "what happened?". */}
+      {hasData && (
+        <Stack
+          direction="row"
+          gap={5}
+          style={{
+            marginTop: 32,
+            padding: '20px 0',
+            borderTop: '1px solid var(--border-hairline)',
+            borderBottom: '1px solid var(--border-hairline)',
+            flexWrap: 'wrap',
+            rowGap: 16,
+          }}
+          data-testid="insights-summary"
+        >
+          <SummaryStat
+            label="Streak"
+            value={streak.current > 0 ? `${streak.current}d` : '—'}
+            sub={streak.longest > streak.current
+              ? `best · ${streak.longest}d`
+              : (streak.current > 0 ? 'best ever' : null)}
+          />
+          <SummaryStat
+            label="This week"
+            value={Math.round(weeklyDelta.thisWeek).toLocaleString()}
+            sub={(() => {
+              if (weeklyDelta.pct === null) return weeklyDelta.thisWeek > 0 ? 'first logged week' : null;
+              const sign = weeklyDelta.pct >= 0 ? '+' : '';
+              return `${sign}${Math.round(weeklyDelta.pct)}% vs. last`;
+            })()}
+            accent={weeklyDelta.pct != null && weeklyDelta.pct >= 10 ? 'up'
+              : (weeklyDelta.pct != null && weeklyDelta.pct <= -10 ? 'down' : null)}
+          />
+          <SummaryStat
+            label="PRs · month"
+            value={monthPRs.length > 0 ? String(monthPRs.length) : '—'}
+            sub={monthPRs.length > 0
+              ? `${new Set(monthPRs.map((p) => p.perf.exerciseId)).size} exercises`
+              : null}
+          />
+        </Stack>
+      )}
+
+      {top5.length > 0 && (
+        <Block gapTop={32} eyebrow="Top movements · last 30 days">
+          <ol data-testid="top-movements" style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+            {top5.map((entry, i) => {
+              const found = findExerciseAnywhere(entry.exerciseId);
+              const name = found?.exercise?.name ?? entry.exerciseId;
+              return (
+                <li
+                  key={entry.exerciseId}
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'auto 1fr auto',
+                    gap: 12,
+                    padding: '10px 0',
+                    borderTop: i === 0 ? 'none' : '1px solid var(--border-hairline)',
+                    alignItems: 'baseline',
+                  }}
+                >
+                  <Text as="span" variant="mono-sm" tone="tertiary" style={{ width: 22 }}>
+                    {String(i + 1).padStart(2, '0')}
+                  </Text>
+                  <Text as="span" variant="title-md">{name}</Text>
+                  <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
+                    {entry.sets} set{entry.sets === 1 ? '' : 's'}
+                  </Text>
+                </li>
+              );
+            })}
+          </ol>
+        </Block>
       )}
 
       <BrushDivider style={{ marginTop: 40 }} />
@@ -233,12 +429,19 @@ export function Insights() {
                 patternKey={p.key}
                 weeks={volume.weeks}
                 max={maxAcrossPatterns}
+                trend={trendsByPattern[p.key]}
               />
             ))}
           </>
         )}
       </Block>
 
+
+      {bodyweightLog && bodyweightLog.length >= 2 && (
+        <Block gapTop={56} eyebrow="Bodyweight · last 30 entries">
+          <BodyweightSpark entries={bodyweightLog} unit={settings.units} />
+        </Block>
+      )}
 
       <Block gapTop={56} eyebrow="Records">
         {allPRs.length === 0 ? (

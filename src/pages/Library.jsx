@@ -17,7 +17,8 @@ import {
 } from '../design-system/components';
 import { patternAccent, dayLineageAccent, space as spaceScale } from '../design-system/tokens';
 import { PATTERNS } from '../data/patterns';
-import { dayList, rawCatalogList } from '../data';
+import { dayList, rawCatalogList, findExerciseById } from '../data';
+import { useSettings } from '../state/settings-context.js';
 
 function GroupHeader({ id, label, count }) {
   return (
@@ -233,14 +234,24 @@ function SearchHitRow({ exercise, isFirst }) {
 }
 
 export function Library() {
+  const { settings } = useSettings();
+  const favorites = useMemo(() => (
+    (settings.favoriteExerciseIds ?? [])
+      .map((id) => findExerciseById(id))
+      .filter(Boolean)
+  ), [settings.favoriteExerciseIds]);
+
   const [query, setQuery] = useState('');
   const hits = useMemo(() => searchCatalog(query), [query]);
   const searching = query.trim().length > 0;
 
-  const anchors = [
-    { id: 'library-days', label: 'Days', count: dayList.length },
-    { id: 'library-movements', label: 'Movements', count: PATTERNS.length },
-  ];
+  const anchors = useMemo(() => {
+    const arr = [];
+    if (favorites.length > 0) arr.push({ id: 'library-favorites', label: 'Favorites', count: favorites.length });
+    arr.push({ id: 'library-days', label: 'Days', count: dayList.length });
+    arr.push({ id: 'library-movements', label: 'Movements', count: PATTERNS.length });
+    return arr;
+  }, [favorites.length]);
 
   return (
     <Page width="dashboard">
@@ -332,6 +343,56 @@ export function Library() {
               )}
             </section>
           ) : null}
+
+          {favorites.length > 0 && (
+            <>
+              <BrushDivider style={{ marginTop: 40 }} />
+              <section>
+                <GroupHeader id="library-favorites" label="Favorites" count={`${favorites.length}`} />
+                <ul
+                  data-testid="library-favorites"
+                  style={{ listStyle: 'none', margin: 0, padding: 0 }}
+                >
+                  {favorites.map((ex, i) => (
+                    <li key={ex.id}>
+                      <Link
+                        to={`/library/exercises/${ex.id}`}
+                        data-exercise-id={ex.id}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: spaceScale[3],
+                          padding: `${spaceScale[3]}px 0`,
+                          borderTop: i === 0 ? 'none' : '1px solid var(--border-hairline)',
+                          textDecoration: 'none',
+                          color: 'var(--text-primary)',
+                        }}
+                      >
+                        <span
+                          aria-hidden
+                          style={{
+                            color: 'var(--accent-ember-ink, var(--accent-rust-ink))',
+                            fontSize: 14,
+                            flexShrink: 0,
+                          }}
+                        >
+                          ★
+                        </span>
+                        <Stack direction="column" gap={1} style={{ flex: 1, minWidth: 0 }}>
+                          <Text as="span" variant="title-md">{ex.name}</Text>
+                          {ex.tier && (
+                            <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
+                              Tier {ex.tier}
+                            </Text>
+                          )}
+                        </Stack>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            </>
+          )}
 
           <BrushDivider style={{ marginTop: 40 }} />
 

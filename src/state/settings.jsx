@@ -107,6 +107,13 @@ export function SettingsProvider({ children }) {
       ...s,
       plateCalculatorEnabled: !!v,
     })),
+    toggleFavorite: (exerciseId) => setSettings((s) => {
+      const current = s.favoriteExerciseIds ?? [];
+      const next = current.includes(exerciseId)
+        ? current.filter((id) => id !== exerciseId)
+        : [...current, exerciseId];
+      return { ...s, favoriteExerciseIds: next };
+    }),
   }), [settings, hydrated]);
 
   return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;

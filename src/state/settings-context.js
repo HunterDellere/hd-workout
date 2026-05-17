@@ -57,6 +57,10 @@ export const DEFAULT_SETTINGS = {
   platesKg: null, // null = use defaults
   platesLb: null,
   plateCalculatorEnabled: true,
+  // Favorite exercise ids — list of exercise ids the user has starred.
+  // Surfaced as a "Favorites" group at the top of /library when non-empty.
+  // Single source of truth for star state on ExerciseSheet + Exercise page.
+  favoriteExerciseIds: [],
 };
 
 export const DAY_OPTIONS = ['push', 'pull', 'legs', 'core', 'recovery', 'rest'];

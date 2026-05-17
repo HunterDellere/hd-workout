@@ -162,12 +162,13 @@ function DataBlock() {
   return (
     <Block gapTop={24} eyebrow="Data">
       <Text as="p" variant="body-md" tone="secondary" style={{ marginBottom: 16 }}>
-        Snapshot includes settings, the active session, and all completed sessions.
-        JSON only — moves cleanly between devices.
+        A backup captures everything: settings, sessions, your overlay edits,
+        and bodyweight log. JSON only — keep a copy somewhere safe or move
+        cleanly to a new device.
       </Text>
       <Stack direction="column" gap={3}>
         <Button variant="soft" accent="stone" size="md" data-testid="export-button" onClick={onExport}>
-          Export snapshot
+          Download backup
         </Button>
         <Button
           variant="soft"
@@ -176,7 +177,7 @@ function DataBlock() {
           data-testid="import-button"
           onClick={() => fileRef.current?.click()}
         >
-          Import snapshot
+          Restore from backup
         </Button>
         <input
           ref={fileRef}
