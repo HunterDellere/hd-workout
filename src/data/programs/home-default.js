@@ -26,6 +26,14 @@ export const homeDefault = {
     push: {
       'chest-horizontal': [
         { id: 'push-pushup',          sets: '4 × 8–15',    rest: '1:30' },
+        // Home adds a KB floor press as the heavier horizontal anchor;
+        // pure bodyweight push-ups cap out fast for stronger lifters.
+        { id: 'push-kb-floor-press',  sets: '3 × 8–12 each side', rest: '1:30' },
+      ],
+      'chest-incline': [
+        // Was missing entirely at home — decline push-up is the
+        // bodyweight upper-chest analog.
+        { id: 'push-decline-pushup',  sets: '3 × 6–12',    rest: '1:30' },
       ],
       'shoulders-ohp': [
         { id: 'push-kb-strict-press', sets: '4 × 6–10 each side', rest: '2:00' },
@@ -34,6 +42,12 @@ export const homeDefault = {
       'shoulders-rotator': [
         // rec-band-pull-apart lives in recovery.js but is fully home-friendly
         { id: 'rec-band-pull-apart',  sets: '3 × 15–20',   rest: '1:00' },
+      ],
+      'shoulders-lateral': [
+        { id: 'push-band-lateral',    sets: '3 × 12–20',   rest: '1:00' },
+      ],
+      'triceps': [
+        { id: 'push-band-pushdown',   sets: '3 × 12–15',   rest: '1:00' },
       ],
     },
     pull: {
@@ -52,8 +66,16 @@ export const homeDefault = {
     },
     legs: {
       'quads-compound': [
-        { id: 'legs-goblet-squat',    sets: '4 × 8–15',    rest: '2:00' },
-        { id: 'legs-bgss',            sets: '3 × 8–10 each side', rest: '1:30' },
+        { id: 'legs-goblet-squat',         sets: '4 × 8–15',           rest: '2:00' },
+        // Heavier double-bell variant for when the goblet caps out;
+        // pure home progression toward more load on the squat.
+        { id: 'legs-kb-double-front-squat', sets: '3 × 6–10',          rest: '2:00' },
+        { id: 'legs-bgss',                  sets: '3 × 8–10 each side', rest: '1:30' },
+      ],
+      'adductors': [
+        // Cossack already authored — wire it into home for the
+        // adductor stretch under load.
+        { id: 'legs-cossack-squat',         sets: '3 × 6 each side',    rest: '1:30' },
       ],
       'hamstrings': [
         { id: 'legs-kb-swing',        sets: '5 × 15–20',   rest: '1:30' },

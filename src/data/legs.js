@@ -207,6 +207,32 @@ export const legs = {
           ],
           tags: ['compound', 'foundational', 'bilateral', 'quad-dominant'],
         },
+        {
+          id: 'legs-kb-double-front-squat',
+          name: 'Double KB Front-Rack Squat',
+          tier: 'A',
+          equipment: ['Two kettlebells (matched)'],
+          primaryMuscles: ['Quadriceps', 'Gluteus maximus'],
+          secondaryMuscles: ['Upper back', 'Core', 'Adductors'],
+          cues: [
+            'Clean both bells into the rack — handles diagonal across the shoulders, fists at the collarbones',
+            'Elbows low and pinned to the ribs; bells rest on the forearms, not the hands',
+            'Stance shoulder-width; toes turned out 10-15°',
+            'Sit straight down — the front-rack load forces an upright torso',
+            'Brace the rack the whole way; drive through mid-foot',
+          ],
+          safetyNotes: [
+            'Skip this lift on grumpy wrists — the rack position loads the wrist into extension',
+            'If a bell starts to drift forward, dump it forward and away from the foot (never onto the foot)',
+          ],
+          variants: [
+            { name: 'Single-arm front-rack squat', note: 'One bell racked — anti-lateral-flexion demand on the off side.' },
+            { name: 'Tempo double KB squat', note: '4-sec eccentric, 2-sec pause, drive up. Brutal at moderate load.' },
+            { name: 'Heels-elevated double KB squat', note: 'Heels on a plate — extreme quad bias, the home hack squat.' },
+            { name: 'KB front-rack box squat', note: 'Sit to a low box — depth control + practice the brace.' },
+          ],
+          tags: ['compound', 'bilateral', 'quad-dominant'],
+        },
         // Cossack squat lives in the adductors section (legs-cossack-squat)
         // — primary muscle is the adductors with a deep stretch component.
         {
