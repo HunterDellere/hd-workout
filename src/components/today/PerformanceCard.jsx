@@ -3,6 +3,7 @@
 // suggestion line, the SetRow input surface, and the rest timer when
 // this performance is resting.
 
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Stack, Text, MonoChipButton, MASTHEAD_HEIGHT_PX } from '../../design-system/components';
 import { findExerciseById } from '../../data';
@@ -128,6 +129,24 @@ function WarmupLadderBlock({ exercise, suggestion, lastTop, unit, accent, hasLog
   );
 }
 
+// Quiet relative-time suffix for the "Last" line — "yesterday",
+// "3d ago", "2wk ago". Anything older than ~3 months reads as "long
+// ago" so we never print "147d ago" (data without judgment).
+function relativeTimeFrom(iso, nowMs) {
+  if (!iso) return null;
+  const then = Date.parse(iso);
+  if (Number.isNaN(then)) return null;
+  const dayMs = 86400000;
+  const days = Math.max(0, Math.round((nowMs - then) / dayMs));
+  if (days === 0) return 'today';
+  if (days === 1) return 'yesterday';
+  if (days < 7) return `${days}d ago`;
+  if (days < 14) return '1wk ago';
+  if (days < 56) return `${Math.round(days / 7)}wk ago`;
+  if (days < 365) return `${Math.round(days / 30)}mo ago`;
+  return 'long ago';
+}
+
 function suggestionLine(suggestion, unit) {
   if (!suggestion) return null;
   const reason = suggestion.reason ? ` · ${suggestion.reason}` : '';
@@ -165,6 +184,16 @@ export function PerformanceCard({
   plateCalculatorEnabled,
   autoProgression,
 }) {
+  // Hooks declared above any early return so call order is stable.
+  // One-shot timestamp captured at mount — keeps `Date.now()` out of
+  // the render path so React 19's purity checker stays happy. The
+  // relative-time string is fine to be stale by a few minutes during
+  // an active session.
+  const [mountedAtMs] = useState(() => Date.now());
+  const lastAgo = useMemo(
+    () => relativeTimeFrom(lastTop?.endedAt, mountedAtMs),
+    [lastTop, mountedAtMs],
+  );
   const ex = findExerciseById(performance.exerciseId);
   if (!ex) return null;
   const prescription = parsePrescription(performance.prescription?.sets ?? ex.sets);
@@ -237,6 +266,7 @@ export function PerformanceCard({
             >
               Last · {lastTop.top.weight}{lastTop.top.unit ?? ''} × {lastTop.top.reps}
               {lastTop.top.rpe != null ? ` · RPE ${lastTop.top.rpe}` : ''}
+              {lastAgo ? ` · ${lastAgo}` : ''}
             </Text>
           )}
           {suggestionText && (
