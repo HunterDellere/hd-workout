@@ -408,6 +408,86 @@ export function SessionProvider({ children }) {
       return true;
     },
 
+    // ─── Manual log entry (no active session required) ──────────────────
+    // Append a one-off completed entry to the archive — e.g. a walk
+    // earlier in the day that wasn't tracked live. Bypasses the active
+    // session slot so it can't disturb an in-flight workout. The blob is
+    // shaped exactly like a normal endSession() output so History,
+    // Insights, and intelligence consume it without special-casing.
+    //
+    // payload = {
+    //   exerciseId,
+    //   loggedAt: ISO string,
+    //   sets: [{ weight, reps, rpe?, unit } | { kind: 'duration', durationSec } | { kind: 'distance', distanceM }],
+    //   notes?: string,
+    // }
+    async addManualLog(payload) {
+      if (!payload?.exerciseId || !Array.isArray(payload.sets) || payload.sets.length === 0) {
+        return null;
+      }
+      const when = payload.loggedAt ?? new Date().toISOString();
+      const performance = {
+        id: ulid(),
+        exerciseId: payload.exerciseId,
+        sectionKey: 'manual',
+        swappedFromId: null,
+        addedInSession: true,
+        prescription: { sets: '', rest: null },
+        notes: payload.notes ?? '',
+        sets: payload.sets.map((s, i) => {
+          const index = i + 1;
+          if (s.kind === 'duration' || s.kind === 'rounds') {
+            return {
+              index,
+              kind: s.kind,
+              durationSec: s.durationSec ?? 0,
+              side: s.side ?? null,
+              restTakenSec: null,
+              loggedAt: when,
+            };
+          }
+          if (s.kind === 'distance') {
+            return {
+              index,
+              kind: 'distance',
+              distanceM: s.distanceM ?? 0,
+              side: s.side ?? null,
+              restTakenSec: null,
+              loggedAt: when,
+            };
+          }
+          return {
+            index,
+            weight: s.weight,
+            unit: s.unit,
+            reps: s.reps,
+            rpe: s.rpe ?? null,
+            restTakenSec: null,
+            loggedAt: when,
+          };
+        }),
+      };
+      const completed = annotatePRs(
+        {
+          id: ulid(),
+          programId: 'manual',
+          dayKey: 'manual',
+          startedAt: when,
+          endedAt: when,
+          performances: [performance],
+          restStartedAt: null,
+          restTargetSec: null,
+          restPerformanceId: null,
+          manual: true,
+        },
+        archive,
+      );
+      const next = [...archive, completed];
+      await saveArchive(next);
+      setArchive(next);
+      return completed;
+    },
+
     // ─── Pre-start: add a new section to the current day ─────────────────
     // For an active session: stamps an empty performance into the new
     // section so it renders. Caller supplies the first exercise (mandatory

@@ -16,11 +16,18 @@ import {
 
 function Stepper({ label, value, step, onDelta, onChange, suffix }) {
   return (
-    <Stack direction="column" gap={1} style={{ flex: 1, minWidth: 0 }}>
-      <Text as="div" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
-        {label}
-      </Text>
-      <Stack direction="row" align="center" gap={1}>
+    <Stack direction="column" gap={1} style={{ flex: '1 1 100%', minWidth: 0 }}>
+      <Stack direction="row" align="baseline" justify="space-between" gap={2}>
+        <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase', letterSpacing: '0.12em' }}>
+          {label}
+        </Text>
+        {suffix && (
+          <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase', letterSpacing: '0.12em' }}>
+            {suffix}
+          </Text>
+        )}
+      </Stack>
+      <Stack direction="row" align="center" gap={2} style={{ width: '100%' }}>
         <button
           type="button"
           aria-label={`Decrease ${label}`}
@@ -48,11 +55,6 @@ function Stepper({ label, value, step, onDelta, onChange, suffix }) {
         >
           +
         </button>
-        {suffix && (
-          <Text as="span" variant="mono-sm" tone="tertiary" style={{ marginLeft: 4, textTransform: 'uppercase' }}>
-            {suffix}
-          </Text>
-        )}
       </Stack>
     </Stack>
   );
@@ -78,16 +80,19 @@ const stepBtnStyle = {
 };
 
 const inputStyle = {
-  width: 72,
+  flex: 1,
+  minWidth: 0,
   height: 44,
   border: '1px solid var(--border-strong)',
   borderRadius: 6,
   background: 'var(--surface-page)',
   color: 'var(--text-primary)',
   fontFamily: 'var(--font-mono)',
-  fontSize: 18,
+  fontSize: 20,
   textAlign: 'center',
   outline: 'none',
+  padding: '0 8px',
+  WebkitAppearance: 'none',
 };
 
 const RPE_VALUES = [6, 7, 8, 9, 10];
@@ -491,7 +496,7 @@ export function SetRow({
       )}
 
       <Stack direction="column" gap={3}>
-        <Stack direction="row" gap={3} align="flex-end" wrap>
+        <Stack direction="column" gap={3}>
           <Stepper
             label="Load"
             value={weight}

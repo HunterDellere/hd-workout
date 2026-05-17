@@ -31,6 +31,7 @@ import { useSession } from '../state/session-context.js';
 import { useSettings } from '../state/settings-context.js';
 import { findExerciseAnywhere } from '../data';
 import { voiceFor } from '../data/voice';
+import { ManualLogSheet } from '../components/ManualLogSheet';
 
 function formatDate(iso) {
   if (!iso) return '—';
@@ -52,14 +53,32 @@ function totalSets(session) {
   return (session.performances ?? []).reduce((n, p) => n + (p.sets?.length ?? 0), 0);
 }
 
+function describeTopSet(set) {
+  if (set?.kind === 'duration' || set?.kind === 'rounds') {
+    const s = set.durationSec ?? 0;
+    if (s >= 60) return `${Math.round(s / 60)} min`;
+    return `${s}s`;
+  }
+  if (set?.kind === 'distance') {
+    return `${Math.round(set.distanceM ?? 0)}m`;
+  }
+  if (set?.weight != null && set?.reps != null) {
+    return `${set.weight}${set.unit ?? ''} × ${set.reps}`;
+  }
+  return '—';
+}
+
 function topExerciseLines(session, limit = 3) {
   const rows = [];
   for (const p of session.performances ?? []) {
     if (!p.sets || p.sets.length === 0) continue;
-    const top = p.sets.reduce(
-      (best, s) => (s.weight > best.weight || (s.weight === best.weight && s.reps > best.reps) ? s : best),
-      p.sets[0],
-    );
+    const weighted = p.sets.filter((s) => s.weight != null);
+    const top = weighted.length > 0
+      ? weighted.reduce(
+        (best, s) => (s.weight > best.weight || (s.weight === best.weight && s.reps > best.reps) ? s : best),
+        weighted[0],
+      )
+      : p.sets[0];
     const found = findExerciseAnywhere(p.exerciseId);
     rows.push({
       name: found?.exercise?.name ?? p.exerciseId,
@@ -75,6 +94,14 @@ function SessionListRow({ session, isActive, onOpen }) {
   const sets = totalSets(session);
   const top = topExerciseLines(session, 2);
   const when = session.endedAt ?? session.startedAt;
+  const isManual = session.manual === true || session.dayKey === 'manual';
+  const heading = (() => {
+    if (!isManual) return (session.dayKey ?? 'session').toUpperCase();
+    const perf = session.performances?.[0];
+    if (!perf) return 'MANUAL';
+    const found = findExerciseAnywhere(perf.exerciseId);
+    return (found?.exercise?.name ?? perf.exerciseId).toUpperCase();
+  })();
   return (
     <button
       type="button"
@@ -96,11 +123,16 @@ function SessionListRow({ session, isActive, onOpen }) {
       <Stack direction="column" gap={1}>
         <Stack direction="row" gap={2} style={{ alignItems: 'baseline', justifyContent: 'space-between' }}>
           <Text as="span" variant="title-md">
-            {(session.dayKey ?? 'session').toUpperCase()}
+            {heading}
           </Text>
           {isActive && (
             <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase', color: 'var(--text-accent, var(--text-primary))' }}>
               In progress
+            </Text>
+          )}
+          {isManual && !isActive && (
+            <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
+              Manual
             </Text>
           )}
         </Stack>
@@ -111,7 +143,7 @@ function SessionListRow({ session, isActive, onOpen }) {
           <Stack direction="column" gap={0} style={{ marginTop: 4 }}>
             {top.map((row, i) => (
               <Text key={i} as="span" variant="body-sm" tone="secondary">
-                {row.name} — {row.top.weight}{row.top.unit ?? ''} × {row.top.reps}
+                {row.name} — {describeTopSet(row.top)}
               </Text>
             ))}
           </Stack>
@@ -318,6 +350,7 @@ export function History() {
   } = useSession();
   const { settings } = useSettings();
   const [openId, setOpenId] = useState(null);
+  const [manualOpen, setManualOpen] = useState(false);
 
   // Newest first.
   const sortedArchive = useMemo(() => {
@@ -378,23 +411,42 @@ export function History() {
               Every session you've logged
             </Text>
           </Stack>
-          {settings.intelligenceEnabled && (
-            <Text
-              as={Link}
-              to="/log/insights"
-              variant="mono-sm"
-              tone="tertiary"
-              data-testid="log-insights-link"
+          <Stack direction="row" gap={3} align="center" style={{ flexShrink: 0 }}>
+            <button
+              type="button"
+              onClick={() => setManualOpen(true)}
+              data-testid="log-manual-entry"
               style={{
+                all: 'unset',
+                cursor: 'pointer',
+                fontFamily: 'var(--font-mono)',
+                fontSize: 11,
                 textTransform: 'uppercase',
                 letterSpacing: '0.12em',
-                textDecoration: 'none',
+                color: 'var(--text-secondary)',
                 whiteSpace: 'nowrap',
               }}
             >
-              Insights →
-            </Text>
-          )}
+              + Add entry
+            </button>
+            {settings.intelligenceEnabled && (
+              <Text
+                as={Link}
+                to="/log/insights"
+                variant="mono-sm"
+                tone="tertiary"
+                data-testid="log-insights-link"
+                style={{
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.12em',
+                  textDecoration: 'none',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                Insights →
+              </Text>
+            )}
+          </Stack>
         </Stack>
 
         <BrushDivider style={{ marginTop: 24 }} />
@@ -431,6 +483,7 @@ export function History() {
           </ul>
         )}
       </Block>
+      <ManualLogSheet open={manualOpen} onClose={() => setManualOpen(false)} />
     </Page>
   );
 }

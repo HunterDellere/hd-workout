@@ -175,10 +175,10 @@ export function DistanceSetRow({
       )}
 
       <Stack direction="column" gap={3}>
-        <Stack direction="row" align="baseline" justify="space-between" gap={3}>
-          <Stack direction="column" gap={1}>
+        <Stack direction="column" gap={1}>
+          <Stack direction="row" align="baseline" justify="space-between" gap={2}>
             <Text
-              as="div"
+              as="span"
               variant="mono-sm"
               tone="tertiary"
               style={{ textTransform: 'uppercase', letterSpacing: '0.12em' }}
@@ -190,44 +190,44 @@ export function DistanceSetRow({
                 </Text>
               )}
             </Text>
-            <Stack direction="row" align="center" gap={1}>
-              <button
-                type="button"
-                aria-label="Decrease distance"
-                onClick={() => setDistance((d) => Math.max(0, (Number(d) || 0) - 5))}
-                style={stepBtnStyle}
-              >
-                −
-              </button>
-              <input
-                type="text"
-                inputMode="decimal"
-                value={distance}
-                onChange={(e) => {
-                  const next = e.target.value.replace(/[^0-9.]/g, '');
-                  setDistance(next === '' ? '' : Number(next));
-                }}
-                aria-label="Distance in meters"
-                style={inputStyle}
-              />
-              <button
-                type="button"
-                aria-label="Increase distance"
-                onClick={() => setDistance((d) => (Number(d) || 0) + 5)}
-                style={stepBtnStyle}
-              >
-                +
-              </button>
-              <Text as="span" variant="mono-sm" tone="tertiary" style={{ marginLeft: 4, textTransform: 'uppercase' }}>
-                m
-              </Text>
-            </Stack>
+            <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase', letterSpacing: '0.12em' }}>
+              Target · {targetLow === targetHigh
+                ? `${targetHigh}m`
+                : `${targetLow}–${targetHigh}m`}
+            </Text>
           </Stack>
-          <Text as="div" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
-            Target · {targetLow === targetHigh
-              ? `${targetHigh}m`
-              : `${targetLow}–${targetHigh}m`}
-          </Text>
+          <Stack direction="row" align="center" gap={2} style={{ width: '100%' }}>
+            <button
+              type="button"
+              aria-label="Decrease distance"
+              onClick={() => setDistance((d) => Math.max(0, (Number(d) || 0) - 5))}
+              style={stepBtnStyle}
+            >
+              −
+            </button>
+            <input
+              type="text"
+              inputMode="decimal"
+              value={distance}
+              onChange={(e) => {
+                const next = e.target.value.replace(/[^0-9.]/g, '');
+                setDistance(next === '' ? '' : Number(next));
+              }}
+              aria-label="Distance in meters"
+              style={inputStyle}
+            />
+            <button
+              type="button"
+              aria-label="Increase distance"
+              onClick={() => setDistance((d) => (Number(d) || 0) + 5)}
+              style={stepBtnStyle}
+            >
+              +
+            </button>
+            <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase', flexShrink: 0 }}>
+              m
+            </Text>
+          </Stack>
         </Stack>
 
         <Stack direction="row" gap={2} justify="space-between" align="center">
@@ -274,14 +274,17 @@ const stepBtnStyle = {
 };
 
 const inputStyle = {
-  width: 72,
+  flex: 1,
+  minWidth: 0,
   height: 44,
   border: '1px solid var(--border-strong)',
   borderRadius: 6,
   background: 'var(--surface-page)',
   color: 'var(--text-primary)',
   fontFamily: 'var(--font-mono)',
-  fontSize: 18,
+  fontSize: 20,
   textAlign: 'center',
   outline: 'none',
+  padding: '0 8px',
+  WebkitAppearance: 'none',
 };
