@@ -25,6 +25,7 @@ import {
   Text,
   Button,
   BrushDivider,
+  MonoChipButton,
 } from '../design-system/components';
 import { Link } from 'react-router-dom';
 import { useSession } from '../state/session-context.js';
@@ -402,33 +403,11 @@ export function History() {
   return (
     <Page>
       <Block>
-        <Stack direction="row" align="baseline" justify="space-between" gap={3}>
-          <Stack direction="column" gap={1} style={{ flex: 1, minWidth: 0 }}>
-            <Text as="div" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
+        <Stack direction="column" gap={1}>
+          <Stack direction="row" align="baseline" justify="space-between" gap={2}>
+            <Text as="div" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase', letterSpacing: '0.12em' }}>
               Log
             </Text>
-            <Text as="h1" variant="display-lg" style={{ fontStyle: 'italic', marginTop: 4 }}>
-              Every session you've logged
-            </Text>
-          </Stack>
-          <Stack direction="row" gap={3} align="center" style={{ flexShrink: 0 }}>
-            <button
-              type="button"
-              onClick={() => setManualOpen(true)}
-              data-testid="log-manual-entry"
-              style={{
-                all: 'unset',
-                cursor: 'pointer',
-                fontFamily: 'var(--font-mono)',
-                fontSize: 11,
-                textTransform: 'uppercase',
-                letterSpacing: '0.12em',
-                color: 'var(--text-secondary)',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              + Add entry
-            </button>
             {settings.intelligenceEnabled && (
               <Text
                 as={Link}
@@ -447,27 +426,43 @@ export function History() {
               </Text>
             )}
           </Stack>
+          <Text as="h1" variant="display-lg" style={{ fontStyle: 'italic', marginTop: 4 }}>
+            History
+          </Text>
+        </Stack>
+
+        <Stack direction="row" gap={2} style={{ marginTop: 16, flexWrap: 'wrap', rowGap: 8 }}>
+          <MonoChipButton
+            onClick={() => setManualOpen(true)}
+            data-testid="log-manual-entry"
+          >
+            + Add entry
+          </MonoChipButton>
         </Stack>
 
         <BrushDivider style={{ marginTop: 24 }} />
 
         {!hasSessions ? (
-          <Text
-            as="p"
-            variant="title-md"
-            tone="secondary"
-            data-testid="history-empty"
-            style={{
-              marginTop: 32,
-              fontStyle: 'italic',
-              fontFamily: 'var(--font-serif)',
-              fontWeight: 300,
-              opacity: 0.78,
-              maxWidth: 60 * 9,
-            }}
-          >
-            {voiceFor('history-empty') ?? 'No sessions yet.'}
-          </Text>
+          <Stack direction="column" gap={3} style={{ marginTop: 32, maxWidth: 60 * 9 }}>
+            <Text
+              as="p"
+              variant="title-md"
+              tone="secondary"
+              data-testid="history-empty"
+              style={{
+                fontStyle: 'italic',
+                fontFamily: 'var(--font-serif)',
+                fontWeight: 300,
+                opacity: 0.78,
+              }}
+            >
+              {voiceFor('history-empty') ?? 'No sessions yet.'}
+            </Text>
+            <Text as="p" variant="body-sm" tone="tertiary">
+              Finished a session, walk, or stretch outside the app? Log it
+              manually so the record stays complete.
+            </Text>
+          </Stack>
         ) : (
           <ul data-testid="history-list" style={{ listStyle: 'none', padding: 0, margin: '24px 0 0' }}>
             {activeSession && totalSets(activeSession) > 0 && (

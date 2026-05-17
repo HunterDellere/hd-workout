@@ -334,21 +334,48 @@ function DistanceEntry({ value, onChange }) {
   );
 }
 
+// Classify an exercise into the manual-entry input shape. The
+// prescription string is the strongest signal when present — it tells
+// us exactly what was authored. When that's missing or free-text
+// (e.g. Zone-2 Walk, which has no `sets` field), fall back to
+// name/category/tag heuristics so a walk doesn't get the strength form.
+function inferDefaultKind(ex) {
+  if (!ex) return 'strength';
+  const prescription = parsePrescription(ex.sets ?? '');
+  if (prescription.kind === 'duration' || prescription.kind === 'rounds') return 'duration';
+  if (prescription.kind === 'distance') return 'distance';
+
+  const hay = [
+    ex.name ?? '',
+    ex.id ?? '',
+    ...(ex.tags ?? []),
+    ...(ex.categories ?? []),
+  ].join(' ').toLowerCase();
+
+  // Distance-first: any movement that's authored as covering ground.
+  if (/\b(ruck|carry|farmer|sled\s*push|sled\s*drag|prowler)\b/.test(hay)) return 'distance';
+
+  // Duration: cardio, conditioning, walks, runs, holds, intervals,
+  // stretches. The healthspan/cardio categories cover Zone-2 Walk and
+  // its siblings; the regex catches name-only signals.
+  if (
+    /\b(cardio|conditioning|healthspan)\b/.test(hay)
+    || /\b(walk|run|jog|bike|row|hike|hang|hold|stretch|intervals|amrap)\b/.test(hay)
+  ) {
+    return 'duration';
+  }
+  return 'strength';
+}
+
 function EntryFormStep({ exerciseId, onBack, onSubmit }) {
   const ex = findExerciseById(exerciseId);
   const { settings } = useSettings();
   const unit = settings?.units ?? 'lb';
-  const prescription = useMemo(
-    () => parsePrescription(ex?.sets ?? ''),
-    [ex],
-  );
-  // Catalog-driven kind detection. Strength is the default for anything
-  // we can't classify (free-text, pyramid, etc).
-  const kind = prescription.kind === 'duration' || prescription.kind === 'rounds'
-    ? 'duration'
-    : prescription.kind === 'distance'
-      ? 'distance'
-      : 'strength';
+  const defaultKind = useMemo(() => inferDefaultKind(ex), [ex]);
+  // Kind lives in state so the user can override the heuristic — e.g. a
+  // walk authored as duration can be logged as distance if they tracked
+  // it on a Garmin instead.
+  const [kind, setKind] = useState(defaultKind);
 
   const [when, setWhen] = useState(() => toDateTimeLocal(new Date()));
   const [strengthSets, setStrengthSets] = useState([{ weight: '', reps: '' }]);
@@ -399,6 +426,48 @@ function EntryFormStep({ exerciseId, onBack, onSubmit }) {
       <BrushDivider style={{ marginTop: 32 }} />
 
       <Stack direction="column" gap={3} style={{ marginTop: 24 }}>
+        <Stack direction="column" gap={1}>
+          <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase', letterSpacing: '0.12em' }}>
+            Log as
+          </Text>
+          <Stack direction="row" gap={2} style={{ flexWrap: 'wrap', rowGap: 8 }}>
+            {[
+              { key: 'strength', label: 'Weight × Reps' },
+              { key: 'duration', label: 'Duration' },
+              { key: 'distance', label: 'Distance' },
+            ].map((opt) => {
+              const active = kind === opt.key;
+              return (
+                <button
+                  key={opt.key}
+                  type="button"
+                  data-testid={`manual-log-kind-${opt.key}`}
+                  data-active={active ? '1' : '0'}
+                  onClick={() => setKind(opt.key)}
+                  style={{
+                    all: 'unset',
+                    cursor: 'pointer',
+                    padding: '8px 14px',
+                    borderRadius: 4,
+                    border: active
+                      ? '1px solid var(--text-primary)'
+                      : '1px solid var(--border-hairline)',
+                    background: active ? 'var(--text-primary)' : 'transparent',
+                    color: active ? 'var(--surface-page)' : 'var(--text-secondary)',
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: 11,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.12em',
+                    fontWeight: 600,
+                  }}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
+          </Stack>
+        </Stack>
+
         <Stack direction="column" gap={1}>
           <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase', letterSpacing: '0.12em' }}>
             When
