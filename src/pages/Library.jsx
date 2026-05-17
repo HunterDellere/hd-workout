@@ -27,7 +27,7 @@ function GroupHeader({ id, label, count }) {
       align="baseline"
       justify="space-between"
       gap={3}
-      style={{ padding: '20px 0 12px' }}
+      style={{ padding: '12px 0 8px' }}
     >
       <Text as="h2" id={id} variant="title-lg" style={{ scrollMarginTop: 24 }}>{label}</Text>
       <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
@@ -287,10 +287,10 @@ export function Library() {
               position: 'sticky',
               top: MASTHEAD_HEIGHT_PX,
               zIndex: 3,
-              marginTop: 20,
+              marginTop: 14,
               background: 'var(--surface-page)',
-              paddingTop: 8,
-              paddingBottom: 8,
+              paddingTop: 6,
+              paddingBottom: 6,
             }}
           >
             <input
@@ -340,7 +340,7 @@ export function Library() {
 
           {favorites.length > 0 && (
             <>
-              <BrushDivider style={{ marginTop: 40 }} />
+              <BrushDivider style={{ marginTop: 28 }} />
               <section>
                 <GroupHeader id="library-favorites" label="Favorites" count={`${favorites.length}`} />
                 <ul
@@ -388,7 +388,7 @@ export function Library() {
             </>
           )}
 
-          <BrushDivider style={{ marginTop: 40 }} />
+          <BrushDivider style={{ marginTop: 28 }} />
 
           <section>
             <GroupHeader id="library-days" label="Days" count={`${dayList.length}`} />
@@ -402,7 +402,7 @@ export function Library() {
             </ul>
           </section>
 
-          <BrushDivider style={{ marginTop: 40 }} />
+          <BrushDivider style={{ marginTop: 28 }} />
 
           <section>
             <GroupHeader id="library-movements" label="Movements" count={`${PATTERNS.length}`} />

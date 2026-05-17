@@ -10,7 +10,7 @@ import { Logo } from './Logo';
 import { ThemeToggle } from './ThemeToggle';
 import { layout } from '../tokens';
 
-export const MASTHEAD_HEIGHT_PX = 56;
+export const MASTHEAD_HEIGHT_PX = 68;
 
 export function Masthead() {
   return (
@@ -46,11 +46,26 @@ export function Masthead() {
           style={{
             display: 'inline-flex',
             alignItems: 'center',
+            gap: 12,
             color: 'inherit',
             textDecoration: 'none',
           }}
         >
-          <Logo size={20} />
+          <Logo size={36} monogram={false} />
+          <span
+            aria-hidden
+            style={{
+              fontFamily: 'var(--font-serif)',
+              fontStyle: 'italic',
+              fontWeight: 500,
+              fontSize: 22,
+              lineHeight: 1,
+              letterSpacing: '-0.01em',
+              color: 'var(--text-primary)',
+            }}
+          >
+            hdw
+          </span>
         </Link>
         <ThemeToggle />
       </div>

@@ -68,20 +68,20 @@ export function PreviewSection({
           {section.blurb}
         </Text>
       )}
-      <ul style={{ listStyle: 'none', padding: 0, margin: '12px 0 0' }}>
+      <ul style={{ listStyle: 'none', padding: 0, margin: '10px 0 0' }}>
         {section.exercises.map((ex, i) => (
           <li
             key={ex.id}
             data-testid="preview-row"
             data-exercise-id={ex.id}
+            className="preview-row"
             style={{
               display: 'grid',
-              // Two rows: [tier · name · sets] on top, [actions] right-aligned below.
-              // Grid collapses cleanly on narrow screens — no overlap.
-              gridTemplateColumns: 'auto 1fr auto',
+              // Single line: tier · name · sets · actions (actions only visible
+              // on hover/focus or when row is selected — keeps the row dense).
+              gridTemplateColumns: 'auto 1fr auto auto',
               columnGap: 12,
-              rowGap: 6,
-              padding: '14px 0',
+              padding: '10px 0',
               borderTop: i === 0 ? 'none' : '1px solid var(--border-hairline)',
               alignItems: 'baseline',
             }}
@@ -91,17 +91,18 @@ export function PreviewSection({
                 as="span"
                 variant="mono-sm"
                 style={{
-                  width: 14,
+                  width: 12,
                   color: ex.tier === 'S'
                     ? `var(--accent-${accent}-ink)`
                     : 'var(--text-tertiary)',
                   opacity: ex.tier === 'S' ? 0.95 : 0.55,
                   fontWeight: 600,
+                  fontSize: 10,
                 }}
               >
                 {ex.tier}
               </Text>
-            ) : <span style={{ width: 14 }} />}
+            ) : <span style={{ width: 12 }} />}
             <Text
               as={Link}
               to={`/library/exercises/${ex.id}`}
@@ -111,7 +112,7 @@ export function PreviewSection({
               data-exercise-id={ex.id}
               style={{
                 minWidth: 0,
-                lineHeight: 1.35,
+                lineHeight: 1.3,
                 color: 'inherit',
                 textDecoration: 'none',
                 display: 'inline-flex',
@@ -120,38 +121,22 @@ export function PreviewSection({
               }}
             >
               {ex.name}
-              <span
-                aria-hidden
-                style={{
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: 10,
-                  color: 'var(--text-tertiary)',
-                  opacity: 0.6,
-                }}
-              >
-                ↗
-              </span>
               {addedIds.has(ex.id) && (
                 <Text as="span" variant="mono-sm" tone="tertiary" style={{ marginLeft: 4, textTransform: 'uppercase' }}>
                   · added
                 </Text>
               )}
             </Text>
-            <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase', whiteSpace: 'nowrap', justifySelf: 'end' }}>
+            <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
               {ex.sets}
             </Text>
-            <div style={{
-              gridColumn: '2 / -1',
-              display: 'flex',
-              gap: 8,
-              justifyContent: 'flex-end',
-              marginTop: 2,
-            }}>
+            <Stack direction="row" gap={1}>
               <MonoChipButton
                 data-testid="preview-swap"
                 data-exercise-id={ex.id}
                 aria-label={`Swap ${ex.name}`}
                 onClick={() => onSwapExercise(section.key, ex.id)}
+                size="sm"
               >
                 Swap
               </MonoChipButton>
@@ -160,10 +145,11 @@ export function PreviewSection({
                 data-exercise-id={ex.id}
                 aria-label={`Remove ${ex.name}`}
                 onClick={() => onRemoveExercise(section.key, ex.id, addedIds.has(ex.id))}
+                size="sm"
               >
                 Remove
               </MonoChipButton>
-            </div>
+            </Stack>
           </li>
         ))}
       </ul>

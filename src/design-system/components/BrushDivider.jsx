@@ -10,8 +10,9 @@
 export function BrushDivider({
   width = '100%',
   height = 8,
-  opacity = 0.18,
+  opacity = 0.28,
   align = 'center',   // 'left' | 'center' | 'right' — controls margin of the inner svg
+  accent,             // optional pattern accent key — tints the brush in day ink
   style,
   ...rest
 }) {
@@ -40,7 +41,7 @@ export function BrushDivider({
           display: 'block',
           margin,
           opacity,
-          color: 'var(--text-primary)',
+          color: accent ? `var(--accent-${accent}-ink)` : 'var(--text-primary)',
         }}
       >
         {/*

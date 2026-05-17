@@ -12,8 +12,8 @@ import { layout } from '../tokens';
 export function Page({
   as: As = 'main',
   width = 'reading', // 'reading' | 'dashboard' | 'full'
-  topPad = 20,
-  bottomPad = 168, // room for the BottomNav (~60) + SessionBar (~52) + breathing
+  topPad = 12,
+  bottomPad = 140, // room for the BottomNav (~60) + SessionBar (~52) + breathing
   chrome = true, // eslint-disable-line no-unused-vars
   style,
   children,

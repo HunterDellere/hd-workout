@@ -98,8 +98,8 @@ export function TodayHero({
       data-testid="today-hero"
       style={{
         position: 'relative',
-        marginTop: 24,
-        padding: '28px 28px 32px',
+        marginTop: 16,
+        padding: '24px 28px 28px',
         background: 'var(--gradient-hero)',
         border: '1px solid var(--border-hairline)',
         borderRadius: 16,
@@ -131,17 +131,17 @@ export function TodayHero({
           position: 'absolute',
           top: -14,
           right: -14,
-          width: 168,
-          height: 168,
+          width: 220,
+          height: 220,
           pointerEvents: 'none',
           color: `var(--accent-${accent}-ink)`,
-          opacity: 0.11,
+          opacity: 0.22,
           display: 'inline-flex',
           alignItems: 'center',
           justifyContent: 'center',
         }}
       >
-        <PatternGlyph name={patternKey} size={168} strokeWidth={1.25} />
+        <PatternGlyph name={patternKey} size={220} strokeWidth={1.5} />
       </span>
 
       <Stack direction="row" align="center" justify="space-between" gap={2}>
