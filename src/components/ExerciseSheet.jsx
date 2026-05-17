@@ -218,12 +218,21 @@ export function ExerciseSheet({ open, onClose, exercise }) {
           </Stack>
         </Stack>
 
-        <SectionBlock>
-          <Stack direction="row" gap={5}>
-            <StatRow label="Sets" value={displaySets} accent={accent} />
-            <StatRow label="Rest" value={displayRest} accent={accent} />
-          </Stack>
-        </SectionBlock>
+        {/* SETS / REST is only meaningful when a prescription is in
+            scope (an active session or a program-referenced exercise).
+            Catalog entries surfaced from /library/exercises/:id have
+            neither, which previously rendered a row of em-dashes that
+            read as broken stubs. Suppress the row entirely in that
+            case — the rest of the sheet (history, technique, variants)
+            stands on its own. */}
+        {(displaySets !== '—' || displayRest !== '—') && (
+          <SectionBlock>
+            <Stack direction="row" gap={5}>
+              <StatRow label="Sets" value={displaySets} accent={accent} />
+              <StatRow label="Rest" value={displayRest} accent={accent} />
+            </Stack>
+          </SectionBlock>
+        )}
 
         <BrushDivider style={{ marginTop: 32 }} />
         <SectionBlock style={{ marginTop: 20 }}>

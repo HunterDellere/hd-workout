@@ -119,8 +119,8 @@ export function Day() {
           Unknown day
         </Text>
         <Text as="p" variant="body-lg" tone="secondary" style={{ marginTop: 16 }}>
-          No day called <code style={{ fontFamily: 'var(--font-mono)' }}>{dayKey}</code> exists.
-          The four rooms are push, pull, legs, and core.
+          No page called <code style={{ fontFamily: 'var(--font-mono)' }}>{dayKey}</code>.
+          The training days are push, pull, legs, core, and recovery.
         </Text>
         <BrushDivider style={{ marginTop: 32 }} />
         <div style={{ marginTop: 24 }}>
