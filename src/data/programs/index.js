@@ -8,19 +8,23 @@
 
 import { fullSpectrum } from './full-spectrum';
 import { ppl6 } from './ppl-6';
+import { longevity } from './longevity';
 import { homeDefault } from './home-default';
 
 export const PROGRAMS = {
   [fullSpectrum.key]: fullSpectrum,
   [ppl6.key]: ppl6,
+  [longevity.key]: longevity,
   [homeDefault.key]: homeDefault,
 };
 
 // Order shown in the /me/settings switcher. Gym programs first; home
 // program is shown when the user is in the Home location preset only.
-export const PROGRAM_LIST = [fullSpectrum, ppl6, homeDefault];
-// Programs that show in the gym/home switcher respectively.
-export const GYM_PROGRAMS = [fullSpectrum, ppl6];
+export const PROGRAM_LIST = [fullSpectrum, ppl6, longevity, homeDefault];
+// Programs that show in the gym/home switcher respectively. Longevity
+// is gym-flavored (cable lateral, hip thrust, leg extension etc.) but
+// translates cleanly enough to home if the user runs the home preset.
+export const GYM_PROGRAMS = [fullSpectrum, ppl6, longevity];
 export const HOME_PROGRAMS = [homeDefault];
 
 export const DEFAULT_PROGRAM_KEY = fullSpectrum.key;
@@ -53,4 +57,4 @@ export function _resetProgramWarnings() {
   warnedMissing = new Set();
 }
 
-export { fullSpectrum, ppl6, homeDefault };
+export { fullSpectrum, ppl6, longevity, homeDefault };

@@ -118,44 +118,32 @@ export const homeDefault = {
       ],
     },
     recovery: {
+      // Curated 10-movement recovery day for home — Zone 2 walk
+      // outdoors + dead hang on the home pull-up bar + mobility +
+      // balance. Other catalog options (neck work, soft-tissue,
+      // posture practice) are available via "+ Add exercise" so
+      // the program doesn't try to do everything by default.
       'posture': [
         { id: 'rec-band-pull-apart', sets: '3 × 15–20',             rest: '0:45' },
         { id: 'rec-wall-slide',      sets: '2 × 10',                rest: '0:45' },
-        { id: 'rec-chin-tuck',       sets: '3 × 10 (3-count hold)', rest: '0:30' },
       ],
       'imbalance': [
         { id: 'rec-1arm-row', sets: '3 × 8–10 each arm (KB or band)', rest: '1:30' },
-        { id: 'rec-1leg-rdl', sets: '3 × 8 each leg',                 rest: '1:30' },
       ],
       'spine-health': [
-        { id: 'rec-mcgill-curlup',    sets: '3 × 5 (10s holds, descending)',           rest: '0:30' },
-        { id: 'rec-mcgill-sideplank', sets: '3 × 5 (10s holds, descending) each side', rest: '0:30' },
-        { id: 'rec-bird-dog',         sets: '3 × 8 (5s holds) each side',              rest: '0:30' },
+        { id: 'rec-bird-dog', sets: '3 × 8 (5s holds) each side', rest: '0:30' },
       ],
       'healthspan': [
         { id: 'rec-zone-2-walk', sets: '1 × 30–60 min', rest: '—' },
         { id: 'rec-dead-hang',   sets: '3 × max effort', rest: '2:00' },
       ],
-      'facial-cervical': [
-        { id: 'rec-neck-flexion',   sets: '2 × 10 (3-count holds)', rest: '0:30' },
-        { id: 'rec-neck-extension', sets: '2 × 10 (3-count holds)', rest: '0:30' },
-      ],
       'stretching': [
-        { id: 'rec-pigeon-stretch',    sets: '2 × 1 min each side',  rest: '0:30' },
-        { id: 'rec-couch-stretch',     sets: '2 × 1 min each side',  rest: '0:30' },
-        { id: 'rec-supine-hamstring',  sets: '2 × 45 sec each side', rest: '0:30' },
-        { id: 'rec-doorway-pec',       sets: '2 × 30 sec each side', rest: '0:30' },
-      ],
-      'posture-practice': [
-        { id: 'rec-wall-posture-check', sets: '2 × 1 min',  rest: '0:30' },
-        { id: 'rec-ribs-down',          sets: '3 × 30 sec', rest: '0:30' },
+        { id: 'rec-pigeon-stretch',  sets: '2 × 1 min each side',  rest: '0:30' },
+        { id: 'rec-couch-stretch',   sets: '2 × 1 min each side',  rest: '0:30' },
+        { id: 'rec-doorway-pec',     sets: '2 × 30 sec each side', rest: '0:30' },
       ],
       'balance': [
         { id: 'rec-single-leg-stand', sets: '2 × 1 min each side', rest: '0:30' },
-      ],
-      'soft-tissue': [
-        { id: 'rec-foam-roll-tspine', sets: '2 × 2 min',           rest: '0:30' },
-        { id: 'rec-lacrosse-glute',   sets: '2 × 2 min each side', rest: '0:30' },
       ],
       'mind-body': [
         { id: 'rec-sun-salutation-a', sets: '5 rounds', rest: '—' },
