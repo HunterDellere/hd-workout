@@ -65,26 +65,28 @@ function fromDateTimeLocal(str) {
   return Number.isNaN(d.getTime()) ? null : d.toISOString();
 }
 
-function ExercisePickStep({ onPick, onClose }) {
+function ExercisePickStep({ onPick }) {
   const [query, setQuery] = useState('');
   const { settings } = useSettings();
   const excludedEquipment = settings?.excludedEquipment ?? [];
   const catalog = useMemo(() => rawCatalogList(), []);
-  const visible = useMemo(() => {
+  const { visible, totalMatching } = useMemo(() => {
     const q = query.trim().toLowerCase();
     const pool = catalog.filter((ex) => !isExerciseExcludedByEquipment(ex, excludedEquipment));
-    if (!q) return pool.slice(0, 50);
-    const terms = q.split(/\s+/).filter(Boolean);
-    return pool.filter((ex) => {
-      const hay = [
-        ex.name,
-        ex.id,
-        ...(ex.tags ?? []),
-        ...(ex.equipment ?? []),
-        ...(ex.primaryMuscles ?? []),
-      ].join(' ').toLowerCase();
-      return terms.every((t) => hay.includes(t));
-    });
+    const matched = !q
+      ? pool
+      : pool.filter((ex) => {
+        const terms = q.split(/\s+/).filter(Boolean);
+        const hay = [
+          ex.name,
+          ex.id,
+          ...(ex.tags ?? []),
+          ...(ex.equipment ?? []),
+          ...(ex.primaryMuscles ?? []),
+        ].join(' ').toLowerCase();
+        return terms.every((t) => hay.includes(t));
+      });
+    return { visible: matched.slice(0, 50), totalMatching: matched.length };
   }, [query, catalog, excludedEquipment]);
 
   return (
@@ -142,14 +144,16 @@ function ExercisePickStep({ onPick, onClose }) {
               >
                 <Stack direction="column" gap={1}>
                   <Text as="span" variant="title-md">{ex.name}</Text>
-                  <Text
-                    as="span"
-                    variant="mono-sm"
-                    tone="tertiary"
-                    style={{ textTransform: 'uppercase' }}
-                  >
-                    {ex.sets ?? '—'}
-                  </Text>
+                  {ex.sets && (
+                    <Text
+                      as="span"
+                      variant="mono-sm"
+                      tone="tertiary"
+                      style={{ textTransform: 'uppercase', letterSpacing: '0.10em' }}
+                    >
+                      {ex.sets}
+                    </Text>
+                  )}
                 </Stack>
               </button>
             </li>
@@ -160,11 +164,16 @@ function ExercisePickStep({ onPick, onClose }) {
           No matches.
         </Text>
       )}
-      <Stack direction="row" gap={2} justify="flex-end" style={{ marginTop: 32 }}>
-        <Button variant="ghost" onClick={onClose} data-testid="manual-log-cancel">
-          Cancel
-        </Button>
-      </Stack>
+      {totalMatching > visible.length && (
+        <Text
+          as="p"
+          variant="mono-sm"
+          tone="tertiary"
+          style={{ marginTop: 16, textTransform: 'uppercase', letterSpacing: '0.10em' }}
+        >
+          · {totalMatching - visible.length} more — refine your search
+        </Text>
+      )}
     </>
   );
 }
@@ -495,7 +504,7 @@ export function ManualLogSheet({ open, onClose }) {
         }}
       >
         {!exerciseId ? (
-          <ExercisePickStep onPick={setExerciseId} onClose={close} />
+          <ExercisePickStep onPick={setExerciseId} />
         ) : (
           <EntryFormStep
             exerciseId={exerciseId}
