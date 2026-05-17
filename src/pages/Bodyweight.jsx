@@ -249,9 +249,13 @@ export function Bodyweight() {
         </form>
       </Block>
 
-      <Block gapTop={48} eyebrow="Last 90 days">
-        <Sparkline entries={log} unit={unit} />
-      </Block>
+      {/* Sparkline block only when there's data. The single empty-state
+          line below carries the full empty message. */}
+      {log.length >= 2 && (
+        <Block gapTop={48} eyebrow="Last 90 days">
+          <Sparkline entries={log} unit={unit} />
+        </Block>
+      )}
 
       {recent.length > 0 && (
         <Block gapTop={48} eyebrow="Recent">

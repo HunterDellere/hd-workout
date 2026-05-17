@@ -179,6 +179,25 @@ export function Day() {
         </div>
       )}
 
+      {showPlanner && (
+        <div style={{ marginTop: 48 }}>
+          <Text
+            as={Link}
+            to="/library"
+            variant="mono-sm"
+            tone="tertiary"
+            style={{
+              textTransform: 'uppercase',
+              letterSpacing: '0.12em',
+              textDecoration: 'none',
+              color: 'var(--text-secondary)',
+            }}
+          >
+            Browse all exercises →
+          </Text>
+        </div>
+      )}
+
       {sessionOnThisDay && (
         <div style={{ marginTop: 24 }}>
           <Button as={Link} to="/" variant="soft" accent={accent} size="md">
@@ -187,22 +206,31 @@ export function Day() {
         </div>
       )}
 
-      <BrushDivider style={{ marginTop: showPlanner ? 48 : 32 }} />
+      {/* Reference list — only when planner is suppressed (rest day, etc.).
+          Today and plan-ahead views already have the planner above, which
+          carries the same exercise data with swap/add affordances; the
+          reference list duplicated that surface and added screen real
+          estate without new information. */}
+      {!showPlanner && (
+        <>
+          <BrushDivider style={{ marginTop: 32 }} />
 
-      <Text as="div" variant="mono-sm" tone="tertiary" style={{ marginTop: 24, textTransform: 'uppercase' }}>
-        Reference
-      </Text>
+          <Text as="div" variant="mono-sm" tone="tertiary" style={{ marginTop: 24, textTransform: 'uppercase' }}>
+            Reference
+          </Text>
 
-      <div style={{ marginTop: 16, position: 'sticky', top: MASTHEAD_HEIGHT_PX, background: 'var(--surface-page)', zIndex: 1 }}>
-        <SectionNav
-          sections={day.sections}
-          activeKey={activeKey}
-          onPick={scrollToSection}
-          accent={accent}
-        />
-      </div>
+          <div style={{ marginTop: 16, position: 'sticky', top: MASTHEAD_HEIGHT_PX, background: 'var(--surface-page)', zIndex: 1 }}>
+            <SectionNav
+              sections={day.sections}
+              activeKey={activeKey}
+              onPick={scrollToSection}
+              accent={accent}
+            />
+          </div>
+        </>
+      )}
 
-      {day.sections.map((section, sectionIndex) => {
+      {!showPlanner && day.sections.map((section, sectionIndex) => {
         const sectionTitle = (section.title.split(' — ')[1] || section.title).trim();
         return (
           <section

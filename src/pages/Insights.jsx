@@ -191,13 +191,17 @@ function Heatmap({ archive }) {
     () => frequencyHeatmap(archive, { weeks: 8 }),
     [archive],
   );
+  // Cap cell size so the heatmap doesn't grow into a 800px+ slab on
+  // desktop. The original aspectRatio:1 design ballooned at full-width
+  // rendering. 28px per cell × 8 rows ≈ 270px total which reads as a
+  // module instead of a screen.
   return (
-    <div data-testid="heatmap">
+    <div data-testid="heatmap" style={{ maxWidth: 360 }}>
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'auto repeat(7, 1fr)',
-          gap: 4,
+          gridTemplateColumns: 'auto repeat(7, 28px)',
+          gap: 3,
           alignItems: 'center',
         }}
       >
@@ -208,7 +212,7 @@ function Heatmap({ archive }) {
             as="span"
             variant="mono-sm"
             tone="tertiary"
-            style={{ textAlign: 'center', textTransform: 'uppercase' }}
+            style={{ textAlign: 'center', textTransform: 'uppercase', fontSize: 9 }}
           >
             {d}
           </Text>
@@ -229,7 +233,7 @@ function Heatmap({ archive }) {
 function ReactRow({ label, counts, max }) {
   return (
     <>
-      <Text as="span" variant="mono-sm" tone="tertiary" style={{ textAlign: 'right' }}>
+      <Text as="span" variant="mono-sm" tone="tertiary" style={{ textAlign: 'right', fontSize: 10 }}>
         {label}
       </Text>
       {counts.map((c, ci) => {
@@ -240,7 +244,8 @@ function ReactRow({ label, counts, max }) {
             data-count={c}
             aria-label={`${c} sessions`}
             style={{
-              aspectRatio: '1 / 1',
+              width: 28,
+              height: 28,
               borderRadius: 2,
               background: c > 0 ? 'var(--text-primary)' : 'var(--surface-sunken)',
               opacity: c > 0 ? Math.max(0.35, ratio) : 1,
@@ -413,29 +418,21 @@ export function Insights() {
       </Block>
 
 
-      <Block gapTop={56} eyebrow="Weekly volume · per pattern">
-        {volume.weeks.length === 0 ? (
-          <Text as="p" variant="body-md" tone="secondary">
-            No archive yet. End a session with logged sets and the bars start rendering.
-          </Text>
-        ) : (
-          <>
-            <Text as="p" variant="body-sm" tone="tertiary" style={{ marginBottom: 16 }}>
-              Σ weight × reps. Split evenly across patterns when an exercise is in more than one.
-            </Text>
-            {PATTERNS.map((p) => (
-              <VolumeRow
-                key={p.key}
-                patternKey={p.key}
-                weeks={volume.weeks}
-                max={maxAcrossPatterns}
-                trend={trendsByPattern[p.key]}
-              />
-            ))}
-          </>
-        )}
-      </Block>
-
+      {/* Volume block: only renders when there's actual data. The single
+          empty-state line near the page top is the only empty message. */}
+      {volume.weeks.length > 0 && (
+        <Block gapTop={56} eyebrow="Weekly volume · per pattern">
+          {PATTERNS.map((p) => (
+            <VolumeRow
+              key={p.key}
+              patternKey={p.key}
+              weeks={volume.weeks}
+              max={maxAcrossPatterns}
+              trend={trendsByPattern[p.key]}
+            />
+          ))}
+        </Block>
+      )}
 
       {bodyweightLog && bodyweightLog.length >= 2 && (
         <Block gapTop={56} eyebrow="Bodyweight · last 30 entries">
@@ -443,12 +440,9 @@ export function Insights() {
         </Block>
       )}
 
-      <Block gapTop={56} eyebrow="Records">
-        {allPRs.length === 0 ? (
-          <Text as="p" variant="body-md" tone="secondary">
-            No PRs logged yet. They’ll surface here after the first record-breaking set lands in the archive.
-          </Text>
-        ) : (
+      {/* Records: also only when there's something to show. */}
+      {allPRs.length > 0 && (
+        <Block gapTop={56} eyebrow="Records">
           <ul data-testid="pr-rollup" style={{ listStyle: 'none', padding: 0, margin: 0 }}>
             {allPRs.map((pr, i) => {
               const found = findExerciseAnywhere(pr.exerciseId);
@@ -485,43 +479,66 @@ export function Insights() {
               );
             })}
           </ul>
-        )}
-      </Block>
+        </Block>
+      )}
 
 
-      <Block gapTop={56} eyebrow="How this is computed">
-        <ul
-          data-testid="insights-explainer"
-          style={{ listStyle: 'none', padding: 0, margin: 0 }}
-        >
-          {[
-            ['Records', 'A set breaks a record when its weight exceeds your prior heaviest at this exercise, or its reps exceed your prior best at the same weight.'],
-            ['Volume', 'Σ (weight × reps) across logged sets. When an exercise belongs to two movement patterns, its volume is split evenly between them.'],
-            ['Frequency', 'One mark per completed session, placed on the day it ended. Last 8 weeks.'],
-            ['Suggestions', 'Cleared the top of the rep range last session → bump weight. Mid-range → hold. Three sessions at the same load with no improvement → deload 10%.'],
-          ].map(([title, body], i) => (
-            <li
-              key={title}
+      {/* Explainer is reference content, not primary signal. Hide behind a
+          disclosure so the page doesn't end on a wall of definitions. */}
+      {hasData && (
+        <Block gapTop={56}>
+          <details
+            data-testid="insights-explainer"
+            style={{
+              borderTop: '1px solid var(--border-hairline)',
+              paddingTop: 16,
+            }}
+          >
+            <summary
               style={{
-                padding: '12px 0',
-                borderTop: i === 0 ? 'none' : '1px solid var(--border-hairline)',
+                cursor: 'pointer',
+                listStyle: 'none',
+                color: 'var(--text-tertiary)',
+                fontFamily: 'var(--font-mono)',
+                fontSize: 11,
+                letterSpacing: '0.12em',
+                textTransform: 'uppercase',
+                userSelect: 'none',
               }}
             >
-              <Text
-                as="div"
-                variant="mono-sm"
-                tone="tertiary"
-                style={{ textTransform: 'uppercase' }}
-              >
-                {title}
-              </Text>
-              <Text as="p" variant="body-sm" tone="secondary" style={{ marginTop: 6, maxWidth: 60 * 9 }}>
-                {body}
-              </Text>
-            </li>
-          ))}
-        </ul>
-      </Block>
+              How this is computed +
+            </summary>
+            <ul style={{ listStyle: 'none', padding: 0, margin: '16px 0 0' }}>
+              {[
+                ['Records', 'A set breaks a record when its weight exceeds your prior heaviest at this exercise, or its reps exceed your prior best at the same weight.'],
+                ['Volume', 'Σ (weight × reps) across logged sets. When an exercise belongs to two movement patterns, its volume is split evenly between them.'],
+                ['Frequency', 'One mark per completed session, placed on the day it ended. Last 8 weeks.'],
+                ['Suggestions', 'Cleared the top of the rep range last session → bump weight. Mid-range → hold. Three sessions at the same load with no improvement → deload 10%.'],
+              ].map(([title, body], i) => (
+                <li
+                  key={title}
+                  style={{
+                    padding: '12px 0',
+                    borderTop: i === 0 ? 'none' : '1px solid var(--border-hairline)',
+                  }}
+                >
+                  <Text
+                    as="div"
+                    variant="mono-sm"
+                    tone="tertiary"
+                    style={{ textTransform: 'uppercase' }}
+                  >
+                    {title}
+                  </Text>
+                  <Text as="p" variant="body-sm" tone="secondary" style={{ marginTop: 6, maxWidth: 60 * 9 }}>
+                    {body}
+                  </Text>
+                </li>
+              ))}
+            </ul>
+          </details>
+        </Block>
+      )}
     </Page>
   );
 }

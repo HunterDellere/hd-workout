@@ -400,26 +400,22 @@ export function History() {
         <BrushDivider style={{ marginTop: 24 }} />
 
         {!hasSessions ? (
-          <>
-            <Text
-              as="p"
-              variant="title-md"
-              tone="secondary"
-              data-testid="history-empty"
-              style={{
-                marginTop: 32,
-                fontStyle: 'italic',
-                fontFamily: 'var(--font-serif)',
-                fontWeight: 300,
-                opacity: 0.78,
-              }}
-            >
-              {voiceFor('history-empty') ?? 'No sessions yet.'}
-            </Text>
-            <Text as="p" variant="body-md" tone="tertiary" style={{ marginTop: 12, maxWidth: 30 * 16 }}>
-              Start one from <em>Today</em> — it'll appear here the moment you log a set.
-            </Text>
-          </>
+          <Text
+            as="p"
+            variant="title-md"
+            tone="secondary"
+            data-testid="history-empty"
+            style={{
+              marginTop: 32,
+              fontStyle: 'italic',
+              fontFamily: 'var(--font-serif)',
+              fontWeight: 300,
+              opacity: 0.78,
+              maxWidth: 60 * 9,
+            }}
+          >
+            {voiceFor('history-empty') ?? 'No sessions yet.'}
+          </Text>
         ) : (
           <ul data-testid="history-list" style={{ listStyle: 'none', padding: 0, margin: '24px 0 0' }}>
             {activeSession && totalSets(activeSession) > 0 && (

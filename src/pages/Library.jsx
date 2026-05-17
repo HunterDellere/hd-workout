@@ -278,22 +278,16 @@ export function Library() {
           >
             Reference
           </Text>
-          <Text
-            as="p"
-            variant="body-lg"
-            tone="secondary"
-            style={{ marginTop: 16, maxWidth: 56 * 9 }}
-          >
-            Browse by day, or by movement.
-          </Text>
 
-          {/* Sticky search input. Calmly positioned; clears on Esc. */}
+          {/* Search lives directly under the masthead. The day-and-movement
+              browse pattern is obvious from the section headers below —
+              no body copy needed to explain it. */}
           <div
             style={{
               position: 'sticky',
               top: MASTHEAD_HEIGHT_PX,
               zIndex: 3,
-              marginTop: 24,
+              marginTop: 20,
               background: 'var(--surface-page)',
               paddingTop: 8,
               paddingBottom: 8,

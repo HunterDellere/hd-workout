@@ -49,10 +49,11 @@ test('closing the exercise sheet returns to /library', async ({ page }) => {
 });
 
 test('Day card tap navigates to canonical exercise route', async ({ page }) => {
+  // Day page now shows the planner instead of the duplicate Reference
+  // section. Tap a preview-row name link to navigate.
   await page.goto('./#/push');
-  const firstCard = page.locator('[data-testid="exercise-card-v2"]').first();
-  await firstCard.waitFor({ state: 'visible' });
-  await page.waitForTimeout(300);
-  await firstCard.click();
+  const firstLink = page.locator('[data-testid="preview-name-link"]').first();
+  await firstLink.waitFor({ state: 'visible' });
+  await firstLink.click();
   await expect(page).toHaveURL(/#\/library\/exercises\/[^/]+$/);
 });

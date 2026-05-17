@@ -19,13 +19,26 @@ const DAY_PATTERN_KEY = {
   recovery: 'mobility',         // open arcs
 };
 
-function HeroStat({ label, value }) {
+function HeroStat({ label, value, primary }) {
+  // `primary` makes the stat read bigger — used for Minutes since most
+  // people plan around how much time they have. Exercises + Sections
+  // are structural details.
   return (
     <div>
       <Text as="div" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase', letterSpacing: '0.12em', opacity: 0.8 }}>
         {label}
       </Text>
-      <Text as="div" variant="mono-lg" tone="primary" style={{ marginTop: 6 }}>
+      <Text
+        as="div"
+        variant={primary ? 'display-lg' : 'mono-lg'}
+        tone="primary"
+        style={{
+          marginTop: 6,
+          fontStyle: 'normal',
+          fontFamily: primary ? 'var(--font-mono)' : undefined,
+          fontWeight: primary ? 500 : undefined,
+        }}
+      >
         {value}
       </Text>
     </div>
@@ -198,9 +211,11 @@ export function TodayHero({
 
       {/* Metrics strip — three quiet numbers, mono. Wraps on narrow screens. */}
       <Stack direction="row" gap={5} style={{ marginTop: 24, flexWrap: 'wrap', rowGap: 16 }}>
+        {/* Minutes is the headline — people plan around time. Exercises
+            and Sections are the structural detail. */}
+        {estMinutes != null && <HeroStat label="Minutes" value={`~${estMinutes}`} primary />}
         <HeroStat label="Exercises" value={exerciseCount} />
         <HeroStat label="Sections" value={sectionCount} />
-        {estMinutes != null && <HeroStat label="Minutes" value={`~${estMinutes}`} />}
       </Stack>
 
       <div style={{ marginTop: 28 }}>
