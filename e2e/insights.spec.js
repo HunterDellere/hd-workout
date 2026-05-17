@@ -104,9 +104,12 @@ test('today suggestion line surfaces when intelligence is on', async ({ page }) 
   await page.goto('./#/today');
   await page.reload();
   await page.getByTestId('start-session').click();
-  // The bench performance carries a hold suggestion (100 × 5 mid-range).
-  // Find it by name link rather than positional index — section order
-  // is configurable per defaultSectionOrder on the catalog day.
+  // Wave 22: focus mode collapses non-active exercises. Tap the bench
+  // row to promote it to focus before its suggestion line renders.
+  const benchRow = page.locator('[data-testid="collapsed-performance-row"]', {
+    hasText: /bench/i,
+  }).first();
+  await benchRow.click();
   const benchCard = page.locator('[data-testid="performance-card"]', {
     has: page.locator('[data-testid="performance-name-link"]', { hasText: /bench/i }),
   }).first();
@@ -134,7 +137,13 @@ test('slot picker opens, filters, picks, removes', async ({ page }) => {
   const exerciseId = await firstCandidate.getAttribute('data-exercise-id');
   await firstCandidate.click();
 
-  // The new card lands and shows a Remove affordance.
+  // Wave 22: the new performance is added but not auto-focused (the
+  // user is mid-workout; their current focus shouldn't move). Find
+  // the collapsed row carrying this exerciseId and tap to promote it.
+  await page
+    .locator(`[data-testid="collapsed-performance-row"][data-exercise-id="${exerciseId}"]`)
+    .click();
+
   const newCard = page.locator(`[data-performance-id]`).filter({ has: page.getByTestId('remove-performance') }).first();
   await expect(newCard).toBeVisible();
 

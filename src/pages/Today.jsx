@@ -38,6 +38,7 @@ import { SlotPicker } from '../components/SlotPicker';
 import { AddGroupSheet } from '../components/AddGroupSheet';
 import { ReorderSectionsSheet } from '../components/ReorderSectionsSheet';
 import { PerformanceCard } from '../components/today/PerformanceCard';
+import { CollapsedPerformanceRow } from '../components/today/CollapsedPerformanceRow';
 import { RestDay } from '../components/today/RestDay';
 import { SessionSummary } from '../components/today/SessionSummary';
 import { DayPlanner } from '../components/today/DayPlanner';
@@ -99,6 +100,52 @@ export function Today() {
     () => (activeSession ? annotatePRs(activeSession, archive) : null),
     [activeSession, archive],
   );
+  // Wave 22 — focus mode. In-session view: one expanded card at a time,
+  // others collapse to one-line summary rows. Focus starts at the first
+  // incomplete performance and auto-advances when the current one fills
+  // its prescribed set count.
+  const firstIncompleteId = useMemo(() => {
+    if (!activeSession) return null;
+    for (const p of activeSession.performances ?? []) {
+      const prescription = parsePrescription(p.prescription?.sets ?? '');
+      const workingSets = (p.sets ?? []).filter((s) => !s.isWarmup).length;
+      const target = prescription.setsTotal ?? 1;
+      if (workingSets < target) return p.id;
+    }
+    // All complete — keep the last performance focused so the lifter
+    // sees their final logged sets rather than collapsing everything.
+    return activeSession.performances?.[activeSession.performances.length - 1]?.id ?? null;
+  }, [activeSession]);
+
+  // Focus is derived: user-override (from a tap) takes precedence;
+  // otherwise the first incomplete performance is focused. When the
+  // override target becomes complete, the override is auto-cleared so
+  // the lifter snaps forward to the next incomplete exercise.
+  const [focusOverride, setFocusOverride] = useState(null);
+  const focusedPerformanceId = useMemo(() => {
+    if (!activeSession) return null;
+    if (focusOverride) {
+      const target = activeSession.performances?.find((p) => p.id === focusOverride);
+      if (target) {
+        const prescription = parsePrescription(target.prescription?.sets ?? '');
+        const working = (target.sets ?? []).filter((s) => !s.isWarmup).length;
+        const setsTotal = prescription.setsTotal ?? 1;
+        // If the override target is still incomplete, honour the override.
+        if (working < setsTotal) return focusOverride;
+      }
+      // Either the override is stale (swap/remove) or now complete —
+      // fall through to first-incomplete. The override flag clears
+      // itself on the next user tap.
+    }
+    return firstIncompleteId;
+  }, [activeSession, focusOverride, firstIncompleteId]);
+
+  // Override is "stale-but-harmless" once its target completes — the
+  // derived focusedPerformanceId already falls through to
+  // firstIncompleteId in that case. We don't need to clear the state
+  // proactively; the next tap on a row will replace it, and at
+  // session end / restart the state resets naturally.
+
   const livePRSetIds = useMemo(() => {
     if (!annotatedSession) return new Set();
     const ids = new Set();
@@ -290,47 +337,63 @@ export function Today() {
                     {meta.blurb}
                   </Text>
                 )}
-                {performances.map((perf) => (
-                  <PerformanceCard
-                    key={perf.id}
-                    performance={perf}
-                    accent={accent}
-                    unit={settings.units}
-                    restTimerMode={settings.restTimerMode}
-                    isResting={activeSession.restPerformanceId === perf.id}
-                    restStartedAt={activeSession.restStartedAt}
-                    restRaw={perf.prescription?.rest}
-                    lastTop={lastTopSetForExercise(archive, perf.exerciseId)}
-                    autoProgression={autoProgressionFor(
-                      lastWorkingSetsForExercise(archive, perf.exerciseId),
-                      parsePrescription(perf.prescription?.sets ?? ''),
-                      settings.units,
-                    )}
-                    barWeight={settings.units === 'lb'
-                      ? (settings.barWeightLb ?? null)
-                      : (settings.barWeightKg ?? null)}
-                    plateInventory={settings.units === 'lb'
-                      ? (settings.platesLb ?? null)
-                      : (settings.platesKg ?? null)}
-                    plateCalculatorEnabled={settings.plateCalculatorEnabled !== false}
-                    suggestion={settings.intelligenceEnabled
-                      ? suggestNextLoad(
-                        historyForExercise(archive, perf.exerciseId),
+                {performances.map((perf) => {
+                  // Wave 22: focus mode. Only the focused performance
+                  // renders the full input card; others collapse to a
+                  // one-line summary that promotes to focus on tap.
+                  const isFocused = perf.id === focusedPerformanceId;
+                  if (!isFocused) {
+                    return (
+                      <CollapsedPerformanceRow
+                        key={perf.id}
+                        performance={perf}
+                        accent={accent}
+                        onFocus={(id) => setFocusOverride(id)}
+                      />
+                    );
+                  }
+                  return (
+                    <PerformanceCard
+                      key={perf.id}
+                      performance={perf}
+                      accent={accent}
+                      unit={settings.units}
+                      restTimerMode={settings.restTimerMode}
+                      isResting={activeSession.restPerformanceId === perf.id}
+                      restStartedAt={activeSession.restStartedAt}
+                      restRaw={perf.prescription?.rest}
+                      lastTop={lastTopSetForExercise(archive, perf.exerciseId)}
+                      autoProgression={autoProgressionFor(
+                        lastWorkingSetsForExercise(archive, perf.exerciseId),
                         parsePrescription(perf.prescription?.sets ?? ''),
                         settings.units,
-                      )
-                      : null}
-                    onLogSet={logSet}
-                    onDiscardSet={discardSet}
-                    onSwap={setSwapPerformanceId}
-                    onStopRest={clearRestTimer}
-                    onRemove={perf.addedInSession && perf.sets.length === 0
-                      ? () => removePerformance(perf.id)
-                      : null}
-                    onSetNote={setPerformanceNote}
-                    prSetIds={livePRSetIds}
-                  />
-                ))}
+                      )}
+                      barWeight={settings.units === 'lb'
+                        ? (settings.barWeightLb ?? null)
+                        : (settings.barWeightKg ?? null)}
+                      plateInventory={settings.units === 'lb'
+                        ? (settings.platesLb ?? null)
+                        : (settings.platesKg ?? null)}
+                      plateCalculatorEnabled={settings.plateCalculatorEnabled !== false}
+                      suggestion={settings.intelligenceEnabled
+                        ? suggestNextLoad(
+                          historyForExercise(archive, perf.exerciseId),
+                          parsePrescription(perf.prescription?.sets ?? ''),
+                          settings.units,
+                        )
+                        : null}
+                      onLogSet={logSet}
+                      onDiscardSet={discardSet}
+                      onSwap={setSwapPerformanceId}
+                      onStopRest={clearRestTimer}
+                      onRemove={perf.addedInSession && perf.sets.length === 0
+                        ? () => removePerformance(perf.id)
+                        : null}
+                      onSetNote={setPerformanceNote}
+                      prSetIds={livePRSetIds}
+                    />
+                  );
+                })}
                 <div style={{ marginTop: 16 }}>
                   <MonoChipButton
                     variant="dashed"
