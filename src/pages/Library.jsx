@@ -146,15 +146,25 @@ function AnchorRail({ anchors }) {
         Index
       </Text>
       {anchors.map(({ id, label, count }) => (
-        <a
+        <button
           key={id}
-          href={`#${id}`}
+          type="button"
+          // Programmatic scroll instead of href="#id". The app uses
+          // HashRouter, so an anchor-style href would replace the
+          // route hash to "#id" and fall through to the unknown-day
+          // 404. scrollIntoView achieves the same intra-page jump
+          // without touching the route.
+          onClick={() => {
+            const el = document.getElementById(id);
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }}
           style={{
+            all: 'unset',
+            cursor: 'pointer',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'baseline',
             gap: 12,
-            textDecoration: 'none',
             color: 'var(--text-secondary)',
             fontFamily: 'var(--font-mono)',
             fontSize: 11,
@@ -165,7 +175,7 @@ function AnchorRail({ anchors }) {
         >
           <span>{label}</span>
           <span style={{ color: 'var(--text-tertiary)' }}>{count}</span>
-        </a>
+        </button>
       ))}
     </nav>
   );
