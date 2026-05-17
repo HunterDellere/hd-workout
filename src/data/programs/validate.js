@@ -18,14 +18,22 @@ export function validateProgram(program, catalogByDay) {
     return issues;
   }
 
-  // Build a quick {dayKey: {sectionKey: Set<id>}} index from the catalog.
+  // Build a quick {dayKey: {sectionKey: ...}} index from the catalog,
+  // and a flat global set of every exercise id across all days. Programs
+  // are allowed to pull exercises across day files (e.g., a `rec-*`
+  // entry showing up in a push-day section) — what the validator cares
+  // about is whether the section key exists on that catalog day AND
+  // whether the referenced exercise id exists *somewhere* in the
+  // catalog.
   const catalogIndex = {};
+  const allCatalogIds = new Set();
   for (const [dayKey, day] of Object.entries(catalogByDay ?? {})) {
-    catalogIndex[dayKey] = {};
+    catalogIndex[dayKey] = new Set();
     for (const section of day.sections ?? []) {
-      catalogIndex[dayKey][section.key] = new Set(
-        (section.exercises ?? []).map((e) => e.id),
-      );
+      catalogIndex[dayKey].add(section.key);
+      for (const ex of section.exercises ?? []) {
+        allCatalogIds.add(ex.id);
+      }
     }
   }
 
@@ -40,8 +48,7 @@ export function validateProgram(program, catalogByDay) {
       continue;
     }
     for (const [sectionKey, entries] of Object.entries(sections ?? {})) {
-      const catalogSection = catalogDay[sectionKey];
-      if (!catalogSection) {
+      if (!catalogDay.has(sectionKey)) {
         issues.push({
           kind: 'missing-section',
           dayKey,
@@ -60,7 +67,11 @@ export function validateProgram(program, catalogByDay) {
           });
           continue;
         }
-        if (!catalogSection.has(entry.id)) {
+        // Programs can borrow exercises across day files (a recovery
+        // movement showing up in a push warmup section, a leg carry
+        // serving as a core finisher). What matters is the id exists
+        // somewhere in the catalog.
+        if (!allCatalogIds.has(entry.id)) {
           issues.push({
             kind: 'missing-exercise',
             dayKey,

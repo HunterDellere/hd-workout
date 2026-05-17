@@ -52,16 +52,29 @@ export const homeDefault = {
     },
     pull: {
       'lats-vertical': [
-        { id: 'pull-pullup',          sets: '4 × 5–10',    rest: '2:00' },
+        { id: 'pull-pullup',          sets: '4 × 5–10',           rest: '2:00' },
+        // Band-resisted lat pulldown for the days when the pull-up
+        // bar isn't available or after pull-ups have been wrung out.
+        { id: 'pull-band-pulldown',   sets: '3 × 10–15',          rest: '1:30' },
       ],
       'back-horizontal': [
-        { id: 'pull-inverted-row',    sets: '4 × 8–15',    rest: '1:30' },
+        { id: 'pull-inverted-row',    sets: '4 × 8–15',           rest: '1:30' },
+        // KB row is the single-arm anchor for home horizontal pull.
+        // Heavier loading than a band, more honest than an inverted
+        // row chain.
+        { id: 'pull-kb-row',          sets: '3 × 8–12 each side', rest: '1:30' },
+      ],
+      'biceps': [
+        { id: 'pull-kb-curl',         sets: '3 × 8–12 each side', rest: '1:30' },
       ],
       'rear-delt': [
-        { id: 'rec-band-pull-apart',  sets: '3 × 15–20',   rest: '1:00' },
+        { id: 'rec-band-pull-apart',  sets: '3 × 15–20',          rest: '1:00' },
       ],
       'grip-forearms': [
-        { id: 'pull-farmers-carry',   sets: '3 × 40–60m (KBs)', rest: '1:30' },
+        { id: 'pull-farmers-carry',   sets: '3 × 40–60m (KBs)',   rest: '1:30' },
+        // Towel hang adds the grip-endurance side that farmers
+        // carries underdose at home weights.
+        { id: 'pull-towel-hang',      sets: '3 × max effort',     rest: '2:00' },
       ],
     },
     legs: {
