@@ -405,6 +405,7 @@ export function History() {
               as="p"
               variant="title-md"
               tone="secondary"
+              data-testid="history-empty"
               style={{
                 marginTop: 32,
                 fontStyle: 'italic',

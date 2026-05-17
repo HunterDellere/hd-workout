@@ -19,7 +19,9 @@ test.beforeEach(async ({ page }) => {
 
 test('history is empty until a session is logged', async ({ page }) => {
   await page.goto('./#/history');
-  await expect(page.getByText(/no sessions yet/i)).toBeVisible();
+  // Anchor on the testid, not the copy — the empty-state line rotates
+  // daily through HISTORY_EMPTY voices.
+  await expect(page.getByTestId('history-empty')).toBeVisible();
 });
 
 test('an active session with logged sets surfaces in history with the in-progress badge', async ({ page }) => {
