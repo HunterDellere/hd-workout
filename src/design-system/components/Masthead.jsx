@@ -61,7 +61,10 @@ export function Masthead() {
               fontFamily: 'var(--font-serif)',
               fontStyle: 'italic',
               fontWeight: 500,
-              fontSize: 28,
+              // Scale up on wider viewports — at desktop widths 28px
+              // floats lost in the gutter; ~36px gives the wordmark
+              // presence without overpowering the eyebrow on phones.
+              fontSize: 'clamp(28px, 3.4vw, 36px)',
               lineHeight: 1,
               letterSpacing: '-0.015em',
               color: 'var(--text-primary)',

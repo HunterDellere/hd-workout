@@ -77,9 +77,12 @@ export function PreviewSection({
             className="preview-row"
             style={{
               display: 'grid',
-              // Single line: tier · name · sets · actions (actions only visible
-              // on hover/focus or when row is selected — keeps the row dense).
-              gridTemplateColumns: 'auto 1fr auto auto',
+              // Tier · name · sets · actions · trailing space. The
+              // trailing 1fr keeps content clustered left so on wide
+              // viewports the actions don't float at the card's edge;
+              // the name column gets minmax(0, …) so long names shrink
+              // before pushing siblings off the row on narrow screens.
+              gridTemplateColumns: 'auto minmax(0, max-content) auto auto 1fr',
               columnGap: 12,
               padding: '10px 0',
               borderTop: i === 0 ? 'none' : '1px solid var(--border-hairline)',

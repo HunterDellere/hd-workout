@@ -130,25 +130,35 @@ export function TodayHero({
           Gym/Home chip pair on push (two parallel marks read as a
           duplicate chip). Now reads as a brand watermark sitting
           behind the Start CTA. */}
+      {/* Fully-visible corner mark — small enough to read as a brand
+          stamp, not a stranded UI element. Earlier the watermark was
+          200–340px partially-off-canvas; with stroke-only glyphs
+          (horizontal-press is two parallel bars), whatever stroke
+          crossed the visible card area read as floating skeleton UI.
+          Keeping the whole glyph inside the card removes that misread. */}
       <span
         aria-hidden
         style={{
           position: 'absolute',
-          bottom: -36,
-          right: -28,
-          width: 240,
-          height: 240,
+          bottom: 18,
+          right: 22,
+          width: 56,
+          height: 56,
           pointerEvents: 'none',
           color: `var(--accent-${accent}-ink)`,
-          opacity: 0.18,
+          opacity: 0.35,
           display: 'inline-flex',
           alignItems: 'center',
           justifyContent: 'center',
         }}
       >
-        <PatternGlyph name={patternKey} size={240} strokeWidth={1.5} />
+        <PatternGlyph name={patternKey} size={56} strokeWidth={1.5} />
       </span>
 
+      {/* Content column — capped width keeps the right side as
+          deliberate breathing room (with corner glyph) rather than
+          looking abandoned on wide viewports. The card itself remains
+          full-bleed to anchor the page. */}
       <Stack direction="row" align="center" justify="space-between" gap={2}>
         <Stack direction="row" align="center" gap={2}>
           <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase', letterSpacing: '0.14em' }}>
