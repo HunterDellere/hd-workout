@@ -23,7 +23,12 @@ import {
 import { dayLineageAccent } from '../design-system/tokens';
 import { findExerciseById } from '../data';
 import { parsePrescription } from '../data/prescription';
-import { historyForExercise, lastTopSetForExercise } from '../data/history';
+import {
+  historyForExercise,
+  lastTopSetForExercise,
+  lastWorkingSetsForExercise,
+  autoProgressionFor,
+} from '../data/history';
 import { suggestNextLoad, annotatePRs } from '../data/intelligence';
 import { useSettings, dayKeyForToday } from '../state/settings-context.js';
 import { useSession, lastLoggedAt } from '../state/session-context.js';
@@ -295,6 +300,11 @@ export function Today() {
                     restStartedAt={activeSession.restStartedAt}
                     restRaw={perf.prescription?.rest}
                     lastTop={lastTopSetForExercise(archive, perf.exerciseId)}
+                    autoProgression={autoProgressionFor(
+                      lastWorkingSetsForExercise(archive, perf.exerciseId),
+                      parsePrescription(perf.prescription?.sets ?? ''),
+                      settings.units,
+                    )}
                     barWeight={settings.units === 'lb'
                       ? (settings.barWeightLb ?? null)
                       : (settings.barWeightKg ?? null)}

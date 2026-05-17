@@ -6,9 +6,10 @@ import { Link } from 'react-router-dom';
 import { Page, Text, BrushDivider, Button } from '../design-system/components';
 
 const ITEMS = [
-  { to: '/me/settings', label: 'Settings', hint: 'Split, rest timer, units, haptics, data' },
-  { to: '/me/glossary', label: 'Glossary', hint: 'What the words mean' },
-  { to: '/me/about',    label: 'About',    hint: 'Install instructions' },
+  { to: '/me/bodyweight', label: 'Bodyweight', hint: 'One number a day' },
+  { to: '/me/settings',   label: 'Settings',   hint: 'Split, rest timer, units, haptics, data' },
+  { to: '/me/glossary',   label: 'Glossary',   hint: 'What the words mean' },
+  { to: '/me/about',      label: 'About',      hint: 'Install instructions' },
 ];
 
 export function Me() {

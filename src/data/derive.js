@@ -61,6 +61,12 @@ const SECTION_TO_PATTERNS = {
   'spine-health':      ['corrective'],
   'facial-cervical':   ['healthspan'],
   'healthspan':        ['healthspan'],
+  // Wave 9 practice sections — anchored to mobility/corrective.
+  'stretching':        ['mobility'],
+  'posture-practice':  ['corrective'],
+  'balance':           ['corrective'],
+  'soft-tissue':       ['mobility'],
+  'mind-body':         ['mobility', 'healthspan'],
 };
 
 // Tag → pattern. Explicit pattern slugs first; semantic fallbacks after.

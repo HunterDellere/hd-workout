@@ -28,6 +28,7 @@ import { ReorderSectionsSheet } from '../ReorderSectionsSheet';
 import { MonoChipButton } from '../../design-system/components';
 import { TodayHero } from './TodayHero';
 import { PreviewSection } from './PreviewSection';
+import { BodyweightQuickLog } from './BodyweightQuickLog';
 import { estimateDayMinutes } from './estimateDayMinutes';
 
 // Map a day's exercises to their movement patterns so we can decide which
@@ -143,6 +144,8 @@ export function DayPlanner({ dayKey, viewMode = 'today' }) {
         hasOverlay={hasOverlay}
         onResetDay={() => resetDay(dayKey)}
       />
+
+      <BodyweightQuickLog />
 
       {/* Wave 6.3c: quiet recovery-debt nudge when this day's patterns
           have been over-baseline in the last 72h. No prediction, no

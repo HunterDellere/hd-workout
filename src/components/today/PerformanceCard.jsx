@@ -53,6 +53,7 @@ export function PerformanceCard({
   barWeight,
   plateInventory,
   plateCalculatorEnabled,
+  autoProgression,
 }) {
   const ex = findExerciseById(performance.exerciseId);
   if (!ex) return null;
@@ -169,8 +170,9 @@ export function PerformanceCard({
       {/* Rest timer: lives ABOVE the set inputs (between header and
           stepper) so when you're resting you see the countdown right
           next to the next set you're about to log. Sticky so as you
-          scroll inside the card it pins to the top. */}
-      {isResting && hasLogged && (
+          scroll inside the card it pins to the top. Suppressed entirely
+          when the user has set restTimerMode='off' — they log and move on. */}
+      {isResting && hasLogged && restTimerMode !== 'off' && (
         <div
           style={{
             position: 'sticky',
@@ -210,6 +212,7 @@ export function PerformanceCard({
             accent={accent}
             unit={unit}
             lastTop={lastTop}
+            autoProgression={autoProgression}
             barWeight={barWeight}
             plateInventory={plateInventory}
             plateCalculatorEnabled={plateCalculatorEnabled}

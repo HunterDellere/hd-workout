@@ -22,7 +22,9 @@ describe('derivePatternToExercises', () => {
 
   it('places OHP under vertical-press', () => {
     const names = map['vertical-press'].map((e) => e.name.toLowerCase());
-    const hasOhp = names.some((n) => n.includes('overhead press') || n.includes('press'));
+    const hasOhp = names.some((n) =>
+      n.includes('overhead press') || n.includes('press') || n.includes('ohp'),
+    );
     expect(hasOhp).toBe(true);
   });
 

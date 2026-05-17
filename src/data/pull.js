@@ -530,7 +530,7 @@ export const pull = {
             { name: 'KB bottoms-up curl', note: 'KB upside-down; brutal grip + stability.' },
             { name: 'Cross-body KB curl', note: 'Curl across the body — different bicep angle.' },
           ],
-          tags: ['isolation', 'bicep'],
+          tags: ['isolation', 'biceps'],
         },
       ],
     },

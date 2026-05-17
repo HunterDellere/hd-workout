@@ -30,7 +30,12 @@ export function SessionBar() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const onToday = pathname === '/';
-  const resting = Boolean(activeSession?.restStartedAt && activeSession?.restPerformanceId);
+  const timerEnabled = settings.restTimerMode !== 'off';
+  const resting = Boolean(
+    activeSession?.restStartedAt
+    && activeSession?.restPerformanceId
+    && timerEnabled,
+  );
   const showAsTimer = onToday && resting;
 
   // Tick only when we're rendering the timer surface.

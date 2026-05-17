@@ -29,6 +29,7 @@ const Settings = lazy(() => import('./pages/Settings').then((m) => ({ default: m
 const Insights = lazy(() => import('./pages/Insights').then((m) => ({ default: m.Insights })));
 const Glossary = lazy(() => import('./pages/Glossary').then((m) => ({ default: m.Glossary })));
 const History = lazy(() => import('./pages/History').then((m) => ({ default: m.History })));
+const Bodyweight = lazy(() => import('./pages/Bodyweight').then((m) => ({ default: m.Bodyweight })));
 
 function RouteFallback() {
   return <Surface as="main" level="page" style={{ minHeight: '100vh' }} />;
@@ -56,6 +57,7 @@ export default function App() {
           <Route path="/me/settings" element={<Settings />} />
           <Route path="/me/about" element={<About />} />
           <Route path="/me/glossary" element={<Glossary />} />
+          <Route path="/me/bodyweight" element={<Bodyweight />} />
 
           {/* Library. */}
           <Route path="/library" element={<Library />} />

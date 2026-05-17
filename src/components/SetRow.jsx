@@ -351,20 +351,31 @@ export function SetRow({
   // pre-fill the first set's weight/reps when nothing's been logged yet
   // in the current performance. Subsequent sets carry within-session.
   lastTop,
+  // Auto-progression seed. Non-null when the user hit the top of the
+  // rep range on every working set in their last session — the first
+  // set's default load bumps by one increment (2.5kg / 5lb).
+  autoProgression,
   // Plate calculator inputs. null/undefined values fall back to
   // unit-aware defaults via src/data/plates.js.
   barWeight,
   plateInventory,
   plateCalculatorEnabled = true,
 }) {
-  // Defaults: within-session prior > archive prior > prescription mid > ''.
+  // Defaults: within-session prior > auto-progression bump > archive top set
+  //           > prescription mid > ''.
   const withinSessionPrior = performance.sets.at(-1);
   const archivePriorWeight = lastTop?.top?.weight ?? '';
   const archivePriorReps = lastTop?.top?.reps ?? '';
-  const defaultWeight = withinSessionPrior?.weight ?? archivePriorWeight;
+  const bumpedWeight = autoProgression?.to ?? null;
+  const defaultWeight = withinSessionPrior?.weight
+    ?? (bumpedWeight !== null ? bumpedWeight : archivePriorWeight);
+  // When we bump weight, drop reps to the low end of the range (a real
+  // working set at the new load isn't going to hit the top again).
   const defaultReps = withinSessionPrior?.reps
     ?? (prescription.kind === 'straight'
-      ? (prescription.repsMid ?? prescription.repsHigh ?? archivePriorReps ?? '')
+      ? (bumpedWeight !== null
+        ? (prescription.repsLow ?? prescription.repsMid ?? '')
+        : (prescription.repsMid ?? prescription.repsHigh ?? archivePriorReps ?? ''))
       : (archivePriorReps ?? ''));
 
   const [weight, setWeight] = useState(defaultWeight);
@@ -447,6 +458,25 @@ export function SetRow({
             onChange={setReps}
           />
         </Stack>
+
+        {/* Auto-progression nudge: only shows when this is the first set
+            of the performance and the user hit the top of the rep range
+            on every working set last session. Quiet mono line, accent ink. */}
+        {autoProgression && performance.sets.length === 0 && (
+          <Text
+            as="div"
+            variant="mono-sm"
+            data-testid="auto-progression-line"
+            style={{
+              textTransform: 'uppercase',
+              letterSpacing: '0.10em',
+              marginTop: -8,
+              color: `var(--accent-${accent}-ink)`,
+            }}
+          >
+            +{autoProgression.increment}{unit} ▲ · cleared the top rep last session
+          </Text>
+        )}
 
         {plateBreakdown && (plateBreakdown.perSide.length > 0 || plateBreakdown.residual > 0) && (
           <Text

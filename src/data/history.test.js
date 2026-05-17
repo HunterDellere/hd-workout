@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { topSet, historyForExercise, lastTopSetForExercise } from './history';
+import {
+  topSet,
+  historyForExercise,
+  lastTopSetForExercise,
+  lastWorkingSetsForExercise,
+  autoProgressionFor,
+} from './history';
 
 const SESSION_A = {
   id: 'A',
@@ -95,5 +101,96 @@ describe('lastTopSetForExercise', () => {
     const last = lastTopSetForExercise([SESSION_A, SESSION_B], 'bench');
     expect(last.sessionId).toBe('B');
     expect(last.top).toMatchObject({ weight: 70, reps: 7 });
+  });
+});
+
+describe('auto-progression', () => {
+  const PRESCRIPTION_5_8 = {
+    kind: 'straight',
+    sets: 3,
+    setsTotal: 3,
+    repsLow: 5,
+    repsHigh: 8,
+    repsMid: 7,
+  };
+
+  function makeSession(id, sets) {
+    return {
+      id,
+      dayKey: 'push',
+      endedAt: '2026-05-08T11:00:00.000Z',
+      performances: [{ exerciseId: 'bench', sets }],
+    };
+  }
+
+  it('bumps when all working sets hit the top of the rep range', () => {
+    const sets = [
+      { weight: 100, reps: 8, unit: 'kg' },
+      { weight: 100, reps: 8, unit: 'kg' },
+      { weight: 100, reps: 8, unit: 'kg' },
+    ];
+    const ws = lastWorkingSetsForExercise([makeSession('A', sets)], 'bench');
+    expect(autoProgressionFor(ws, PRESCRIPTION_5_8, 'kg')).toMatchObject({
+      from: 100, to: 102.5, increment: 2.5,
+    });
+  });
+
+  it('lb uses 5lb increment', () => {
+    const sets = [
+      { weight: 225, reps: 8, unit: 'lb' },
+      { weight: 225, reps: 8, unit: 'lb' },
+      { weight: 225, reps: 8, unit: 'lb' },
+    ];
+    const ws = lastWorkingSetsForExercise([makeSession('A', sets)], 'bench');
+    expect(autoProgressionFor(ws, PRESCRIPTION_5_8, 'lb')).toMatchObject({
+      from: 225, to: 230, increment: 5,
+    });
+  });
+
+  it('does not bump when one set fell short', () => {
+    const sets = [
+      { weight: 100, reps: 8, unit: 'kg' },
+      { weight: 100, reps: 8, unit: 'kg' },
+      { weight: 100, reps: 7, unit: 'kg' },
+    ];
+    const ws = lastWorkingSetsForExercise([makeSession('A', sets)], 'bench');
+    expect(autoProgressionFor(ws, PRESCRIPTION_5_8, 'kg')).toBeNull();
+  });
+
+  it('does not bump on RPE 9+', () => {
+    const sets = [
+      { weight: 100, reps: 8, rpe: 8, unit: 'kg' },
+      { weight: 100, reps: 8, rpe: 9, unit: 'kg' },
+      { weight: 100, reps: 8, rpe: 8, unit: 'kg' },
+    ];
+    const ws = lastWorkingSetsForExercise([makeSession('A', sets)], 'bench');
+    expect(autoProgressionFor(ws, PRESCRIPTION_5_8, 'kg')).toBeNull();
+  });
+
+  it('does not bump when fewer sets were logged than prescribed', () => {
+    const sets = [
+      { weight: 100, reps: 8, unit: 'kg' },
+      { weight: 100, reps: 8, unit: 'kg' },
+    ];
+    const ws = lastWorkingSetsForExercise([makeSession('A', sets)], 'bench');
+    expect(autoProgressionFor(ws, PRESCRIPTION_5_8, 'kg')).toBeNull();
+  });
+
+  it('ignores warmup sets', () => {
+    const sets = [
+      { weight: 60, reps: 8, isWarmup: true, unit: 'kg' },
+      { weight: 100, reps: 8, unit: 'kg' },
+      { weight: 100, reps: 8, unit: 'kg' },
+      { weight: 100, reps: 8, unit: 'kg' },
+    ];
+    const ws = lastWorkingSetsForExercise([makeSession('A', sets)], 'bench');
+    expect(autoProgressionFor(ws, PRESCRIPTION_5_8, 'kg')).toMatchObject({
+      to: 102.5,
+    });
+  });
+
+  it('returns null on empty history', () => {
+    expect(autoProgressionFor([], PRESCRIPTION_5_8, 'kg')).toBeNull();
+    expect(autoProgressionFor(null, PRESCRIPTION_5_8, 'kg')).toBeNull();
   });
 });

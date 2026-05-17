@@ -379,7 +379,7 @@ export function Settings() {
             label="Count up"
             hint="0:00 → target. Pulses when ready."
             isFirst
-            groupValues={['count-up', 'countdown']}
+            groupValues={['count-up', 'countdown', 'off']}
           />
           <Radio
             value="countdown"
@@ -387,7 +387,15 @@ export function Settings() {
             onSelect={setRestTimerMode}
             label="Countdown"
             hint="Target → 0:00. Pulses at zero."
-            groupValues={['count-up', 'countdown']}
+            groupValues={['count-up', 'countdown', 'off']}
+          />
+          <Radio
+            value="off"
+            current={settings.restTimerMode}
+            onSelect={setRestTimerMode}
+            label="Off"
+            hint="No timer. Log the set and move on."
+            groupValues={['count-up', 'countdown', 'off']}
           />
         </div>
       </Block>

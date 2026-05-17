@@ -22,10 +22,10 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('switching to PPL changes the prescribed exercises on /today', async ({ page }) => {
-  // Full Spectrum push includes the upright row (push-upright-row).
-  // PPL push intentionally does not.
+  // Full Spectrum push includes cable external rotation (push-cable-ext-rot).
+  // PPL push does not program it.
   await page.goto('./#/today');
-  await expect(page.locator('[data-testid="preview-row"][data-exercise-id="push-upright-row"]')).toBeVisible();
+  await expect(page.locator('[data-testid="preview-row"][data-exercise-id="push-cable-ext-rot"]')).toBeVisible();
 
   // Switch to PPL.
   await page.goto('./#/me/settings');
@@ -33,10 +33,10 @@ test('switching to PPL changes the prescribed exercises on /today', async ({ pag
   await page.locator('[data-testid="program-switcher"] [data-radio="ppl-6"]').click();
   await page.waitForTimeout(150);
 
-  // Back to /today — the upright row should be gone (PPL doesn't program it).
+  // Back to /today — ext rotation should be gone (PPL doesn't program it).
   await page.goto('./#/today');
-  await expect(page.locator('[data-testid="preview-row"][data-exercise-id="push-upright-row"]')).toHaveCount(0);
-  // But the bench is still there (PPL keeps it).
+  await expect(page.locator('[data-testid="preview-row"][data-exercise-id="push-cable-ext-rot"]')).toHaveCount(0);
+  // But the bench is still there (both programs keep it).
   await expect(page.locator('[data-testid="preview-row"][data-exercise-id="push-bb-bench"]')).toBeVisible();
 });
 

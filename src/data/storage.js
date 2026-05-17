@@ -63,4 +63,6 @@ export const STORAGE_KEYS = {
   // Phase 4 slice 2 scaffold: per-user overrides on top of a program
   // template. Read-only until the fork-and-edit UI lands.
   programOverlay: 'hdw:program:overlay',
+  // Bodyweight log: array of { date: 'YYYY-MM-DD', value: number, unit: 'kg'|'lb' }.
+  bodyweight: 'hdw:bodyweight',
 };

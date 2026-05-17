@@ -25,6 +25,7 @@ import { applyTheme, initTheme } from './design-system/applyTheme';
 import { SettingsProvider } from './state/settings.jsx';
 import { SessionProvider } from './state/session.jsx';
 import { OverlayProvider } from './state/overlay.jsx';
+import { BodyweightProvider } from './state/bodyweight.jsx';
 import { ErrorBoundary } from './components/ErrorBoundary.jsx';
 
 // Inject theme tokens (CSS vars) once, before first paint.
@@ -37,7 +38,9 @@ createRoot(document.getElementById('root')).render(
       <SettingsProvider>
         <OverlayProvider>
           <SessionProvider>
-            <App />
+            <BodyweightProvider>
+              <App />
+            </BodyweightProvider>
           </SessionProvider>
         </OverlayProvider>
       </SettingsProvider>

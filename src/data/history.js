@@ -65,3 +65,60 @@ export function lastTopSetForExercise(archive, exerciseId) {
   if (hist.length === 0) return null;
   return hist[hist.length - 1];
 }
+
+/**
+ * Last completed-session ALL working sets for an exercise. Returns an
+ * array of { weight, reps, rpe, unit }, oldest-set-first (set index 1
+ * is the first working set; warmups excluded). Used by the
+ * auto-progression check: if every working set hit the prescription's
+ * top of rep range, the next session's default load bumps an increment.
+ */
+export function lastWorkingSetsForExercise(archive, exerciseId) {
+  if (!Array.isArray(archive) || archive.length === 0) return [];
+  // Walk newest-first to find the most recent session containing this id.
+  for (let i = archive.length - 1; i >= 0; i -= 1) {
+    const session = archive[i];
+    for (const perf of session.performances ?? []) {
+      if (perf.exerciseId !== exerciseId) continue;
+      const working = (perf.sets ?? []).filter((s) => !s.isWarmup && typeof s.weight === 'number');
+      if (working.length === 0) continue;
+      return working.map((s) => ({
+        weight: s.weight,
+        reps: s.reps,
+        rpe: s.rpe ?? null,
+        unit: s.unit ?? null,
+      }));
+    }
+  }
+  return [];
+}
+
+/**
+ * Auto-progression check. Given last session's working sets and the
+ * current prescription, return the next session's seed weight when:
+ *   - we have ≥ prescription.sets working sets logged (i.e. all sets done)
+ *   - every working set's reps >= prescription.repsHigh (top of range)
+ *   - all sets were at the same weight (the user wasn't dropping load)
+ *   - no set's RPE was ≥ 9 (we don't bump on grinder sets)
+ * Returns { from: number, to: number, increment: number } or null.
+ */
+export function autoProgressionFor(workingSets, prescription, unit = 'kg') {
+  if (!Array.isArray(workingSets) || workingSets.length === 0) return null;
+  if (!prescription || prescription.kind !== 'straight') return null;
+  const needed = prescription.setsTotal ?? prescription.sets ?? 0;
+  if (needed > 0 && workingSets.length < needed) return null;
+  const high = prescription.repsHigh;
+  if (typeof high !== 'number') return null;
+  const firstWeight = workingSets[0].weight;
+  for (const s of workingSets) {
+    if (s.weight !== firstWeight) return null;
+    if (s.reps < high) return null;
+    if (s.rpe != null && s.rpe >= 9) return null;
+  }
+  const step = unit === 'lb' ? 5 : 2.5;
+  return {
+    from: firstWeight,
+    to: Math.round((firstWeight + step) * 100) / 100,
+    increment: step,
+  };
+}
