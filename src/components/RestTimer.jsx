@@ -10,9 +10,10 @@ import { Stack, Text } from '../design-system/components';
 import { useHaptics } from '../hooks/useHaptics';
 import { parseRest } from '../data/prescription';
 
-function fmtTime(totalSeconds) {
-  const sign = totalSeconds < 0 ? '-' : '';
-  const s = Math.abs(Math.round(totalSeconds));
+function fmtTime(totalSeconds, { signPositive = false } = {}) {
+  const rounded = Math.round(totalSeconds);
+  const sign = rounded < 0 ? '-' : (signPositive && rounded > 0 ? '+' : '');
+  const s = Math.abs(rounded);
   const m = Math.floor(s / 60);
   const r = s % 60;
   return `${sign}${m}:${String(r).padStart(2, '0')}`;
@@ -37,22 +38,29 @@ export function RestTimer({ startedAt, restRaw, mode = 'count-up', accent = 'sto
   const elapsedSec = startedAt
     ? Math.max(0, (now - new Date(startedAt).getTime()) / 1000)
     : 0;
-  const reachedTarget = targetSec != null && elapsedSec >= targetSec;
+  const atOrPast = targetSec != null && elapsedSec >= targetSec;
 
   useEffect(() => {
-    if (reachedTarget && buzzedForRef.current !== startedAt) {
+    if (atOrPast && buzzedForRef.current !== startedAt) {
       buzzedForRef.current = startedAt;
       haptic('ready');
     }
-  }, [reachedTarget, startedAt, haptic]);
+  }, [atOrPast, startedAt, haptic]);
 
   if (!startedAt) return null;
 
-  const display = mode === 'countdown' && targetSec != null
-    ? fmtTime(targetSec - elapsedSec)
-    : fmtTime(elapsedSec);
-
-  const atOrPast = targetSec != null && elapsedSec >= targetSec;
+  // Once the target is reached, both modes count UP as overtime so the
+  // timer keeps tracking how long you've actually rested past target.
+  // Countdown mode prefixes the overage with `+` so the flip reads
+  // clearly ("0:00" → "+0:01").
+  let display;
+  if (mode === 'countdown' && targetSec != null) {
+    display = atOrPast
+      ? fmtTime(elapsedSec - targetSec, { signPositive: true })
+      : fmtTime(targetSec - elapsedSec);
+  } else {
+    display = fmtTime(elapsedSec);
+  }
 
   return (
     <Stack

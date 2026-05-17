@@ -193,6 +193,40 @@ export function SessionProvider({ children }) {
       });
     },
 
+    // Adjust the prescribed set count for a performance by ±1. Rewrites
+    // the leading integer of the prescription string ("3 × 8" → "4 × 8",
+    // "5 rounds" → "6 rounds"). Floor is the greater of 1 or the number
+    // of sets already logged — you can't shrink the plan below what
+    // you've already done. No-op for free-text prescriptions where we
+    // can't safely identify the set count.
+    adjustPrescribedSets(performanceId, delta) {
+      if (!Number.isFinite(delta) || delta === 0) return;
+      setSession((s) => {
+        if (!s) return s;
+        const performances = s.performances.map((p) => {
+          if (p.id !== performanceId) return p;
+          const raw = String(p.prescription?.sets ?? '').trim();
+          if (!raw) return p;
+          // Match a leading integer (possibly with range like "3–4" or "3-4").
+          // Captures the first int so we can rewrite it.
+          const m = raw.match(/^(\d+)(\s*[–-]\s*\d+)?(.*)$/);
+          if (!m) return p;
+          const current = Number.parseInt(m[1], 10);
+          if (!Number.isFinite(current)) return p;
+          const floor = Math.max(1, p.sets.length);
+          const next = Math.max(floor, current + delta);
+          if (next === current) return p;
+          // Drop any range suffix on edit — collapses "3–4 × 8" to "4 × 8".
+          const rewritten = `${next}${m[3]}`;
+          return {
+            ...p,
+            prescription: { ...p.prescription, sets: rewritten },
+          };
+        });
+        return { ...s, performances };
+      });
+    },
+
     discardSet(performanceId, setIndex) {
       setSession((s) => {
         if (!s) return s;

@@ -4,7 +4,6 @@
 // this performance is resting.
 
 import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { Stack, Text, MonoChipButton, MASTHEAD_HEIGHT_PX } from '../../design-system/components';
 import { findExerciseById } from '../../data';
 import { parsePrescription } from '../../data/prescription';
@@ -12,6 +11,7 @@ import { warmupLadder } from '../../data/warmup';
 import { SetRow } from '../SetRow';
 import { DurationSetRow } from '../DurationSetRow';
 import { RestTimer } from '../RestTimer';
+import { ExerciseSheet } from '../ExerciseSheet';
 import { NoteField } from './NoteField';
 
 // Sticky offset: masthead (56) + SessionProgress (~44 with rule + pad).
@@ -19,6 +19,24 @@ import { NoteField } from './NoteField';
 // just below them when scrolled.
 const SESSION_PROGRESS_HEIGHT_PX = 44;
 const STICKY_TOP_PX = MASTHEAD_HEIGHT_PX + SESSION_PROGRESS_HEIGHT_PX;
+
+// Compact stepper buttons for adjusting prescribed set count inline.
+// Smaller than mid-set steppers (these aren't eyes-up controls) but
+// still tappable. Match the hairline aesthetic of the eyebrow row.
+const adjustBtnStyle = {
+  all: 'unset',
+  width: 28,
+  height: 28,
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  border: '1px solid var(--border-hairline)',
+  borderRadius: 4,
+  fontFamily: 'var(--font-mono)',
+  fontSize: 14,
+  color: 'var(--text-secondary)',
+  cursor: 'pointer',
+};
 
 // Warmup is only auto-suggested for the canonical heavy compounds
 // (tagged 'foundational' in the catalog). Bench, squat, deadlift,
@@ -177,6 +195,7 @@ export function PerformanceCard({
   onSwap,
   onStopRest,
   onRemove,
+  onAdjustSets,
   onSetNote,
   prSetIds,
   barWeight,
@@ -190,6 +209,10 @@ export function PerformanceCard({
   // relative-time string is fine to be stale by a few minutes during
   // an active session.
   const [mountedAtMs] = useState(() => Date.now());
+  // Inline exercise-info sheet. Keeps Today's scroll position intact
+  // (no route change), and the Sheet primitive already supports
+  // swipe-down-to-dismiss + scrim tap + escape.
+  const [infoOpen, setInfoOpen] = useState(false);
   const lastAgo = useMemo(
     () => relativeTimeFrom(lastTop?.endedAt, mountedAtMs),
     [lastTop, mountedAtMs],
@@ -214,25 +237,72 @@ export function PerformanceCard({
     >
       <Stack direction="row" align="flex-start" justify="space-between" gap={3}>
         <Stack direction="column" gap={2} style={{ flex: 1, minWidth: 0 }}>
-          <Text as="div" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
-            {performance.prescription?.sets ?? ex.sets}
-            {performance.prescription?.rest && ` · rest ${performance.prescription.rest}`}
-          </Text>
-          {/* Wave 5.3: name links to the canonical exercise detail with a
-              quiet "↗" affordance. The session is IDB-persisted, so a
-              detail-dive round-trips cleanly. */}
+          <Stack direction="row" align="center" gap={2} wrap>
+            <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
+              {performance.prescription?.sets ?? ex.sets}
+              {performance.prescription?.rest && ` · rest ${performance.prescription.rest}`}
+            </Text>
+            {onAdjustSets && (() => {
+              const raw = String(performance.prescription?.sets ?? '').trim();
+              const m = raw.match(/^(\d+)/);
+              const current = m ? Number.parseInt(m[1], 10) : null;
+              const floor = Math.max(1, performance.sets.length);
+              const canDecrement = Boolean(current) && current > floor;
+              return (
+                <Stack direction="row" align="center" gap={1} data-testid="adjust-sets">
+                  <button
+                    type="button"
+                    aria-label="Remove a set from prescription"
+                    data-testid="adjust-sets-down"
+                    onClick={() => canDecrement && onAdjustSets(performance.id, -1)}
+                    disabled={!canDecrement}
+                    style={{
+                      ...adjustBtnStyle,
+                      opacity: canDecrement ? 1 : 0.35,
+                      cursor: canDecrement ? 'pointer' : 'not-allowed',
+                    }}
+                  >
+                    −
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Add a set to prescription"
+                    data-testid="adjust-sets-up"
+                    onClick={() => onAdjustSets(performance.id, +1)}
+                    disabled={!current}
+                    style={{
+                      ...adjustBtnStyle,
+                      opacity: current ? 1 : 0.35,
+                      cursor: current ? 'pointer' : 'not-allowed',
+                    }}
+                  >
+                    +
+                  </button>
+                </Stack>
+              );
+            })()}
+          </Stack>
+          {/* Name opens the exercise-info Sheet inline. Previously this
+              was a route navigation (/library/exercises/:id), which lost
+              the user's scroll position when they returned mid-session.
+              The sheet's swipe-down dismiss keeps the page underneath
+              static, so checking technique before a set is friction-free. */}
           <Text
-            as={Link}
-            to={`/library/exercises/${ex.id}`}
-            state={{ from: '/' }}
+            as="button"
+            type="button"
+            onClick={() => setInfoOpen(true)}
             variant="title-lg"
             data-testid="performance-name-link"
+            aria-label={`Show details for ${ex.name}`}
             style={{
+              all: 'unset',
+              cursor: 'pointer',
               color: 'inherit',
               textDecoration: 'none',
               display: 'inline-flex',
               alignItems: 'baseline',
               gap: 8,
+              textAlign: 'left',
             }}
           >
             {ex.name}
@@ -380,6 +450,12 @@ export function PerformanceCard({
           testIdPrefix={`note-${performance.id}`}
         />
       )}
+
+      <ExerciseSheet
+        open={infoOpen}
+        onClose={() => setInfoOpen(false)}
+        exercise={ex}
+      />
     </div>
   );
 }

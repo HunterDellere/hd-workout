@@ -10,22 +10,24 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSession, totalLoggedSets } from '../state/session-context.js';
+import { findExerciseById } from '../data';
 import { useSettings } from '../state/settings-context.js';
-import { Text } from '../design-system/components';
+import { Stack, Text } from '../design-system/components';
 import { dayLineageAccent } from '../design-system/tokens';
 import { getDay } from '../data';
 import { parseRest } from '../data/prescription';
 
 const NAV_HEIGHT_PX = 64;
 
-function fmt(seconds) {
-  const sign = seconds < 0 ? '-' : '';
-  const s = Math.abs(Math.round(seconds));
+function fmt(seconds, { signPositive = false } = {}) {
+  const rounded = Math.round(seconds);
+  const sign = rounded < 0 ? '-' : (signPositive && rounded > 0 ? '+' : '');
+  const s = Math.abs(rounded);
   return `${sign}${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 }
 
 export function SessionBar() {
-  const { activeSession } = useSession();
+  const { activeSession, clearRestTimer } = useSession();
   const { settings } = useSettings();
   const { pathname } = useLocation();
   const navigate = useNavigate();
@@ -63,25 +65,22 @@ export function SessionBar() {
     const targetSec = rest.lowerBoundSec ?? null;
     const elapsed = Math.max(0, (now - new Date(activeSession.restStartedAt).getTime()) / 1000);
     const atOrPast = targetSec != null && elapsed >= targetSec;
-    const display = settings.restTimerMode === 'countdown' && targetSec != null
-      ? fmt(targetSec - elapsed)
-      : fmt(elapsed);
+    let display;
+    if (settings.restTimerMode === 'countdown' && targetSec != null) {
+      display = atOrPast
+        ? fmt(elapsed - targetSec, { signPositive: true })
+        : fmt(targetSec - elapsed);
+    } else {
+      display = fmt(elapsed);
+    }
 
+    const restingExercise = restingPerf
+      ? findExerciseById(restingPerf.exerciseId)
+      : null;
     return (
-      <button
-        type="button"
+      <div
         data-testid="session-bar-timer"
-        aria-label="Scroll to resting exercise"
-        onClick={() => {
-          // Scroll the resting performance card into view.
-          const card = document.querySelector(
-            `[data-performance-id="${activeSession.restPerformanceId}"]`,
-          );
-          if (card) card.scrollIntoView({ block: 'center', behavior: 'smooth' });
-        }}
         style={{
-          all: 'unset',
-          cursor: 'pointer',
           position: 'fixed',
           left: 0,
           right: 0,
@@ -90,7 +89,7 @@ export function SessionBar() {
           alignItems: 'center',
           justifyContent: 'space-between',
           gap: 12,
-          padding: '10px 20px',
+          padding: '10px 16px',
           background: atOrPast
             ? `var(--accent-${accent}-soft)`
             : 'var(--surface-raised)',
@@ -102,44 +101,99 @@ export function SessionBar() {
           transition: 'background-color 240ms ease',
         }}
       >
-        <Text
-          as="span"
-          variant="mono-sm"
+        {/* Tap target — scroll the resting card into view. The Stop
+            button below sits outside so it isn't a nested button. */}
+        <button
+          type="button"
+          aria-label={`Scroll to resting exercise${restingExercise ? ` (${restingExercise.name})` : ''}`}
+          data-testid="session-bar-timer-view"
+          onClick={() => {
+            const card = document.querySelector(
+              `[data-performance-id="${activeSession.restPerformanceId}"]`,
+            );
+            if (card) card.scrollIntoView({ block: 'center', behavior: 'smooth' });
+          }}
           style={{
-            color: atOrPast ? `var(--accent-${accent}-ink)` : 'var(--text-tertiary)',
+            all: 'unset',
+            cursor: 'pointer',
+            flex: 1,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            minWidth: 0,
+          }}
+        >
+          <Text
+            as="span"
+            variant="mono-sm"
+            style={{
+              color: atOrPast ? `var(--accent-${accent}-ink)` : 'var(--text-tertiary)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.14em',
+              fontWeight: 600,
+              flexShrink: 0,
+            }}
+          >
+            Rest
+          </Text>
+          <Text
+            as="span"
+            variant="mono-lg"
+            style={{
+              color: atOrPast ? `var(--accent-${accent}-ink)` : 'var(--text-primary)',
+              fontVariantNumeric: 'tabular-nums',
+              flexShrink: 0,
+            }}
+          >
+            {display}
+            {targetSec != null && (
+              <Text as="span" variant="mono-sm" tone="tertiary" style={{ marginLeft: 8 }}>
+                / {fmt(targetSec)}
+              </Text>
+            )}
+          </Text>
+          {restingExercise && (
+            <Text
+              as="span"
+              variant="mono-sm"
+              tone="tertiary"
+              style={{
+                textTransform: 'uppercase',
+                letterSpacing: '0.10em',
+                flex: 1,
+                minWidth: 0,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              · {restingExercise.name}
+            </Text>
+          )}
+        </button>
+        <button
+          type="button"
+          data-testid="session-bar-timer-stop"
+          aria-label="Stop rest timer"
+          onClick={clearRestTimer}
+          style={{
+            all: 'unset',
+            cursor: 'pointer',
+            flexShrink: 0,
+            padding: '6px 12px',
+            border: `1px solid ${atOrPast ? `var(--accent-${accent}-ink)` : 'var(--border-strong)'}`,
+            borderRadius: 4,
+            color: atOrPast ? `var(--accent-${accent}-ink)` : 'var(--text-secondary)',
+            fontFamily: 'var(--font-mono)',
+            fontSize: 11,
             textTransform: 'uppercase',
-            letterSpacing: '0.14em',
+            letterSpacing: '0.12em',
             fontWeight: 600,
           }}
         >
-          Rest
-        </Text>
-        <Text
-          as="span"
-          variant="mono-lg"
-          style={{
-            color: atOrPast ? `var(--accent-${accent}-ink)` : 'var(--text-primary)',
-            fontVariantNumeric: 'tabular-nums',
-            flex: 1,
-            textAlign: 'center',
-          }}
-        >
-          {display}
-          {targetSec != null && (
-            <Text as="span" variant="mono-sm" tone="tertiary" style={{ marginLeft: 8 }}>
-              / {fmt(targetSec)}
-            </Text>
-          )}
-        </Text>
-        <Text
-          as="span"
-          variant="mono-sm"
-          tone="secondary"
-          style={{ textTransform: 'uppercase', letterSpacing: '0.12em' }}
-        >
-          View ↑
-        </Text>
-      </button>
+          Stop
+        </button>
+      </div>
     );
   }
 
@@ -160,30 +214,38 @@ export function SessionBar() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        gap: 12,
-        padding: '10px 20px',
-        background: 'var(--surface-sunken)',
+        gap: 16,
+        padding: '18px 20px',
+        background: 'var(--surface-raised)',
         borderTop: '1px solid var(--border-hairline)',
         borderBottom: '1px solid var(--border-hairline)',
+        boxShadow: '0 -8px 24px -16px rgba(0,0,0,0.18)',
         zIndex: 49,
         color: 'var(--text-primary)',
       }}
     >
-      <Text
-        as="span"
-        variant="mono-sm"
-        style={{
-          color: `var(--accent-${accent}-ink)`,
-          textTransform: 'uppercase',
-          letterSpacing: '0.14em',
-          fontWeight: 600,
-        }}
-      >
-        {day?.name ?? activeSession.dayKey}
-      </Text>
-      <Text as="span" variant="mono-sm" tone="tertiary" style={{ flex: 1, textTransform: 'uppercase' }}>
-        {count} set{count === 1 ? '' : 's'} logged
-      </Text>
+      <Stack direction="column" gap={1} style={{ flex: 1, minWidth: 0 }}>
+        <Text
+          as="span"
+          variant="mono-sm"
+          style={{
+            color: `var(--accent-${accent}-ink)`,
+            textTransform: 'uppercase',
+            letterSpacing: '0.14em',
+            fontWeight: 600,
+          }}
+        >
+          {day?.name ?? activeSession.dayKey}
+        </Text>
+        <Text
+          as="span"
+          variant="mono-sm"
+          tone="tertiary"
+          style={{ textTransform: 'uppercase', letterSpacing: '0.10em' }}
+        >
+          Session in progress · {count} set{count === 1 ? '' : 's'} logged
+        </Text>
+      </Stack>
       <Text
         as="span"
         variant="mono-sm"

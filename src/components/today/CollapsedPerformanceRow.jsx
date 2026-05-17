@@ -30,6 +30,27 @@ export function CollapsedPerformanceRow({
   const isComplete = setsTotal != null && workingSetsLogged >= setsTotal;
   const hasStarted = workingSetsLogged > 0;
 
+  // Three rendering states — drives the rail color, status chip, and
+  // background tint. Order matters: complete > in-progress > pending.
+  const state = isComplete ? 'complete' : (hasStarted ? 'progress' : 'pending');
+
+  const railStyle = (() => {
+    if (state === 'complete') return {
+      background: `var(--accent-${accent}-ink)`,
+    };
+    if (state === 'progress') return {
+      background: `var(--accent-${accent}-ink)`,
+      opacity: 0.55,
+    };
+    return {
+      background: 'var(--border-hairline)',
+    };
+  })();
+
+  const bgStyle = state === 'progress'
+    ? `var(--accent-${accent}-soft)`
+    : 'transparent';
+
   return (
     <button
       type="button"
@@ -37,22 +58,40 @@ export function CollapsedPerformanceRow({
       data-performance-id={performance.id}
       data-exercise-id={performance.exerciseId}
       data-complete={isComplete ? '1' : '0'}
+      data-state={state}
       onClick={() => onFocus(performance.id)}
       style={{
         all: 'unset',
         cursor: 'pointer',
         display: 'block',
         width: '100%',
-        padding: '14px 0',
+        padding: '14px 12px 14px 14px',
         borderTop: '1px solid var(--border-hairline)',
-        // Keep keyboard focus visible — design-system uses --focus-color.
+        background: bgStyle,
+        position: 'relative',
         outline: 'none',
-        opacity: isComplete ? 0.78 : 1,
+        opacity: isComplete ? 0.82 : 1,
+        transition: 'background-color 200ms ease, opacity 200ms ease',
         '--focus-color': `var(--accent-${accent}-ink)`,
       }}
       aria-label={`Focus ${ex.name}`}
     >
-      <Stack direction="row" align="baseline" gap={3}>
+      {/* Left signal rail — quiet for pending, accent for in-progress
+          (faint) and complete (solid). Mirrors the focused card's
+          accent stripe so the surface reads as one connected language. */}
+      <span
+        aria-hidden
+        style={{
+          position: 'absolute',
+          left: 0,
+          top: 8,
+          bottom: 8,
+          width: 3,
+          borderRadius: 2,
+          ...railStyle,
+        }}
+      />
+      <Stack direction="row" align="center" gap={3}>
         {ex.tier ? (
           <Text
             as="span"
@@ -74,7 +113,14 @@ export function CollapsedPerformanceRow({
         <Text
           as="span"
           variant="title-md"
-          style={{ flex: 1, minWidth: 0, lineHeight: 1.25 }}
+          style={{
+            flex: 1,
+            minWidth: 0,
+            lineHeight: 1.25,
+            textDecoration: isComplete ? 'line-through' : 'none',
+            textDecorationColor: isComplete ? `var(--accent-${accent}-ink)` : undefined,
+            textDecorationThickness: isComplete ? '1px' : undefined,
+          }}
         >
           {ex.name}
         </Text>
@@ -87,28 +133,50 @@ export function CollapsedPerformanceRow({
             style={{
               textTransform: 'uppercase',
               letterSpacing: '0.10em',
-              color: `var(--accent-${accent}-ink)`,
+              padding: '3px 8px',
+              borderRadius: 999,
+              background: `var(--accent-${accent}-ink)`,
+              color: 'var(--text-on-accent)',
+              fontWeight: 600,
               whiteSpace: 'nowrap',
             }}
           >
             ✓ Done
           </Text>
+        ) : state === 'progress' ? (
+          <Text
+            as="span"
+            variant="mono-sm"
+            data-testid="row-status"
+            style={{
+              textTransform: 'uppercase',
+              letterSpacing: '0.10em',
+              padding: '3px 8px',
+              borderRadius: 999,
+              border: `1px solid var(--accent-${accent}-ink)`,
+              color: `var(--accent-${accent}-ink)`,
+              fontWeight: 600,
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {setsTotal != null ? `${workingSetsLogged}/${setsTotal}` : `${workingSetsLogged}`}
+          </Text>
         ) : (
           <Text
             as="span"
             variant="mono-sm"
-            tone={hasStarted ? 'secondary' : 'tertiary'}
+            tone="tertiary"
             data-testid="row-status"
-            style={{ whiteSpace: 'nowrap' }}
+            style={{ whiteSpace: 'nowrap', textTransform: 'uppercase', letterSpacing: '0.10em' }}
           >
-            {setsTotal != null ? `${workingSetsLogged}/${setsTotal}` : `${workingSetsLogged} set${workingSetsLogged === 1 ? '' : 's'}`}
+            {setsTotal != null ? `0/${setsTotal}` : '—'}
           </Text>
         )}
         <Text
           as="span"
           variant="mono-sm"
           tone="tertiary"
-          style={{ whiteSpace: 'nowrap', textTransform: 'uppercase' }}
+          style={{ whiteSpace: 'nowrap', textTransform: 'uppercase', opacity: 0.7 }}
         >
           {performance.prescription?.sets ?? ex.sets}
         </Text>

@@ -14,12 +14,14 @@
 // "30s · L" or "1 round" rather than "100kg × 5".
 
 import { useEffect, useRef, useState } from 'react';
-import { Stack, Text, Button, MonoChipButton } from '../design-system/components';
+import { Stack, Text, Button } from '../design-system/components';
 import { useHaptics } from '../hooks/useHaptics';
 
-function fmtTime(sec) {
-  const s = Math.max(0, Math.round(sec));
-  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+function fmtTime(sec, { signPositive = false } = {}) {
+  const rounded = Math.round(sec);
+  const sign = rounded < 0 ? '-' : (signPositive && rounded > 0 ? '+' : '');
+  const s = Math.abs(rounded);
+  return `${sign}${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 }
 
 function LoggedDurationSet({ set, isLast, onDiscard, perSide }) {
@@ -204,9 +206,17 @@ export function DurationSetRow({
   }
 
   const atOrPast = targetSec != null && elapsed >= targetSec;
-  const display = isRounds || targetSec == null
-    ? fmtTime(elapsed)
-    : fmtTime(Math.max(0, targetSec - elapsed));
+  // Past target: keep counting up as overtime so the timer never stalls.
+  // Countdown variant prefixes with `+` to flag the flip; rounds and
+  // open-ended (no target) just count up plainly.
+  let display;
+  if (isRounds || targetSec == null) {
+    display = fmtTime(elapsed);
+  } else if (atOrPast) {
+    display = fmtTime(elapsed - targetSec, { signPositive: true });
+  } else {
+    display = fmtTime(targetSec - elapsed);
+  }
 
   const setsRemaining = prescription.setsTotal
     ? Math.max(0, prescription.setsTotal - performance.sets.length)
@@ -230,10 +240,40 @@ export function DurationSetRow({
 
       <Stack direction="column" gap={3}>
         {/* Timer + side indicator */}
-        <Stack direction="row" align="baseline" justify="space-between" gap={3}>
+        <Stack
+          direction="row"
+          align="baseline"
+          justify="space-between"
+          gap={3}
+          data-testid="duration-timer-block"
+          data-complete={atOrPast ? '1' : '0'}
+          style={{
+            padding: atOrPast ? '12px 14px' : '0',
+            borderRadius: 8,
+            background: atOrPast ? `var(--accent-${accent}-soft)` : 'transparent',
+            border: atOrPast
+              ? `1px solid var(--accent-${accent}-ink)`
+              : '1px solid transparent',
+            transition: 'background-color 240ms ease, border-color 240ms ease, padding 240ms ease',
+          }}
+        >
           <Stack direction="column" gap={1}>
-            <Text as="div" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase', letterSpacing: '0.12em' }}>
-              {isRounds ? 'Time' : (targetSec != null ? 'Remaining' : 'Elapsed')}
+            <Text
+              as="div"
+              variant="mono-sm"
+              tone={atOrPast ? 'primary' : 'tertiary'}
+              style={{
+                textTransform: 'uppercase',
+                letterSpacing: '0.12em',
+                color: atOrPast ? `var(--accent-${accent}-ink)` : undefined,
+                fontWeight: atOrPast ? 600 : 400,
+              }}
+            >
+              {(() => {
+                if (isRounds) return 'Time';
+                if (targetSec == null) return 'Elapsed';
+                return atOrPast ? 'Complete · overtime' : 'Remaining';
+              })()}
               {perSide && nextSide && (
                 <Text as="span" variant="mono-sm" style={{ marginLeft: 8, color: `var(--accent-${accent}-ink)` }}>
                   · {nextSide}
@@ -256,7 +296,16 @@ export function DurationSetRow({
             </Text>
           </Stack>
           {targetSec != null && !isRounds && (
-            <Text as="div" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
+            <Text
+              as="div"
+              variant="mono-sm"
+              tone="tertiary"
+              style={{
+                textTransform: 'uppercase',
+                color: atOrPast ? `var(--accent-${accent}-ink)` : undefined,
+                opacity: atOrPast ? 0.85 : 1,
+              }}
+            >
               Target · {fmtTime(targetSec)}
             </Text>
           )}
@@ -286,9 +335,14 @@ export function DurationSetRow({
             </Button>
           )}
           {elapsed > 0 && (
-            <MonoChipButton onClick={reset} data-testid="duration-reset">
+            <Button
+              variant="ghost"
+              size="md"
+              onClick={reset}
+              data-testid="duration-reset"
+            >
               Reset
-            </MonoChipButton>
+            </Button>
           )}
           <Button
             variant="primary"

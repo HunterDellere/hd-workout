@@ -33,9 +33,14 @@ export function SessionProgress({ session, accent }) {
 
   if (!stats) return null;
 
+  const isResting = Boolean(session.restStartedAt && session.restPerformanceId);
+  const isComplete = stats.prescribed > 0 && stats.pct >= 1;
+
   return (
     <div
       data-testid="session-progress"
+      data-resting={isResting ? '1' : '0'}
+      data-complete={isComplete ? '1' : '0'}
       style={{
         position: 'sticky',
         top: MASTHEAD_HEIGHT_PX,
@@ -43,13 +48,52 @@ export function SessionProgress({ session, accent }) {
         background: 'var(--surface-page)',
         marginTop: -8,
         paddingTop: 12,
-        paddingBottom: 10,
+        paddingBottom: 12,
       }}
     >
-      <Stack direction="row" align="baseline" justify="space-between" gap={3} style={{ marginBottom: 8 }}>
-        <Stack direction="row" gap={3} align="baseline">
-          <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase', letterSpacing: '0.12em' }}>
-            {stats.workingLogged}{stats.prescribed > 0 ? `/${stats.prescribed}` : ''} sets
+      <Stack direction="row" align="center" justify="space-between" gap={3} style={{ marginBottom: 10 }}>
+        <Stack direction="row" gap={2} align="center">
+          {/* Status pip — solid when resting (pulses), hairline-ring when
+              actively logging, filled square when the prescription is
+              fully cleared. */}
+          <span
+            aria-hidden
+            data-testid="session-status-pip"
+            style={{
+              display: 'inline-block',
+              width: 10,
+              height: 10,
+              borderRadius: isComplete ? 2 : 999,
+              background: isResting || isComplete
+                ? `var(--accent-${accent}-ink)`
+                : 'transparent',
+              border: isResting || isComplete
+                ? `1px solid var(--accent-${accent}-ink)`
+                : `1.5px solid var(--accent-${accent}-ink)`,
+              animation: isResting ? 'hdw-pip-pulse 1.4s ease-in-out infinite' : undefined,
+            }}
+          />
+          <Text
+            as="span"
+            variant="mono-sm"
+            style={{
+              textTransform: 'uppercase',
+              letterSpacing: '0.14em',
+              fontWeight: 600,
+              color: isResting || isComplete
+                ? `var(--accent-${accent}-ink)`
+                : 'var(--text-secondary)',
+            }}
+          >
+            {isComplete ? 'Complete' : (isResting ? 'Resting' : 'Working')}
+          </Text>
+          <Text
+            as="span"
+            variant="mono-sm"
+            tone="tertiary"
+            style={{ textTransform: 'uppercase', letterSpacing: '0.12em', marginLeft: 4 }}
+          >
+            · {stats.workingLogged}{stats.prescribed > 0 ? `/${stats.prescribed}` : ''} sets
           </Text>
           {stats.prs > 0 && (
             <Text
@@ -67,18 +111,36 @@ export function SessionProgress({ session, accent }) {
           )}
         </Stack>
         {stats.prescribed > 0 && (
-          <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
+          <Text
+            as="span"
+            variant="mono-sm"
+            style={{
+              textTransform: 'uppercase',
+              letterSpacing: '0.10em',
+              fontWeight: 600,
+              color: isComplete ? `var(--accent-${accent}-ink)` : 'var(--text-secondary)',
+            }}
+          >
             {Math.round(stats.pct * 100)}%
           </Text>
         )}
       </Stack>
+      <style>{`
+        @keyframes hdw-pip-pulse {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50%      { opacity: 0.45; transform: scale(0.85); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          [data-testid="session-status-pip"] { animation: none !important; }
+        }
+      `}</style>
       <div
         aria-hidden
         style={{
           position: 'relative',
           width: '100%',
-          height: 2,
-          background: 'var(--border-hairline)',
+          height: 4,
+          background: `var(--accent-${accent}-soft)`,
           borderRadius: 999,
           overflow: 'hidden',
         }}
@@ -91,7 +153,7 @@ export function SessionProgress({ session, accent }) {
             bottom: 0,
             width: `${stats.pct * 100}%`,
             background: `var(--accent-${accent}-ink)`,
-            transition: 'width 240ms ease',
+            transition: 'width 320ms cubic-bezier(0.2, 0.8, 0.2, 1)',
           }}
         />
       </div>

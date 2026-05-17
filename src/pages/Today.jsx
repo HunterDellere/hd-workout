@@ -63,6 +63,7 @@ export function Today() {
     resumeArchivedSession,
     setPerformanceNote,
     reorderSections,
+    adjustPrescribedSets,
   } = useSession();
 
   const {
@@ -125,26 +126,15 @@ export function Today() {
   const focusedPerformanceId = useMemo(() => {
     if (!activeSession) return null;
     if (focusOverride) {
+      // Honour any explicit tap — even on completed exercises — so the
+      // lifter can re-open a finished card to review sets or add an
+      // extra. Auto-snap-forward only kicks in when there's no override.
       const target = activeSession.performances?.find((p) => p.id === focusOverride);
-      if (target) {
-        const prescription = parsePrescription(target.prescription?.sets ?? '');
-        const working = (target.sets ?? []).filter((s) => !s.isWarmup).length;
-        const setsTotal = prescription.setsTotal ?? 1;
-        // If the override target is still incomplete, honour the override.
-        if (working < setsTotal) return focusOverride;
-      }
-      // Either the override is stale (swap/remove) or now complete —
-      // fall through to first-incomplete. The override flag clears
-      // itself on the next user tap.
+      if (target) return focusOverride;
+      // Stale override (swap/remove deleted the target). Fall through.
     }
     return firstIncompleteId;
   }, [activeSession, focusOverride, firstIncompleteId]);
-
-  // Override is "stale-but-harmless" once its target completes — the
-  // derived focusedPerformanceId already falls through to
-  // firstIncompleteId in that case. We don't need to clear the state
-  // proactively; the next tap on a row will replace it, and at
-  // session end / restart the state resets naturally.
 
   const livePRSetIds = useMemo(() => {
     if (!annotatedSession) return new Set();
@@ -317,19 +307,71 @@ export function Today() {
 
           {performancesBySection.map(({ key: sectionKey, performances }) => {
             const meta = sectionMeta(sectionKey);
+            // Section-level completion: count performances whose working
+            // sets have met their prescribed total. Gives the user a
+            // tangible "X of Y exercises done in this section" cue.
+            const sectionTotals = performances.reduce((acc, p) => {
+              const presc = parsePrescription(p.prescription?.sets ?? '');
+              const target = presc.setsTotal ?? null;
+              const workingDone = (p.sets ?? []).filter((s) => !s.isWarmup).length;
+              acc.total += 1;
+              if (target != null && workingDone >= target) acc.done += 1;
+              return acc;
+            }, { done: 0, total: 0 });
+            const sectionComplete = sectionTotals.total > 0
+              && sectionTotals.done === sectionTotals.total;
             return (
               <section
                 key={sectionKey}
                 data-testid="section-group"
                 data-section-key={sectionKey}
+                data-section-complete={sectionComplete ? '1' : '0'}
                 style={{ marginTop: 40 }}
               >
-                <Stack direction="row" align="baseline" justify="space-between" gap={2}>
-                  <Text as="div" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
-                    {meta.title}
-                  </Text>
-                  <Text as="div" variant="mono-sm" tone="tertiary">
-                    {performances.length}
+                <Stack direction="row" align="center" justify="space-between" gap={2}>
+                  <Stack direction="row" align="center" gap={2}>
+                    <span
+                      aria-hidden
+                      style={{
+                        display: 'inline-block',
+                        width: 3,
+                        height: 16,
+                        borderRadius: 2,
+                        background: sectionComplete
+                          ? `var(--accent-${accent}-ink)`
+                          : `var(--accent-${accent}-solid)`,
+                        opacity: sectionComplete ? 1 : 0.55,
+                      }}
+                    />
+                    <Text
+                      as="div"
+                      variant="mono-sm"
+                      style={{
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.14em',
+                        fontWeight: 600,
+                        color: sectionComplete
+                          ? `var(--accent-${accent}-ink)`
+                          : 'var(--text-secondary)',
+                      }}
+                    >
+                      {meta.title}
+                    </Text>
+                  </Stack>
+                  <Text
+                    as="div"
+                    variant="mono-sm"
+                    style={{
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.10em',
+                      color: sectionComplete
+                        ? `var(--accent-${accent}-ink)`
+                        : 'var(--text-tertiary)',
+                      fontWeight: sectionComplete ? 600 : 400,
+                    }}
+                  >
+                    {sectionTotals.done}/{sectionTotals.total}
+                    {sectionComplete ? ' ✓' : ''}
                   </Text>
                 </Stack>
                 {meta.blurb && (
@@ -390,6 +432,7 @@ export function Today() {
                         ? () => removePerformance(perf.id)
                         : null}
                       onSetNote={setPerformanceNote}
+                      onAdjustSets={adjustPrescribedSets}
                       prSetIds={livePRSetIds}
                     />
                   );
@@ -477,32 +520,48 @@ export function Today() {
                     Yes, end
                   </Button>
                 </>
-              ) : (
-                <Button
-                  variant="soft"
-                  accent={accent}
-                  size="md"
-                  data-testid="end-session"
-                  onClick={async () => {
-                    // No sets logged → end immediately (no data to lose).
-                    const hasLogged = activeSession?.performances?.some(
-                      (p) => p.sets && p.sets.length > 0,
-                    );
-                    if (!hasLogged) {
-                      const completed = await endSession();
-                      if (completed && settings.intelligenceEnabled) {
-                        setEndedSummary(completed);
-                      } else {
-                        navigate('/');
+              ) : (() => {
+                // Promote to CTA variant when every prescribed working
+                // set is logged — a tangible "you're done, commit it"
+                // affordance. Stays soft when there's still work left.
+                const totals = activeSession?.performances?.reduce((acc, p) => {
+                  const presc = parsePrescription(p.prescription?.sets ?? '');
+                  const target = presc.setsTotal ?? null;
+                  const done = (p.sets ?? []).filter((s) => !s.isWarmup).length;
+                  if (target != null) {
+                    acc.target += target;
+                    acc.done += Math.min(done, target);
+                  }
+                  return acc;
+                }, { done: 0, target: 0 }) ?? { done: 0, target: 0 };
+                const fullyDone = totals.target > 0 && totals.done >= totals.target;
+                return (
+                  <Button
+                    variant={fullyDone ? 'cta' : 'soft'}
+                    accent={accent}
+                    size="md"
+                    data-testid="end-session"
+                    onClick={async () => {
+                      // No sets logged → end immediately (no data to lose).
+                      const hasLogged = activeSession?.performances?.some(
+                        (p) => p.sets && p.sets.length > 0,
+                      );
+                      if (!hasLogged) {
+                        const completed = await endSession();
+                        if (completed && settings.intelligenceEnabled) {
+                          setEndedSummary(completed);
+                        } else {
+                          navigate('/');
+                        }
+                        return;
                       }
-                      return;
-                    }
-                    setEndConfirming(true);
-                  }}
-                >
-                  End session
-                </Button>
-              )}
+                      setEndConfirming(true);
+                    }}
+                  >
+                    {fullyDone ? 'Finish session →' : 'End session'}
+                  </Button>
+                );
+              })()}
             </Stack>
           </Block>
         </>
