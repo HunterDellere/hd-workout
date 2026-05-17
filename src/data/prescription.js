@@ -26,19 +26,60 @@
 const SET_REPS_SEP = /\s*[×x]\s*/i;
 const RANGE = /\s*[-–—]\s*/;
 const PYRAMID = /^\s*\d+(?:\s*\/\s*\d+)+\s*$/;
-// Time units: matches '30 sec', '30s', '2 min', '1.5 min'. Case-insensitive.
-const TIME_UNIT = /^\s*(\d+(?:\.\d+)?)\s*(sec|second|seconds|s|min|minute|minutes|m)\b/i;
+// Time units: matches '30 sec', '30s', '2 min', '1.5 min'. The bare 'm'
+// alias is intentionally restricted to the long-form spellings here —
+// "min" / "minute(s)" — because a stand-alone "m" collides with the
+// distance unit "meters" (see `parseDistanceToMeters`). Case-insensitive.
+const TIME_UNIT = /^\s*(\d+(?:\.\d+)?)\s*(sec|second|seconds|s|min|minute|minutes)\b/i;
+// Distance unit: '40m', '60 m', '40-60m'. Meters only — yards/feet are
+// not used in any current catalog entry; revisit if that changes.
+const DISTANCE_UNIT = /^\s*(\d+(?:\.\d+)?)\s*(m|meter|meters)\b/i;
 const ROUNDS = /^\s*(\d+)\s*(round|rounds|cycle|cycles|flow|flows)\b/i;
 const PER_SIDE = /\b(each\s+side|per\s+side|each)\b/i;
+// "max effort" / "max" / "to failure" / "AMRAP" — any of these in the
+// reps slot means "go until you can't" rather than a specific rep target.
+// Surface routes these to the duration timer with no target (open-ended).
+const OPEN_EFFORT = /\b(max\s+effort|max|to\s+failure|amrap)\b/i;
 
 function parseTimeToSeconds(text) {
-  const m = String(text ?? '').match(TIME_UNIT);
+  const raw = String(text ?? '').trim();
+  // Range form: "30–60 sec", "1–2 min". Use the high end as the target
+  // so the lifter has the full window to hit before overtime kicks in.
+  if (RANGE.test(raw)) {
+    const [, b] = raw.split(RANGE, 2);
+    // Pull the unit off the upper bound, then re-attach to the lower
+    // bound so a bare "30" picks up the trailing unit's interpretation.
+    const upper = parseTimeToSeconds(b);
+    if (upper != null) return upper;
+  }
+  const m = raw.match(TIME_UNIT);
   if (!m) return null;
   const n = Number.parseFloat(m[1]);
   if (!Number.isFinite(n)) return null;
   const unit = m[2].toLowerCase();
-  const isMin = unit.startsWith('m');
+  const isMin = unit.startsWith('min') || unit.startsWith('minute');
   return Math.round(n * (isMin ? 60 : 1));
+}
+
+// Parse "40m" / "40–60m" / "60 meters" → { low, high } in meters.
+// Range form takes the high end as the target (mirrors duration handling).
+function parseDistanceToMeters(text) {
+  const raw = String(text ?? '').trim();
+  if (RANGE.test(raw)) {
+    const [a, b] = raw.split(RANGE, 2);
+    const aMatch = a.match(/^\s*(\d+(?:\.\d+)?)/);
+    const bMatch = b.match(DISTANCE_UNIT);
+    if (aMatch && bMatch) {
+      const low = Number.parseFloat(aMatch[1]);
+      const high = Number.parseFloat(bMatch[1]);
+      if (Number.isFinite(low) && Number.isFinite(high)) return { low, high };
+    }
+  }
+  const m = raw.match(DISTANCE_UNIT);
+  if (!m) return null;
+  const n = Number.parseFloat(m[1]);
+  if (!Number.isFinite(n)) return null;
+  return { low: n, high: n };
 }
 
 function parseRange(text, fallback) {
@@ -58,6 +99,16 @@ function midpoint(low, high) {
   return Math.round((low + high) / 2);
 }
 
+// Split on the first occurrence of SET_REPS_SEP. We can't use
+// `String.split(regex, 2)` because that returns the first 2 chunks of
+// an N-way split, which truncates strings like "3 × max effort" to
+// ["3", "ma"] (the `x` in `max` is also a SET_REPS_SEP hit).
+function splitFirstSetReps(raw) {
+  const m = SET_REPS_SEP.exec(raw);
+  if (!m) return null;
+  return [raw.slice(0, m.index), raw.slice(m.index + m[0].length)];
+}
+
 export function parsePrescription(input) {
   if (input == null) return { kind: 'free-text', raw: '' };
   const raw = String(input).trim();
@@ -72,9 +123,10 @@ export function parsePrescription(input) {
     }
   }
 
-  // Duration with sets prefix: '3 × 30 sec', '2 x 1 min each side'.
+  // Duration with sets prefix: '3 × 30 sec', '2 x 1 min each side',
+  // '3 × 30–60 sec' (range, upper bound becomes the target).
   if (SET_REPS_SEP.test(raw)) {
-    const [setsPart, restPart] = raw.split(SET_REPS_SEP, 2);
+    const [setsPart, restPart] = splitFirstSetReps(raw) ?? [null, null];
     const setsRange = parseRange(setsPart, null);
     const holdSec = parseTimeToSeconds(restPart);
     if (setsRange && holdSec != null) {
@@ -89,7 +141,48 @@ export function parsePrescription(input) {
     }
   }
 
-  // Single duration without sets: '5 min', '30 sec each side'.
+  // Distance with sets prefix: '3 × 40m', '4 × 40–60m', '3 × 30s each side'
+  // for carries / walks / rucks. The lifter logs meters per round rather
+  // than reps; the timer surface is suppressed (these are about distance,
+  // not hold-time). Note: PER_SIDE handling identical to duration.
+  if (SET_REPS_SEP.test(raw)) {
+    const [setsPart, restPart] = splitFirstSetReps(raw) ?? [null, null];
+    const setsRange = parseRange(setsPart, null);
+    const distance = parseDistanceToMeters(restPart);
+    if (setsRange && distance) {
+      return {
+        kind: 'distance',
+        sets: setsRange.high,
+        setsTotal: setsRange.high,
+        distanceLow: distance.low,
+        distanceHigh: distance.high,
+        unit: 'm',
+        perSide: PER_SIDE.test(restPart),
+        raw,
+      };
+    }
+  }
+
+  // Open-effort with sets prefix: '3 × max effort', '3 × AMRAP'.
+  // Routes to the duration timer with no target (open count-up) so the
+  // lifter can hang / hold / row to exhaustion without a bogus reps input.
+  if (SET_REPS_SEP.test(raw)) {
+    const [setsPart, restPart] = splitFirstSetReps(raw) ?? [null, null];
+    const setsRange = parseRange(setsPart, null);
+    if (setsRange && OPEN_EFFORT.test(restPart)) {
+      return {
+        kind: 'duration',
+        sets: setsRange.high,
+        setsTotal: setsRange.high,
+        holdSec: null, // open-ended — UI shows count-up with no target
+        perSide: PER_SIDE.test(restPart),
+        raw,
+      };
+    }
+  }
+
+  // Single duration without sets: '5 min', '30 sec each side',
+  // '30–60 min' (range — upper bound is the target).
   const bareDuration = parseTimeToSeconds(raw);
   if (bareDuration != null) {
     return {
@@ -120,7 +213,7 @@ export function parsePrescription(input) {
   }
 
   if (SET_REPS_SEP.test(raw)) {
-    const [setsPart, repsPart] = raw.split(SET_REPS_SEP, 2);
+    const [setsPart, repsPart] = splitFirstSetReps(raw) ?? [null, null];
     const setsRange = parseRange(setsPart, null);
     const repsRange = parseRange(repsPart, null);
     if (setsRange && repsRange) {

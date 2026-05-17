@@ -113,7 +113,7 @@ test('swap an exercise that has no logged sets', async ({ page }) => {
   await candidates.first().click();
 
   // The first performance card now points at the picked exercise.
-  await expect(page.getByText(/swapped in this session/i).first()).toBeVisible();
+  await expect(page.getByText(/^swapped$/i).first()).toBeVisible();
   expect(pickedId).toBeTruthy();
 });
 

@@ -10,6 +10,7 @@ import { parsePrescription } from '../../data/prescription';
 import { warmupLadder } from '../../data/warmup';
 import { SetRow } from '../SetRow';
 import { DurationSetRow } from '../DurationSetRow';
+import { DistanceSetRow } from '../DistanceSetRow';
 import { RestTimer } from '../RestTimer';
 import { ExerciseSheet } from '../ExerciseSheet';
 import { NoteField } from './NoteField';
@@ -430,7 +431,15 @@ export function PerformanceCard({
       )}
 
       <div style={{ marginTop: 20 }}>
-        {prescription.kind === 'duration' || prescription.kind === 'rounds' ? (
+        {prescription.kind === 'distance' ? (
+          <DistanceSetRow
+            performance={performance}
+            prescription={prescription}
+            accent={accent}
+            onLogSet={(payload) => onLogSet(performance.id, payload)}
+            onDiscardSet={(setIdx) => onDiscardSet(performance.id, setIdx)}
+          />
+        ) : prescription.kind === 'duration' || prescription.kind === 'rounds' ? (
           <DurationSetRow
             performance={performance}
             prescription={prescription}

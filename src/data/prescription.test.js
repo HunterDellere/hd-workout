@@ -65,6 +65,53 @@ describe('parsePrescription', () => {
       kind: 'rounds', rounds: 2,
     });
   });
+
+  // Distance carries — "40m" must not be parsed as 40 minutes.
+  it('parses distance "3 × 40m"', () => {
+    expect(parsePrescription('3 × 40m')).toMatchObject({
+      kind: 'distance', sets: 3, setsTotal: 3, distanceLow: 40, distanceHigh: 40, unit: 'm',
+    });
+  });
+  it('parses distance range "4 × 40–60m"', () => {
+    expect(parsePrescription('4 × 40–60m')).toMatchObject({
+      kind: 'distance', sets: 4, distanceLow: 40, distanceHigh: 60,
+    });
+  });
+  it('parses distance with suffix "3 × 40–60m (KBs)"', () => {
+    expect(parsePrescription('3 × 40–60m (KBs)')).toMatchObject({
+      kind: 'distance', sets: 3, distanceLow: 40, distanceHigh: 60,
+    });
+  });
+  it('parses per-side distance "3 × 30–40m each"', () => {
+    expect(parsePrescription('3 × 30–40m each')).toMatchObject({
+      kind: 'distance', sets: 3, distanceLow: 30, distanceHigh: 40, perSide: true,
+    });
+  });
+
+  // Open-effort — "max effort" / "AMRAP" route to open-ended duration timer.
+  it('parses open effort "3 × max effort"', () => {
+    expect(parsePrescription('3 × max effort')).toMatchObject({
+      kind: 'duration', sets: 3, setsTotal: 3, holdSec: null,
+    });
+  });
+  it('parses open effort "3 × AMRAP"', () => {
+    expect(parsePrescription('3 × AMRAP')).toMatchObject({
+      kind: 'duration', sets: 3, holdSec: null,
+    });
+  });
+
+  // Time ranges — upper bound becomes the target so the lifter has the
+  // full window before the timer rolls into overtime.
+  it('parses duration range "3 × 30–60 sec"', () => {
+    expect(parsePrescription('3 × 30–60 sec')).toMatchObject({
+      kind: 'duration', sets: 3, holdSec: 60,
+    });
+  });
+  it('parses bare duration range "1 × 30–60 min"', () => {
+    expect(parsePrescription('1 × 30–60 min')).toMatchObject({
+      kind: 'duration', sets: 1, holdSec: 3600,
+    });
+  });
 });
 
 describe('parseRest', () => {

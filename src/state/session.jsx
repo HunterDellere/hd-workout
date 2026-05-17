@@ -153,7 +153,17 @@ export function SessionProvider({ children }) {
           // Intelligence / archive consumers already gate on
           // s.weight != null so they ignore duration entries cleanly.
           const isTimeBased = payload?.kind === 'duration' || payload?.kind === 'rounds';
-          const newSet = isTimeBased
+          const isDistance = payload?.kind === 'distance';
+          const newSet = isDistance
+            ? {
+              index: nextIndex,
+              kind: 'distance',
+              distanceM: payload.distanceM ?? 0,
+              side: payload.side ?? null,
+              restTakenSec: null,
+              loggedAt: new Date().toISOString(),
+            }
+            : isTimeBased
             ? {
               index: nextIndex,
               kind: payload.kind,
@@ -175,10 +185,12 @@ export function SessionProvider({ children }) {
             };
           return { ...p, sets: [...p.sets, newSet] };
         });
-        // Duration / rounds sets don't trigger a rest timer — the exercise
-        // itself is the timed element.
+        // Duration / rounds / distance sets don't trigger a rest timer —
+        // the exercise itself sets the pace. (Carries usually rest between
+        // rounds via the catalog rest field, but we don't auto-start it.)
         const isTimeBased = payload?.kind === 'duration' || payload?.kind === 'rounds';
-        if (isTimeBased) {
+        const isDistance = payload?.kind === 'distance';
+        if (isTimeBased || isDistance) {
           return { ...s, performances };
         }
         const target = (s.performances.find((p) => p.id === performanceId)
