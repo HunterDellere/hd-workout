@@ -181,6 +181,41 @@ function suggestionLine(suggestion, unit) {
   }
 }
 
+function sameLocalDay(aIso, bIso) {
+  const a = new Date(aIso);
+  const b = new Date(bIso);
+  return a.getFullYear() === b.getFullYear()
+    && a.getMonth() === b.getMonth()
+    && a.getDate() === b.getDate();
+}
+
+function describeManualSets(sets) {
+  if (!sets || sets.length === 0) return '';
+  const first = sets[0];
+  if (first.kind === 'duration' || first.kind === 'rounds') {
+    const total = sets.reduce((n, s) => n + (s.durationSec ?? 0), 0);
+    return total >= 60 ? `${Math.round(total / 60)} min` : `${total}s`;
+  }
+  if (first.kind === 'distance') {
+    const total = sets.reduce((n, s) => n + (s.distanceM ?? 0), 0);
+    return `${Math.round(total)}m`;
+  }
+  // Strength — collapse to "N sets · top {weight} × {reps}".
+  const weighted = sets.filter((s) => s.weight != null);
+  if (weighted.length === 0) return `${sets.length} set${sets.length === 1 ? '' : 's'}`;
+  const top = weighted.reduce(
+    (best, s) => (s.weight > best.weight || (s.weight === best.weight && s.reps > best.reps) ? s : best),
+    weighted[0],
+  );
+  return `${weighted.length} set${weighted.length === 1 ? '' : 's'} · top ${top.weight}${top.unit ?? ''} × ${top.reps}`;
+}
+
+function formatLocalTime(iso) {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+}
+
 export function PerformanceCard({
   performance,
   accent,
@@ -203,6 +238,8 @@ export function PerformanceCard({
   plateInventory,
   plateCalculatorEnabled,
   autoProgression,
+  manualEntriesToday,
+  onCreditManualEntry,
 }) {
   // Hooks declared above any early return so call order is stable.
   // One-shot timestamp captured at mount — keeps `Date.now()` out of
@@ -391,6 +428,78 @@ export function PerformanceCard({
           )}
         </Stack>
       </Stack>
+
+      {!hasLogged && Array.isArray(manualEntriesToday) && manualEntriesToday.length > 0 && (
+        <div
+          data-testid="manual-credit-banner"
+          style={{
+            marginTop: 16,
+            padding: '12px 14px',
+            border: '1px solid var(--border-hairline)',
+            borderLeft: `2px solid var(--accent-${accent}-solid)`,
+            borderRadius: 8,
+          }}
+        >
+          {manualEntriesToday.map((entry, i) => {
+            const summary = describeManualSets(entry.performances?.[0]?.sets);
+            const when = formatLocalTime(entry.startedAt);
+            return (
+              <Stack
+                key={entry.id}
+                direction="row"
+                align="center"
+                justify="space-between"
+                gap={2}
+                style={{
+                  marginTop: i === 0 ? 0 : 8,
+                  paddingTop: i === 0 ? 0 : 8,
+                  borderTop: i === 0 ? 'none' : '1px solid var(--border-hairline)',
+                }}
+              >
+                <Stack direction="column" gap={1} style={{ flex: 1, minWidth: 0 }}>
+                  <Text
+                    as="span"
+                    variant="mono-sm"
+                    style={{
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.12em',
+                      color: `var(--accent-${accent}-ink)`,
+                      fontWeight: 600,
+                    }}
+                  >
+                    Logged earlier · {when}
+                  </Text>
+                  <Text as="span" variant="body-sm" tone="secondary">
+                    {summary}
+                  </Text>
+                </Stack>
+                <button
+                  type="button"
+                  data-testid="credit-manual-entry"
+                  data-manual-id={entry.id}
+                  onClick={() => onCreditManualEntry?.(performance.id, entry.id)}
+                  style={{
+                    all: 'unset',
+                    cursor: 'pointer',
+                    flexShrink: 0,
+                    padding: '8px 14px',
+                    border: `1px solid var(--accent-${accent}-ink)`,
+                    borderRadius: 4,
+                    color: `var(--accent-${accent}-ink)`,
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: 11,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.12em',
+                    fontWeight: 600,
+                  }}
+                >
+                  Pull in
+                </button>
+              </Stack>
+            );
+          })}
+        </div>
+      )}
 
       <WarmupLadderBlock
         exercise={ex}

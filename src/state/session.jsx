@@ -408,6 +408,46 @@ export function SessionProvider({ children }) {
       return true;
     },
 
+    // ─── Credit a manual entry into a live performance ──────────────────
+    // When the user logged something earlier in the day (e.g. a 7am
+    // ruck) and then starts a session that includes the same exercise,
+    // they can fold the manual entry into the live performance with one
+    // tap. The manual session is removed from the archive so totals
+    // don't double-count. Returns true on success.
+    async creditManualEntry(performanceId, manualSessionId) {
+      if (!session) return false;
+      const manualIdx = archive.findIndex((s) => s.id === manualSessionId);
+      if (manualIdx < 0) return false;
+      const manual = archive[manualIdx];
+      if (!manual?.manual) return false;
+      const sourceSets = manual.performances?.[0]?.sets ?? [];
+      if (sourceSets.length === 0) return false;
+
+      // Remove the manual entry from the archive first so PR re-annotation
+      // on session end doesn't double-count.
+      const nextArchive = archive.filter((s) => s.id !== manualSessionId);
+      await saveArchive(nextArchive);
+      setArchive(nextArchive);
+
+      setSession((s) => {
+        if (!s) return s;
+        const performances = s.performances.map((p) => {
+          if (p.id !== performanceId) return p;
+          // Renumber starting after any sets already on the performance
+          // (this is the empty-performance case in practice, but be
+          // defensive — the banner is suppressed once sets exist anyway).
+          const baseIndex = p.sets.length;
+          const newSets = sourceSets.map((src, i) => ({
+            ...src,
+            index: baseIndex + i + 1,
+          }));
+          return { ...p, sets: [...p.sets, ...newSets] };
+        });
+        return { ...s, performances };
+      });
+      return true;
+    },
+
     // ─── Manual log entry (no active session required) ──────────────────
     // Append a one-off completed entry to the archive — e.g. a walk
     // earlier in the day that wasn't tracked live. Bypasses the active

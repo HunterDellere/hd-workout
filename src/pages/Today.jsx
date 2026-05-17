@@ -64,6 +64,7 @@ export function Today() {
     setPerformanceNote,
     reorderSections,
     adjustPrescribedSets,
+    creditManualEntry,
   } = useSession();
 
   const {
@@ -423,6 +424,20 @@ export function Today() {
                           settings.units,
                         )
                         : null}
+                      manualEntriesToday={archive.filter((s) => (
+                        s.manual === true
+                        && s.performances?.[0]?.exerciseId === perf.exerciseId
+                        && s.startedAt
+                        && activeSession.startedAt
+                        && (() => {
+                          const a = new Date(s.startedAt);
+                          const b = new Date(activeSession.startedAt);
+                          return a.getFullYear() === b.getFullYear()
+                            && a.getMonth() === b.getMonth()
+                            && a.getDate() === b.getDate();
+                        })()
+                      ))}
+                      onCreditManualEntry={creditManualEntry}
                       onLogSet={logSet}
                       onDiscardSet={discardSet}
                       onSwap={setSwapPerformanceId}
