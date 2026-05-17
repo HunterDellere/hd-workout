@@ -73,6 +73,11 @@ export function TodayHero({
   hasOverlay,
   onResetDay,
   dayKey,
+  // Location swap — Gym / Home. When both are passed, a pair of
+  // LocationChips renders top-right of the hero so the user can flip
+  // without leaving Today. Wired by DayPlanner from useSettings.
+  location,
+  onSetLocation,
 }) {
   const patternKey = DAY_PATTERN_KEY[dayKey] ?? 'mobility';
   return (
@@ -132,14 +137,32 @@ export function TodayHero({
             {labelOverride ?? `Today · ${todayKey}`}
           </Text>
         </Stack>
-        {hasOverlay && (
-          <MonoChipButton
-            onClick={onResetDay}
-            data-testid="reset-day"
-          >
-            Reset day
-          </MonoChipButton>
-        )}
+        <Stack direction="row" align="center" gap={2}>
+          {onSetLocation && (
+            <Stack direction="row" gap={1} data-testid="hero-location">
+              <LocationChip
+                label="Gym"
+                active={location !== 'home'}
+                onClick={() => onSetLocation('gym')}
+                testId="hero-location-gym"
+              />
+              <LocationChip
+                label="Home"
+                active={location === 'home'}
+                onClick={() => onSetLocation('home')}
+                testId="hero-location-home"
+              />
+            </Stack>
+          )}
+          {hasOverlay && (
+            <MonoChipButton
+              onClick={onResetDay}
+              data-testid="reset-day"
+            >
+              Reset day
+            </MonoChipButton>
+          )}
+        </Stack>
       </Stack>
 
       <Text

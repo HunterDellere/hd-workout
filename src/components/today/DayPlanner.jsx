@@ -63,7 +63,7 @@ const PATTERN_LABEL = {
 
 export function DayPlanner({ dayKey, viewMode = 'today' }) {
   const navigate = useNavigate();
-  const { settings } = useSettings();
+  const { settings, setLocation } = useSettings();
   const { activeSession, archive, startSession } = useSession();
   const {
     overlay,
@@ -143,6 +143,11 @@ export function DayPlanner({ dayKey, viewMode = 'today' }) {
         startLabel={sessionActive ? 'Session in progress' : 'Start session'}
         hasOverlay={hasOverlay}
         onResetDay={() => resetDay(dayKey)}
+        // Location swap lives on the hero so the user can flip Gym/Home
+        // without leaving Today. The swap is disabled mid-session — the
+        // active session is locked to the location it was started in.
+        location={settings.location ?? 'gym'}
+        onSetLocation={sessionActive ? null : setLocation}
       />
 
       <BodyweightQuickLog />
