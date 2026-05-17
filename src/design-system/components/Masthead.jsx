@@ -6,7 +6,6 @@
 // Page and overlap the eyebrow on narrow viewports.
 
 import { Link } from 'react-router-dom';
-import { Logo } from './Logo';
 import { ThemeToggle } from './ThemeToggle';
 import { layout } from '../tokens';
 
@@ -51,16 +50,20 @@ export function Masthead() {
             textDecoration: 'none',
           }}
         >
-          <Logo size={36} monogram={false} />
+          {/* Bare wordmark only — the enso ring lives on the favicon /
+              splash / standalone surfaces. In the masthead next to body
+              type, the ring at any reasonable size either competes with
+              the type or reads as a tiny "○" — neither works. Let the
+              serif italic wordmark carry the brand here. */}
           <span
             aria-hidden
             style={{
               fontFamily: 'var(--font-serif)',
               fontStyle: 'italic',
               fontWeight: 500,
-              fontSize: 22,
+              fontSize: 28,
               lineHeight: 1,
-              letterSpacing: '-0.01em',
+              letterSpacing: '-0.015em',
               color: 'var(--text-primary)',
             }}
           >

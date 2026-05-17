@@ -4,6 +4,8 @@
 // Variants:
 //   solid (default) — hairline border
 //   dashed          — 1px dashed border (the "+ Add" affordance)
+//   ghost           — no border, tertiary text; for inline row actions
+//                     that shouldn't compete with content
 //
 // Accents tint the text via --accent-{name}-ink. Pass `accent="warn"` for
 // the warm-amber variant used by destructive bare-chip pairings.
@@ -40,13 +42,17 @@ export const MonoChipButton = forwardRef(function MonoChipButton(
   },
   ref,
 ) {
-  const padding = size === 'md' ? '10px 14px' : '6px 10px';
+  const padding = variant === 'ghost'
+    ? '4px 6px'
+    : (size === 'md' ? '10px 14px' : '6px 10px');
   const border = variant === 'dashed'
     ? '1px dashed var(--border-hairline)'
-    : '1px solid var(--border-hairline)';
+    : variant === 'ghost'
+      ? '1px solid transparent'
+      : '1px solid var(--border-hairline)';
   const color = accent
     ? `var(--accent-${accent}-ink)`
-    : (variant === 'dashed' ? 'var(--text-secondary)' : 'var(--text-secondary)');
+    : (variant === 'ghost' ? 'var(--text-tertiary)' : 'var(--text-secondary)');
   const computed = {
     ...baseStyle,
     padding,

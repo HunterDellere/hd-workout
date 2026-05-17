@@ -125,23 +125,28 @@ export function TodayHero({
           same vocabulary as Library and pattern pages — geometric, not
           decorative. Sized large + low-opacity so it reads as character
           without competing with the headline. Tinted in the day's accent. */}
+      {/* Pattern glyph as a large bottom-right watermark — moved away
+          from the top-right corner where it competed visually with the
+          Gym/Home chip pair on push (two parallel marks read as a
+          duplicate chip). Now reads as a brand watermark sitting
+          behind the Start CTA. */}
       <span
         aria-hidden
         style={{
           position: 'absolute',
-          top: -14,
-          right: -14,
-          width: 220,
-          height: 220,
+          bottom: -36,
+          right: -28,
+          width: 240,
+          height: 240,
           pointerEvents: 'none',
           color: `var(--accent-${accent}-ink)`,
-          opacity: 0.22,
+          opacity: 0.18,
           display: 'inline-flex',
           alignItems: 'center',
           justifyContent: 'center',
         }}
       >
-        <PatternGlyph name={patternKey} size={220} strokeWidth={1.5} />
+        <PatternGlyph name={patternKey} size={240} strokeWidth={1.5} />
       </span>
 
       <Stack direction="row" align="center" justify="space-between" gap={2}>

@@ -80,21 +80,21 @@ export function ThemeToggle({ size = 36, style, ...rest }) {
       data-testid="theme-toggle"
       data-theme-state={theme}
       style={{
-        // Borderless so the theme toggle sits quieter than the gear
-        // (settings) link to its left — two same-bordered circles would
-        // read as siblings of equal weight, which they aren't.
+        // Hairline-bordered chip — matches the LocationChip / MonoChipButton
+        // language used elsewhere. Previously borderless: read as a tiny
+        // orphan icon in the otherwise-bordered masthead.
         width: size,
         height: size,
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center',
         background: 'transparent',
-        border: 'none',
+        border: '1px solid var(--border-hairline)',
         borderRadius: 999,
         color: 'var(--text-secondary)',
         cursor: 'pointer',
         padding: 0,
-        transition: 'color 160ms ease, background-color 160ms ease',
+        transition: 'color 160ms ease, background-color 160ms ease, border-color 160ms ease',
         ...style,
       }}
       {...rest}

@@ -130,8 +130,9 @@ export function PreviewSection({
             <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
               {ex.sets}
             </Text>
-            <Stack direction="row" gap={1}>
+            <Stack direction="row" gap={0}>
               <MonoChipButton
+                variant="ghost"
                 data-testid="preview-swap"
                 data-exercise-id={ex.id}
                 aria-label={`Swap ${ex.name}`}
@@ -141,6 +142,7 @@ export function PreviewSection({
                 Swap
               </MonoChipButton>
               <MonoChipButton
+                variant="ghost"
                 data-testid="preview-remove"
                 data-exercise-id={ex.id}
                 aria-label={`Remove ${ex.name}`}
