@@ -88,14 +88,14 @@ export function SessionBar() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          gap: 12,
-          padding: '10px 16px',
+          gap: 16,
+          padding: '18px 20px',
           background: atOrPast
             ? `var(--accent-${accent}-soft)`
             : 'var(--surface-raised)',
           borderTop: '1px solid var(--border-hairline)',
           borderBottom: '1px solid var(--border-hairline)',
-          boxShadow: '0 -8px 24px -16px rgba(0,0,0,0.18)',
+          boxShadow: '0 -12px 32px -16px rgba(0,0,0,0.24)',
           zIndex: 49,
           color: 'var(--text-primary)',
           transition: 'background-color 240ms ease',
@@ -118,40 +118,45 @@ export function SessionBar() {
             cursor: 'pointer',
             flex: 1,
             display: 'flex',
-            alignItems: 'center',
-            gap: 12,
+            flexDirection: 'column',
+            alignItems: 'flex-start',
+            gap: 4,
             minWidth: 0,
           }}
         >
-          <Text
-            as="span"
-            variant="mono-sm"
-            style={{
-              color: atOrPast ? `var(--accent-${accent}-ink)` : 'var(--text-tertiary)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.14em',
-              fontWeight: 600,
-              flexShrink: 0,
-            }}
-          >
-            Rest
-          </Text>
-          <Text
-            as="span"
-            variant="mono-lg"
-            style={{
-              color: atOrPast ? `var(--accent-${accent}-ink)` : 'var(--text-primary)',
-              fontVariantNumeric: 'tabular-nums',
-              flexShrink: 0,
-            }}
-          >
-            {display}
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, minWidth: 0, width: '100%' }}>
+            <Text
+              as="span"
+              variant="mono-sm"
+              style={{
+                color: atOrPast ? `var(--accent-${accent}-ink)` : 'var(--text-tertiary)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.14em',
+                fontWeight: 600,
+                flexShrink: 0,
+              }}
+            >
+              Rest
+            </Text>
+            <span
+              style={{
+                color: atOrPast ? `var(--accent-${accent}-ink)` : 'var(--text-primary)',
+                fontFamily: 'var(--font-mono)',
+                fontVariantNumeric: 'tabular-nums',
+                fontSize: 32,
+                fontWeight: 600,
+                lineHeight: 1,
+                flexShrink: 0,
+              }}
+            >
+              {display}
+            </span>
             {targetSec != null && (
-              <Text as="span" variant="mono-sm" tone="tertiary" style={{ marginLeft: 8 }}>
+              <Text as="span" variant="mono-sm" tone="tertiary" style={{ flexShrink: 0 }}>
                 / {fmt(targetSec)}
               </Text>
             )}
-          </Text>
+          </div>
           {restingExercise && (
             <Text
               as="span"
@@ -160,14 +165,13 @@ export function SessionBar() {
               style={{
                 textTransform: 'uppercase',
                 letterSpacing: '0.10em',
-                flex: 1,
-                minWidth: 0,
+                maxWidth: '100%',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
               }}
             >
-              · {restingExercise.name}
+              {restingExercise.name}
             </Text>
           )}
         </button>
@@ -180,12 +184,12 @@ export function SessionBar() {
             all: 'unset',
             cursor: 'pointer',
             flexShrink: 0,
-            padding: '6px 12px',
+            padding: '10px 16px',
             border: `1px solid ${atOrPast ? `var(--accent-${accent}-ink)` : 'var(--border-strong)'}`,
             borderRadius: 4,
             color: atOrPast ? `var(--accent-${accent}-ink)` : 'var(--text-secondary)',
             fontFamily: 'var(--font-mono)',
-            fontSize: 11,
+            fontSize: 12,
             textTransform: 'uppercase',
             letterSpacing: '0.12em',
             fontWeight: 600,
