@@ -29,7 +29,9 @@ import {
   prsThisMonth,
 } from '../data/insights';
 import { PATTERNS, PATTERN_BY_KEY } from '../data/patterns';
+import { dayLineageAccent, patternAccent } from '../design-system/tokens';
 import { findExerciseAnywhere } from '../data';
+import { e1rmSeriesForExercise, summarizeE1RM } from '../data/e1rm';
 
 const WEEKDAY_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
@@ -114,6 +116,128 @@ function BodyweightSpark({ entries, unit }) {
   );
 }
 
+// One e1RM trend row — small sparkline + latest value + delta vs. the
+// earliest session in the window. Uses the same visual language as
+// BodyweightSpark: quiet hairline path, no axes, mono numerals.
+// Series is computed in the parent and passed in.
+function E1RMSparkRow({ exerciseId, series, accent }) {
+  const found = findExerciseAnywhere(exerciseId);
+  const name = found?.exercise?.name ?? exerciseId;
+  if (!series || series.length < 2) {
+    // Single data point: still surface the latest e1RM as a stat row,
+    // but no sparkline (a single dot would be misleading as a trend).
+    const latest = series?.[series.length - 1];
+    if (!latest) return null;
+    return (
+      <div
+        data-testid="e1rm-row"
+        data-exercise-id={exerciseId}
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'minmax(0, 1fr) auto auto',
+          gap: 16,
+          alignItems: 'baseline',
+          padding: '14px 0',
+          borderTop: '1px solid var(--border-hairline)',
+        }}
+      >
+        <Text as="span" variant="title-md">{name}</Text>
+        <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
+          1 session
+        </Text>
+        <Text
+          as="span"
+          variant="mono-lg"
+          style={{ color: `var(--accent-${accent}-ink)`, fontFamily: 'var(--font-mono)' }}
+        >
+          ~{Math.round(latest.e1rm)}{latest.unit ?? ''}
+        </Text>
+      </div>
+    );
+  }
+  const summary = summarizeE1RM(series);
+  const W = 100;
+  const H = 28;
+  const PAD = 2;
+  const values = series.map((p) => p.e1rm);
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = Math.max(0.5, max - min);
+  const coords = series.map((p, i) => {
+    const x = PAD + (i / (series.length - 1)) * (W - PAD * 2);
+    const y = H - PAD - ((p.e1rm - min) / range) * (H - PAD * 2);
+    return [x, y];
+  });
+  const path = coords
+    .map(([x, y], i) => `${i === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)}`)
+    .join(' ');
+  const deltaSign = summary.delta >= 0 ? '+' : '';
+  const unit = summary.latest.unit ?? '';
+  return (
+    <div
+      data-testid="e1rm-row"
+      data-exercise-id={exerciseId}
+      style={{
+        display: 'grid',
+        gridTemplateColumns: 'minmax(0, 1.4fr) 110px auto',
+        gap: 16,
+        alignItems: 'center',
+        padding: '14px 0',
+        borderTop: '1px solid var(--border-hairline)',
+      }}
+    >
+      <div style={{ minWidth: 0 }}>
+        <Text as="div" variant="title-md" style={{ lineHeight: 1.2 }}>{name}</Text>
+        <Text
+          as="div"
+          variant="mono-sm"
+          tone="tertiary"
+          style={{ marginTop: 4, textTransform: 'uppercase', letterSpacing: '0.10em' }}
+        >
+          {series.length} sessions · {deltaSign}{summary.delta.toFixed(1)}{unit} ({deltaSign}{summary.deltaPct?.toFixed(0) ?? '—'}%)
+        </Text>
+      </div>
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        width="100%"
+        height={H}
+        preserveAspectRatio="none"
+        aria-hidden
+        style={{ display: 'block', overflow: 'visible' }}
+      >
+        <path
+          d={path}
+          fill="none"
+          stroke={`var(--accent-${accent}-ink)`}
+          strokeWidth="1.25"
+          strokeLinejoin="round"
+          strokeLinecap="round"
+        />
+        {/* End-cap dot so the sparkline reads as "this is where you
+            are right now" even when range collapses. */}
+        <circle
+          cx={coords[coords.length - 1][0]}
+          cy={coords[coords.length - 1][1]}
+          r="1.8"
+          fill={`var(--accent-${accent}-ink)`}
+        />
+      </svg>
+      <Text
+        as="span"
+        variant="mono-lg"
+        style={{
+          fontFamily: 'var(--font-mono)',
+          color: `var(--accent-${accent}-ink)`,
+          textAlign: 'right',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        ~{Math.round(summary.latest.e1rm)}{unit}
+      </Text>
+    </div>
+  );
+}
+
 function TrendArrow({ direction }) {
   if (direction === 'up') {
     return (
@@ -134,6 +258,7 @@ function TrendArrow({ direction }) {
 
 function VolumeRow({ patternKey, weeks, max, trend }) {
   const meta = PATTERN_BY_KEY[patternKey];
+  const accent = patternAccent[patternKey] ?? 'stone';
   const series = weeks.map((w) => w.perPattern[patternKey] ?? 0);
   const total = series.reduce((a, b) => a + b, 0);
   if (total === 0) return null;
@@ -174,9 +299,14 @@ function VolumeRow({ patternKey, weeks, max, trend }) {
               title={`${weeks[i].label}: ${Math.round(v)}`}
               style={{
                 height: `${Math.max(2, ratio * 100)}%`,
-                background: v > 0 ? 'var(--text-primary)' : 'var(--border-hairline)',
+                // Tinted in the pattern's lineage ink rather than pure
+                // text-primary — keeps the visual identity per pattern
+                // consistent with the rest of the app (movement glyphs,
+                // category dots), and softens the block of solid black
+                // that read as too heavy in light mode.
+                background: v > 0 ? `var(--accent-${accent}-ink)` : 'var(--border-hairline)',
                 borderRadius: 1,
-                opacity: v > 0 ? 1 : 0.4,
+                opacity: v > 0 ? 0.85 : 0.4,
               }}
             />
           );
@@ -278,6 +408,25 @@ export function Insights() {
   const streak = useMemo(() => sessionStreak(archive), [archive]);
   const top5 = useMemo(() => topExercises(archive, { days: 30, limit: 5 }), [archive]);
   const monthPRs = useMemo(() => prsThisMonth(archive), [archive]);
+
+  // e1RM trend: top loaded movements with at least one strength session.
+  // Limit to the top 5 by recent activity AND filter out non-loaded
+  // exercises (bodyweight pull-ups with no added weight produce a 0
+  // e1RM that isn't meaningful).
+  const e1rmRows = useMemo(() => {
+    const rows = [];
+    for (const top of top5) {
+      const series = e1rmSeriesForExercise(archive, top.exerciseId);
+      const latest = series[series.length - 1];
+      if (!latest || latest.e1rm <= 0) continue;
+      // Resolve the day-lineage accent based on which catalog day the
+      // exercise lives in. Falls back to 'stone'.
+      const found = findExerciseAnywhere(top.exerciseId);
+      const dayKey = found?.dayKey ?? null;
+      rows.push({ exerciseId: top.exerciseId, series, dayKey });
+    }
+    return rows;
+  }, [top5, archive]);
 
   // PR roll-up across all archived sessions.
   const allPRs = useMemo(() => {
@@ -404,6 +553,32 @@ export function Insights() {
               );
             })}
           </ol>
+        </Block>
+      )}
+
+      {/* Estimated 1RM trend per top loaded movement. Epley formula,
+          one point per session, sparkline + delta. Honest signal: only
+          rendered when at least one top movement has loaded data. */}
+      {e1rmRows.length > 0 && (
+        <Block gapTop={32} eyebrow="Estimated 1RM · top loaded">
+          <div data-testid="e1rm-list">
+            {e1rmRows.map((row) => (
+              <E1RMSparkRow
+                key={row.exerciseId}
+                exerciseId={row.exerciseId}
+                series={row.series}
+                accent={dayLineageAccent[row.dayKey] ?? 'stone'}
+              />
+            ))}
+          </div>
+          <Text
+            as="p"
+            variant="mono-sm"
+            tone="tertiary"
+            style={{ marginTop: 12, opacity: 0.7, letterSpacing: '0.06em' }}
+          >
+            Epley estimate · trend, not a tested max.
+          </Text>
         </Block>
       )}
 
