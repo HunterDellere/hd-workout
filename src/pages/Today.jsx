@@ -87,6 +87,7 @@ export function Today() {
   const [addGroupOpen, setAddGroupOpen] = useState(false);
   const [reorderOpen, setReorderOpen] = useState(false);
   const [endedSummary, setEndedSummary] = useState(null);
+  const [endConfirming, setEndConfirming] = useState(false);
   // Dismissal lives on the session blob so it survives reloads.
   const resumeDismissed = Boolean(activeSession?.resumePromptDismissed);
 
@@ -368,6 +369,11 @@ export function Today() {
               flow so it doesn't overlap the BottomNav, but with extra
               breathing room. The session progress bar at the top is the
               persistent surface; this is the commit. */}
+          {/* End-session: two-tap confirm when sets have been logged.
+              Without it, an accidental tap drops a session into the
+              archive with no undo path beyond the History edit screen.
+              Sessions with no sets logged end with one tap (no work
+              to lose). */}
           <Block gapTop={48}>
             <BrushDivider />
             <Stack
@@ -377,22 +383,63 @@ export function Today() {
               gap={3}
               style={{ marginTop: 24 }}
             >
-              <Button
-                variant="soft"
-                accent={accent}
-                size="md"
-                data-testid="end-session"
-                onClick={async () => {
-                  const completed = await endSession();
-                  if (completed && settings.intelligenceEnabled) {
-                    setEndedSummary(completed);
-                  } else {
-                    navigate('/');
-                  }
-                }}
-              >
-                End session
-              </Button>
+              {endConfirming ? (
+                <>
+                  <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
+                    End this session?
+                  </Text>
+                  <Button
+                    variant="bare"
+                    size="md"
+                    onClick={() => setEndConfirming(false)}
+                    data-testid="end-session-cancel"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="soft"
+                    accent={accent}
+                    size="md"
+                    data-testid="end-session-confirm"
+                    onClick={async () => {
+                      setEndConfirming(false);
+                      const completed = await endSession();
+                      if (completed && settings.intelligenceEnabled) {
+                        setEndedSummary(completed);
+                      } else {
+                        navigate('/');
+                      }
+                    }}
+                  >
+                    Yes, end
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  variant="soft"
+                  accent={accent}
+                  size="md"
+                  data-testid="end-session"
+                  onClick={async () => {
+                    // No sets logged → end immediately (no data to lose).
+                    const hasLogged = activeSession?.performances?.some(
+                      (p) => p.sets && p.sets.length > 0,
+                    );
+                    if (!hasLogged) {
+                      const completed = await endSession();
+                      if (completed && settings.intelligenceEnabled) {
+                        setEndedSummary(completed);
+                      } else {
+                        navigate('/');
+                      }
+                      return;
+                    }
+                    setEndConfirming(true);
+                  }}
+                >
+                  End session
+                </Button>
+              )}
             </Stack>
           </Block>
         </>

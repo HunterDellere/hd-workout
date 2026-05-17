@@ -5,7 +5,7 @@
 // Designed mid-set, eyes-up: mono-lg numerals, generous tap targets,
 // the load value carries the most visual weight.
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Stack, Text, Button } from '../design-system/components';
 import { useHaptics } from '../hooks/useHaptics';
 import {
@@ -138,7 +138,7 @@ function RpeRow({ value, onChange, accent }) {
   );
 }
 
-function LoggedSet({ set, isLast, onDiscard, unitDisplay, isPR }) {
+function LoggedSet({ set, isLast, onDiscard, unitDisplay, isPR, justLogged }) {
   // Swipe-to-discard: pointer-driven horizontal drag reveals a Delete
   // affordance under the row. Threshold is 56px (matches the visible
   // pull-tab); beyond that, releasing fires onDiscard. Keyboard / mouse
@@ -217,6 +217,9 @@ function LoggedSet({ set, isLast, onDiscard, unitDisplay, isPR }) {
           transform: `translateX(${offset}px)`,
           transition: tracking ? 'none' : 'transform 180ms ease',
           touchAction: 'pan-y',
+          animation: justLogged
+            ? 'hdw-set-landed 380ms cubic-bezier(0.2, 0.8, 0.2, 1)'
+            : undefined,
         }}
       >
       <Text as="span" variant="mono-sm" tone="tertiary" style={{ width: 24, textTransform: 'uppercase' }}>
@@ -434,8 +437,43 @@ export function SetRow({
     ? Math.max(0, prescription.setsTotal - performance.sets.length)
     : null;
 
+  // Animate ONLY the just-logged row, not on every parent re-render.
+  // Compare the latest set index to a ref; if it advanced this render,
+  // mark that index as "animating". State update lives in an effect so
+  // it doesn't run during render (React 19 purity).
+  const latestSetIndex = performance.sets.length > 0
+    ? performance.sets[performance.sets.length - 1].index
+    : null;
+  const prevLatestRef = useRef(latestSetIndex);
+  const [justLandedIndex, setJustLandedIndex] = useState(null);
+  useEffect(() => {
+    if (latestSetIndex !== prevLatestRef.current) {
+      const isAdvance = latestSetIndex !== null
+        && (prevLatestRef.current === null || latestSetIndex > prevLatestRef.current);
+      prevLatestRef.current = latestSetIndex;
+      if (isAdvance) {
+        setJustLandedIndex(latestSetIndex);
+        // Clear the flag shortly after the animation finishes so a
+        // subsequent re-render with the same latest index doesn't
+        // re-animate.
+        const timeout = setTimeout(() => setJustLandedIndex(null), 500);
+        return () => clearTimeout(timeout);
+      }
+    }
+    return undefined;
+  }, [latestSetIndex]);
+
   return (
     <div data-testid="set-row" data-performance-id={performance.id}>
+      <style>{`
+        @keyframes hdw-set-landed {
+          0%   { opacity: 0; transform: translateY(-6px) translateX(0); }
+          100% { opacity: 1; transform: translateY(0) translateX(0); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          [data-testid="logged-set-row"] { animation: none !important; }
+        }
+      `}</style>
       {performance.sets.length > 0 && (
         <div style={{ marginBottom: 12 }}>
           {performance.sets.map((set, i) => (
@@ -446,6 +484,7 @@ export function SetRow({
               onDiscard={onDiscardSet}
               unitDisplay={unit}
               isPR={prSetIds?.has(`${performance.id}:${set.index}`) ?? false}
+              justLogged={set.index === justLandedIndex}
             />
           ))}
         </div>

@@ -184,6 +184,7 @@ export function SlotPicker({
   const [showAll, setShowAll] = useState(false);
   const [activePatterns, setActivePatterns] = useState([]);
   const [activeCategories, setActiveCategories] = useState([]);
+  const [query, setQuery] = useState('');
   // Details peek lives inside the picker so opening it doesn't dismiss
   // the user's filter state.
   const [peekExerciseId, setPeekExerciseId] = useState(null);
@@ -281,6 +282,29 @@ export function SlotPicker({
     excludedEquipment,
   ]);
 
+  // Keyboard search layered on top of the chip/section scoping. When
+  // there's a query, it overrides chip filters and searches the whole
+  // catalog by name + tags so the user can find anything they remember
+  // the name of without first guessing the right chip.
+  const visibleCandidates = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return candidates;
+    const terms = q.split(/\s+/).filter(Boolean);
+    const pool = catalog
+      .filter((ex) => !excludeIds.includes(ex.id))
+      .filter((ex) => !isExerciseExcludedByEquipment(ex, excludedEquipment));
+    return pool.filter((ex) => {
+      const hay = [
+        ex.name,
+        ex.id,
+        ...(ex.tags ?? []),
+        ...(ex.equipment ?? []),
+        ...(ex.primaryMuscles ?? []),
+      ].join(' ').toLowerCase();
+      return terms.every((t) => hay.includes(t));
+    });
+  }, [query, candidates, catalog, excludeIds, excludedEquipment]);
+
   function togglePattern(key) {
     setActivePatterns((prev) => (
       prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
@@ -329,7 +353,33 @@ export function SlotPicker({
 
         <BrushDivider style={{ marginTop: 32 }} />
 
-        <div style={{ marginTop: 24 }}>
+        {/* Search input — overrides chip scoping when present. Lets the
+            user type the name of any exercise they remember without
+            first picking the right pattern chip. */}
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Escape') setQuery(''); }}
+          placeholder="Search exercises…"
+          aria-label="Search exercises"
+          data-testid="slot-search"
+          style={{
+            width: '100%',
+            marginTop: 24,
+            padding: '12px 16px',
+            background: 'var(--surface-sunken)',
+            border: '1px solid var(--border-hairline)',
+            borderRadius: 8,
+            color: 'var(--text-primary)',
+            fontFamily: 'var(--font-sans)',
+            fontSize: 15,
+            outline: 'none',
+            boxSizing: 'border-box',
+          }}
+        />
+
+        <div style={{ marginTop: 20, opacity: query.trim() ? 0.4 : 1, pointerEvents: query.trim() ? 'none' : 'auto' }}>
           {orderedPatternKeys.length > 0 && (
             <>
               <Text as="div" variant="mono-sm" tone="tertiary" style={{ marginBottom: 8, textTransform: 'uppercase' }}>
@@ -375,12 +425,12 @@ export function SlotPicker({
           </Stack>
         </div>
 
-        {candidates.length > 0 ? (
+        {visibleCandidates.length > 0 ? (
           <ul
             data-testid="slot-picker-list"
             style={{ listStyle: 'none', padding: 0, margin: '24px 0 0' }}
           >
-            {candidates.map((ex, i) => (
+            {visibleCandidates.map((ex, i) => (
               <li key={ex.id}>
                 <PickRow
                   exercise={ex}
