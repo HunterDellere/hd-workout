@@ -238,9 +238,14 @@ export function PerformanceCard({
       <Stack direction="row" align="flex-start" justify="space-between" gap={3}>
         <Stack direction="column" gap={2} style={{ flex: 1, minWidth: 0 }}>
           <Stack direction="row" align="center" gap={2} wrap>
-            <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
+            <Text
+              as="span"
+              variant="mono-sm"
+              tone="tertiary"
+              style={{ textTransform: 'uppercase', letterSpacing: '0.12em' }}
+            >
               {performance.prescription?.sets ?? ex.sets}
-              {performance.prescription?.rest && ` · rest ${performance.prescription.rest}`}
+              {performance.prescription?.rest && ` · ${performance.prescription.rest} rest`}
             </Text>
             {onAdjustSets && (() => {
               const raw = String(performance.prescription?.sets ?? '').trim();
@@ -319,8 +324,17 @@ export function PerformanceCard({
             </span>
           </Text>
           {performance.swappedFromId && (
-            <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
-              Swapped in this session
+            <Text
+              as="span"
+              variant="mono-sm"
+              tone="tertiary"
+              style={{
+                textTransform: 'uppercase',
+                letterSpacing: '0.10em',
+                opacity: 0.7,
+              }}
+            >
+              Swapped
             </Text>
           )}
           {/* Wave 5.2: last-time + suggestion stack into one quiet row each.

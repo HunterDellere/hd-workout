@@ -531,7 +531,7 @@ export function SetRow({
               color: `var(--accent-${accent}-ink)`,
             }}
           >
-            +{effectiveProgression.increment}{unit} ▲ · cleared the top rep last session
+            ▲ +{effectiveProgression.increment}{unit} · cleared top rep last time
           </Text>
         )}
 
@@ -583,10 +583,15 @@ export function SetRow({
 
         <Stack direction="row" gap={2} justify="space-between" align="center">
           {setsRemaining != null ? (
-            <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
+            <Text
+              as="span"
+              variant="mono-sm"
+              tone="tertiary"
+              style={{ textTransform: 'uppercase', letterSpacing: '0.12em' }}
+            >
               {setsRemaining > 0
-                ? `${setsRemaining} set${setsRemaining === 1 ? '' : 's'} remaining`
-                : 'Prescription complete'}
+                ? `${setsRemaining} left`
+                : 'Complete'}
             </Text>
           ) : <span />}
           <Button

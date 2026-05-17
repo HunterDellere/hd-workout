@@ -243,7 +243,7 @@ export function SessionBar() {
           tone="tertiary"
           style={{ textTransform: 'uppercase', letterSpacing: '0.10em' }}
         >
-          Session in progress · {count} set{count === 1 ? '' : 's'} logged
+          In session · {count} set{count === 1 ? '' : 's'}
         </Text>
       </Stack>
       <Text

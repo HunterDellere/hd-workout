@@ -172,14 +172,9 @@ export function CollapsedPerformanceRow({
             {setsTotal != null ? `0/${setsTotal}` : '—'}
           </Text>
         )}
-        <Text
-          as="span"
-          variant="mono-sm"
-          tone="tertiary"
-          style={{ whiteSpace: 'nowrap', textTransform: 'uppercase', opacity: 0.7 }}
-        >
-          {performance.prescription?.sets ?? ex.sets}
-        </Text>
+        {/* Prescription string suppressed — the status chip already
+            carries the working/total count, and the full prescription
+            (with rest) lives one tap away in the focused card. */}
       </Stack>
     </button>
   );

@@ -358,10 +358,15 @@ export function DurationSetRow({
 
         <Stack direction="row" gap={2} justify="space-between" align="center">
           {setsRemaining != null ? (
-            <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
+            <Text
+              as="span"
+              variant="mono-sm"
+              tone="tertiary"
+              style={{ textTransform: 'uppercase', letterSpacing: '0.12em' }}
+            >
               {setsRemaining > 0
-                ? `${setsRemaining} ${isRounds ? (setsRemaining === 1 ? 'round' : 'rounds') : 'set'} remaining`
-                : 'Prescription complete'}
+                ? `${setsRemaining} left`
+                : 'Complete'}
             </Text>
           ) : <span />}
         </Stack>

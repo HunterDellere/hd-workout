@@ -247,18 +247,20 @@ export function Today() {
                 borderRadius: 1,
               }}
             />
-            <Text as="div" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
-              Today · {day.key}
+            <Text
+              as="div"
+              variant="mono-sm"
+              tone="tertiary"
+              style={{ textTransform: 'uppercase', letterSpacing: '0.14em' }}
+            >
+              {day.key}
             </Text>
           </Stack>
-          <Text as="h1" variant="display-lg" style={{ marginTop: 8, fontStyle: 'italic' }}>
+          <Text as="h1" variant="display-lg" style={{ marginTop: 6, fontStyle: 'italic' }}>
             {day.name}
           </Text>
-          <Text as="p" variant="body-lg" tone="secondary" style={{ marginTop: 16, maxWidth: 60 * 9 }}>
-            {day.description}
-          </Text>
 
-          <BrushDivider style={{ marginTop: 32 }} />
+          <BrushDivider style={{ marginTop: 24 }} />
 
           {/* Wave 5.2: sticky session progress lives below the page header
               so the user always sees how far in they are. Uses the working-
@@ -277,8 +279,7 @@ export function Today() {
               }}
             >
               <Text as="p" variant="body-md" tone="primary">
-                {longGap.hours >= 1 ? `${longGap.hours}h` : 'a while'} since your last set.
-                Continue this session or end it now?
+                {longGap.hours >= 1 ? `${longGap.hours}h` : 'A while'} since your last set.
               </Text>
               <Stack direction="row" gap={2} style={{ marginTop: 12 }}>
                 <Button
@@ -374,11 +375,9 @@ export function Today() {
                     {sectionComplete ? ' ✓' : ''}
                   </Text>
                 </Stack>
-                {meta.blurb && (
-                  <Text as="p" variant="body-sm" tone="secondary" style={{ marginTop: 8, maxWidth: 60 * 9 }}>
-                    {meta.blurb}
-                  </Text>
-                )}
+                {/* Section blurbs are planning copy — suppressed mid-session
+                    to let the work surface dominate. They still appear in the
+                    pre-session DayPlanner. */}
                 {performances.map((perf) => {
                   // Wave 22: focus mode. Only the focused performance
                   // renders the full input card; others collapse to a
@@ -452,14 +451,14 @@ export function Today() {
             );
           })}
 
-          <Stack direction="row" gap={2} style={{ marginTop: 32, flexWrap: 'wrap', rowGap: 8 }}>
+          <Stack direction="row" gap={2} style={{ marginTop: 28, flexWrap: 'wrap', rowGap: 8 }}>
             <MonoChipButton
               variant="dashed"
               size="md"
               data-testid="add-group"
               onClick={() => setAddGroupOpen(true)}
             >
-              + Add custom group
+              + Add group
             </MonoChipButton>
             <MonoChipButton
               size="md"
@@ -467,7 +466,7 @@ export function Today() {
               onClick={() => setReorderOpen(true)}
               disabled={performancesBySection.length < 2}
             >
-              Reorder sections
+              Reorder
             </MonoChipButton>
           </Stack>
 
@@ -491,8 +490,13 @@ export function Today() {
             >
               {endConfirming ? (
                 <>
-                  <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
-                    End this session?
+                  <Text
+                    as="span"
+                    variant="mono-sm"
+                    tone="tertiary"
+                    style={{ textTransform: 'uppercase', letterSpacing: '0.12em' }}
+                  >
+                    End session?
                   </Text>
                   <Button
                     variant="bare"
@@ -517,7 +521,7 @@ export function Today() {
                       }
                     }}
                   >
-                    Yes, end
+                    End
                   </Button>
                 </>
               ) : (() => {
