@@ -156,53 +156,215 @@ function SessionListRow({ session, isActive, onOpen }) {
 
 // ─── Set editor (inline) ───────────────────────────────────────────────────
 
+function formatDurationSec(sec) {
+  const s = Math.max(0, Math.round(sec ?? 0));
+  if (s < 60) return `${s}s`;
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+}
+
+function describePerformance(sets) {
+  if (!sets || sets.length === 0) return '';
+  const first = sets[0];
+  if (first.kind === 'duration' || first.kind === 'rounds') {
+    const total = sets.reduce((n, s) => n + (s.durationSec ?? 0), 0);
+    const label = total >= 60 ? `${Math.round(total / 60)} min` : `${total}s`;
+    return `${sets.length} set${sets.length === 1 ? '' : 's'} · ${label} total`;
+  }
+  if (first.kind === 'distance') {
+    const total = sets.reduce((n, s) => n + (s.distanceM ?? 0), 0);
+    return `${sets.length} set${sets.length === 1 ? '' : 's'} · ${Math.round(total)}m total`;
+  }
+  const weighted = sets.filter((s) => s.weight != null);
+  if (weighted.length === 0) return `${sets.length} set${sets.length === 1 ? '' : 's'}`;
+  const top = weighted.reduce(
+    (best, s) => (s.weight > best.weight || (s.weight === best.weight && (s.reps ?? 0) > (best.reps ?? 0)) ? s : best),
+    weighted[0],
+  );
+  return `${sets.length} set${sets.length === 1 ? '' : 's'} · top ${top.weight}${top.unit ?? ''} × ${top.reps}`;
+}
+
+function formatSetSummary(set) {
+  if (set.kind === 'rounds') {
+    const dur = set.durationSec ?? 0;
+    return dur > 0 ? `Round ${set.index} · ${formatDurationSec(dur)}` : `Round ${set.index}`;
+  }
+  if (set.kind === 'duration') {
+    const time = formatDurationSec(set.durationSec);
+    return set.side ? `${time} · ${set.side}` : time;
+  }
+  if (set.kind === 'distance') {
+    const dist = `${Math.round(set.distanceM ?? 0)}m`;
+    return set.side ? `${dist} · ${set.side}` : dist;
+  }
+  if (set.weight == null && set.reps == null) return '—';
+  const tags = [];
+  if (set.isWarmup) tags.push('warmup');
+  if (set.isDrop) tags.push('drop');
+  const weight = set.weight != null ? `${set.weight}${set.unit ?? ''}` : '—';
+  const reps = set.reps ?? '—';
+  let line = `${weight} × ${reps}`;
+  if (set.rpe != null) line += ` · RPE ${set.rpe}`;
+  if (tags.length) line += ` · ${tags.join(' · ')}`;
+  return line;
+}
+
 function SetEditor({ set, onChange, onDelete }) {
+  const [editing, setEditing] = useState(false);
+  const isWeight = set.kind == null;
+  const isTimeBased = set.kind === 'duration' || set.kind === 'rounds';
+  const isDistance = set.kind === 'distance';
+  const isRounds = set.kind === 'rounds';
+
+  if (!editing) {
+    return (
+      <Stack
+        direction="row"
+        gap={2}
+        style={{
+          alignItems: 'center',
+          padding: '10px 0',
+          borderTop: '1px solid var(--border-hairline)',
+        }}
+      >
+        <Text as="span" variant="mono-sm" tone="tertiary" style={{ width: 24, flexShrink: 0 }}>
+          {String(set.index).padStart(2, '0')}
+        </Text>
+        <button
+          type="button"
+          onClick={() => setEditing(true)}
+          data-testid="edit-set-toggle"
+          aria-label={`Edit set ${set.index}`}
+          style={{
+            all: 'unset',
+            cursor: 'pointer',
+            flex: 1,
+            minWidth: 0,
+            padding: '4px 0',
+          }}
+        >
+          <Text as="span" variant="mono-lg" tone="primary" style={{ display: 'block' }}>
+            {formatSetSummary(set)}
+          </Text>
+        </button>
+        <button
+          type="button"
+          onClick={onDelete}
+          data-testid="edit-set-delete"
+          aria-label="Delete set"
+          style={iconBtnStyle}
+        >
+          ✕
+        </button>
+      </Stack>
+    );
+  }
+
   return (
-    <Stack direction="row" gap={2} style={{ alignItems: 'center', padding: '8px 0', borderTop: '1px solid var(--border-hairline)' }}>
-      <Text as="span" variant="mono-sm" tone="tertiary" style={{ width: 24 }}>
-        {set.index}
+    <Stack
+      direction="row"
+      gap={2}
+      style={{
+        alignItems: 'center',
+        padding: '8px 0',
+        borderTop: '1px solid var(--border-hairline)',
+        flexWrap: 'wrap',
+        rowGap: 8,
+      }}
+    >
+      <Text as="span" variant="mono-sm" tone="tertiary" style={{ width: 24, flexShrink: 0 }}>
+        {String(set.index).padStart(2, '0')}
       </Text>
-      <input
-        type="number"
-        step="0.5"
-        value={set.weight ?? ''}
-        onChange={(e) => onChange({ ...set, weight: e.target.value === '' ? null : Number(e.target.value) })}
-        data-testid="edit-set-weight"
-        aria-label="Weight"
-        style={inputStyle}
-      />
-      <Text as="span" variant="mono-sm" tone="tertiary">{set.unit ?? ''}</Text>
-      <Text as="span" variant="mono-sm" tone="tertiary">×</Text>
-      <input
-        type="number"
-        value={set.reps ?? ''}
-        onChange={(e) => onChange({ ...set, reps: e.target.value === '' ? null : Number(e.target.value) })}
-        data-testid="edit-set-reps"
-        aria-label="Reps"
-        style={inputStyle}
-      />
-      <input
-        type="number"
-        step="0.5"
-        placeholder="RPE"
-        value={set.rpe ?? ''}
-        onChange={(e) => onChange({ ...set, rpe: e.target.value === '' ? null : Number(e.target.value) })}
-        data-testid="edit-set-rpe"
-        aria-label="RPE"
-        style={{ ...inputStyle, maxWidth: 56 }}
-      />
+
+      {isWeight && (
+        <>
+          <input
+            type="number"
+            step="0.5"
+            value={set.weight ?? ''}
+            onChange={(e) => onChange({ ...set, weight: e.target.value === '' ? null : Number(e.target.value) })}
+            data-testid="edit-set-weight"
+            aria-label="Weight"
+            style={inputStyle}
+          />
+          <Text as="span" variant="mono-sm" tone="tertiary">{set.unit ?? ''}</Text>
+          <Text as="span" variant="mono-sm" tone="tertiary">×</Text>
+          <input
+            type="number"
+            value={set.reps ?? ''}
+            onChange={(e) => onChange({ ...set, reps: e.target.value === '' ? null : Number(e.target.value) })}
+            data-testid="edit-set-reps"
+            aria-label="Reps"
+            style={inputStyle}
+          />
+          <Stack direction="row" align="center" gap={1}>
+            <Text as="span" variant="mono-sm" tone="tertiary">RPE</Text>
+            <input
+              type="number"
+              step="0.5"
+              value={set.rpe ?? ''}
+              onChange={(e) => onChange({ ...set, rpe: e.target.value === '' ? null : Number(e.target.value) })}
+              data-testid="edit-set-rpe"
+              aria-label="RPE"
+              style={{ ...inputStyle, maxWidth: 56 }}
+            />
+          </Stack>
+        </>
+      )}
+
+      {isTimeBased && (
+        <>
+          {isRounds && (
+            <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
+              Round {set.index}
+            </Text>
+          )}
+          <input
+            type="number"
+            value={set.durationSec ?? ''}
+            onChange={(e) => onChange({ ...set, durationSec: e.target.value === '' ? null : Number(e.target.value) })}
+            data-testid="edit-set-duration"
+            aria-label="Duration in seconds"
+            style={inputStyle}
+          />
+          <Text as="span" variant="mono-sm" tone="tertiary">sec</Text>
+          {set.side && (
+            <Text as="span" variant="mono-sm" tone="tertiary">· {set.side}</Text>
+          )}
+        </>
+      )}
+
+      {isDistance && (
+        <>
+          <input
+            type="number"
+            value={set.distanceM ?? ''}
+            onChange={(e) => onChange({ ...set, distanceM: e.target.value === '' ? null : Number(e.target.value) })}
+            data-testid="edit-set-distance"
+            aria-label="Distance in meters"
+            style={inputStyle}
+          />
+          <Text as="span" variant="mono-sm" tone="tertiary">m</Text>
+          {set.side && (
+            <Text as="span" variant="mono-sm" tone="tertiary">· {set.side}</Text>
+          )}
+        </>
+      )}
+
+      <button
+        type="button"
+        onClick={() => setEditing(false)}
+        data-testid="edit-set-done"
+        aria-label="Done editing set"
+        style={iconBtnStyle}
+      >
+        Done
+      </button>
       <button
         type="button"
         onClick={onDelete}
         data-testid="edit-set-delete"
         aria-label="Delete set"
-        style={{
-          all: 'unset', cursor: 'pointer',
-          padding: '4px 8px',
-          color: 'var(--text-tertiary)',
-          fontFamily: 'var(--font-mono)', fontSize: 11,
-          letterSpacing: '0.10em', textTransform: 'uppercase',
-        }}
+        style={iconBtnStyle}
       >
         ✕
       </button>
@@ -219,6 +381,17 @@ const inputStyle = {
   color: 'var(--text-primary)',
   fontFamily: 'var(--font-mono)',
   fontSize: 14,
+};
+
+const iconBtnStyle = {
+  all: 'unset',
+  cursor: 'pointer',
+  padding: '4px 8px',
+  color: 'var(--text-tertiary)',
+  fontFamily: 'var(--font-mono)',
+  fontSize: 11,
+  letterSpacing: '0.10em',
+  textTransform: 'uppercase',
 };
 
 // ─── Detail view ───────────────────────────────────────────────────────────
@@ -298,6 +471,7 @@ function SessionDetail({ session, isActive, onBack, onSave, onDelete }) {
 
         {draft.performances.map((p) => {
           const found = findExerciseAnywhere(p.exerciseId);
+          const summary = describePerformance(p.sets);
           return (
             <div key={p.id} style={{ marginTop: 24 }}>
               <Stack direction="column" gap={1}>
@@ -307,6 +481,11 @@ function SessionDetail({ session, isActive, onBack, onSave, onDelete }) {
                 <Text as="span" variant="title-md">
                   {found?.exercise?.name ?? p.exerciseId}
                 </Text>
+                {summary && (
+                  <Text as="span" variant="body-sm" tone="secondary">
+                    {summary}
+                  </Text>
+                )}
               </Stack>
               {p.sets.length === 0 ? (
                 <Text as="p" variant="body-sm" tone="tertiary" style={{ marginTop: 8 }}>
