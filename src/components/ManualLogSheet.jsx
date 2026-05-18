@@ -68,7 +68,10 @@ function fromDateTimeLocal(str) {
 function ExercisePickStep({ onPick }) {
   const [query, setQuery] = useState('');
   const { settings } = useSettings();
-  const excludedEquipment = settings?.excludedEquipment ?? [];
+  const excludedEquipment = useMemo(
+    () => settings?.excludedEquipment ?? [],
+    [settings?.excludedEquipment],
+  );
   const catalog = useMemo(() => rawCatalogList(), []);
   const { visible, totalMatching } = useMemo(() => {
     const q = query.trim().toLowerCase();

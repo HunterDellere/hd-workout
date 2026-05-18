@@ -181,14 +181,6 @@ function suggestionLine(suggestion, unit) {
   }
 }
 
-function sameLocalDay(aIso, bIso) {
-  const a = new Date(aIso);
-  const b = new Date(bIso);
-  return a.getFullYear() === b.getFullYear()
-    && a.getMonth() === b.getMonth()
-    && a.getDate() === b.getDate();
-}
-
 function describeManualSets(sets) {
   if (!sets || sets.length === 0) return '';
   const first = sets[0];
