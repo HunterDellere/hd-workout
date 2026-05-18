@@ -139,8 +139,14 @@ export const fullSpectrum = {
         { id: 'rec-bird-dog',         sets: '3 × 8 (5s holds) each side', rest: '0:30' },
       ],
       'healthspan': [
-        { id: 'rec-vo2-intervals', sets: '4 × 4 min (3 min recovery)', rest: '3:00' },
-        { id: 'rec-dead-hang',     sets: '3 × max effort',             rest: '2:00' },
+        { id: 'rec-vo2-intervals',   sets: '4 × 4 min (3 min recovery)', rest: '3:00' },
+        { id: 'rec-dead-hang',       sets: '3 × max effort',             rest: '2:00' },
+        // Forearm prehab. Rice bucket is the omnidirectional rebuild;
+        // finger extension is the neglected extensor side that all the
+        // crushing grip work (farmers, hangs, heavy pulls) underdoses.
+        // Daily-frequency tools — once a week here is the floor, not a cap.
+        { id: 'rec-rice-bucket',     sets: '2 × 60–90 sec each hand',    rest: '0:30' },
+        { id: 'rec-finger-extension', sets: '2 × 15–20 each hand',       rest: '0:30' },
       ],
       'stretching': [
         { id: 'rec-pigeon-stretch',  sets: '2 × 1 min each side', rest: '0:30' },

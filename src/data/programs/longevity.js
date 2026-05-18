@@ -157,6 +157,13 @@ export const longevity = {
         { id: 'rec-vo2-intervals',   sets: '4 × 4 min (3 min recovery)', rest: '3:00' },
         { id: 'rec-zone-2-walk',     sets: '1 × 30–60 min',              rest: '—' },
         { id: 'rec-dead-hang',       sets: '3 × max effort',             rest: '2:00' },
+        // Grip and finger health is a healthspan staple — grip strength
+        // is one of the strongest mortality predictors across cohorts.
+        // Rice bucket rebuilds the whole forearm omnidirectionally;
+        // finger extension catches the extensor imbalance that drives
+        // late-life tendinopathy.
+        { id: 'rec-rice-bucket',      sets: '2 × 60–90 sec each hand',    rest: '0:30' },
+        { id: 'rec-finger-extension', sets: '2 × 15–20 each hand',        rest: '0:30' },
       ],
       'stretching': [
         { id: 'rec-pigeon-stretch',  sets: '2 × 1 min each side',        rest: '0:30' },

@@ -138,8 +138,12 @@ export const homeDefault = {
         { id: 'rec-bird-dog',         sets: '3 × 8 (5s holds) each side', rest: '0:30' },
       ],
       'healthspan': [
-        { id: 'rec-zone-2-walk', sets: '1 × 30–60 min', rest: '—' },
-        { id: 'rec-dead-hang',   sets: '3 × max effort', rest: '2:00' },
+        { id: 'rec-zone-2-walk',      sets: '1 × 30–60 min',           rest: '—' },
+        { id: 'rec-dead-hang',        sets: '3 × max effort',          rest: '2:00' },
+        // Home build already has farmer carries + towel hang + dead
+        // hang — finger extension is the cheap prehab that balances
+        // all that crushing work. A rubber band is the only kit.
+        { id: 'rec-finger-extension', sets: '2 × 15–20 each hand',     rest: '0:30' },
       ],
       'stretching': [
         { id: 'rec-pigeon-stretch',  sets: '2 × 1 min each side',  rest: '0:30' },
