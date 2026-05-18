@@ -42,6 +42,10 @@ test('an active session with logged sets surfaces in history with the in-progres
 
   // Open the detail — the logged set is visible.
   await rows.first().click();
+  // Each set renders as a clean read-mode summary; tap to expand into edit
+  // inputs so the form fields don't drown out the actual logged values.
+  await expect(page.getByTestId('edit-set-toggle').first()).toBeVisible();
+  await page.getByTestId('edit-set-toggle').first().click();
   await expect(page.getByTestId('edit-set-weight').first()).toHaveValue('100');
   await expect(page.getByTestId('edit-set-reps').first()).toHaveValue('5');
 
