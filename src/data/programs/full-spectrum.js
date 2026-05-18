@@ -130,7 +130,13 @@ export const fullSpectrum = {
         { id: 'rec-1arm-row', sets: '3 × 8–10 each arm', rest: '1:30' },
       ],
       'spine-health': [
-        { id: 'rec-bird-dog', sets: '3 × 8 (5s holds) each side', rest: '0:30' },
+        // McGill Big 3 — the canonical spine-safe core protocol, in
+        // McGill's published order: anterior brace → lateral brace →
+        // anti-rotation/extensor. Always together; the value is the
+        // pattern, not any one piece.
+        { id: 'rec-mcgill-curlup',    sets: '3 × 10/8/6/4/2s descending holds', rest: '0:30' },
+        { id: 'rec-mcgill-sideplank', sets: '3 × 10/8/6/4/2s descending each side', rest: '0:30' },
+        { id: 'rec-bird-dog',         sets: '3 × 8 (5s holds) each side', rest: '0:30' },
       ],
       'healthspan': [
         { id: 'rec-vo2-intervals', sets: '4 × 4 min (3 min recovery)', rest: '3:00' },
