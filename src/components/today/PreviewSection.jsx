@@ -76,17 +76,16 @@ export function PreviewSection({
             data-exercise-id={ex.id}
             className="preview-row"
             style={{
-              display: 'grid',
-              // Tier · name · sets · actions · trailing space. The
-              // trailing 1fr keeps content clustered left so on wide
-              // viewports the actions don't float at the card's edge;
-              // the name column gets minmax(0, …) so long names shrink
-              // before pushing siblings off the row on narrow screens.
-              gridTemplateColumns: 'auto minmax(0, max-content) auto auto 1fr',
-              columnGap: 12,
+              // Two-column flex: name+details stack vertically on the
+              // left (so long prescription strings like "3 × 10/8/6/4/2s
+              // descending holds" never collide with the name), actions
+              // float right. The tier mark hangs in a fixed-width gutter
+              // so the name column starts at the same x across rows.
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: 12,
               padding: '10px 0',
               borderTop: i === 0 ? 'none' : '1px solid var(--border-hairline)',
-              alignItems: 'baseline',
             }}
           >
             {ex.tier ? (
@@ -94,7 +93,9 @@ export function PreviewSection({
                 as="span"
                 variant="mono-sm"
                 style={{
+                  flexShrink: 0,
                   width: 12,
+                  paddingTop: 4,
                   color: ex.tier === 'S'
                     ? `var(--accent-${accent}-ink)`
                     : 'var(--text-tertiary)',
@@ -105,35 +106,38 @@ export function PreviewSection({
               >
                 {ex.tier}
               </Text>
-            ) : <span style={{ width: 12 }} />}
-            <Text
-              as={Link}
-              to={`/library/exercises/${ex.id}`}
-              state={{ from: pathname }}
-              variant="body-md"
-              data-testid="preview-name-link"
-              data-exercise-id={ex.id}
-              style={{
-                minWidth: 0,
-                lineHeight: 1.3,
-                color: 'inherit',
-                textDecoration: 'none',
-                display: 'inline-flex',
-                alignItems: 'baseline',
-                gap: 6,
-              }}
-            >
-              {ex.name}
-              {addedIds.has(ex.id) && (
-                <Text as="span" variant="mono-sm" tone="tertiary" style={{ marginLeft: 4, textTransform: 'uppercase' }}>
-                  · added
-                </Text>
-              )}
-            </Text>
-            <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
-              {ex.sets}
-            </Text>
-            <Stack direction="row" gap={0}>
+            ) : <span style={{ flexShrink: 0, width: 12 }} />}
+            <Stack direction="column" gap={1} style={{ flex: 1, minWidth: 0 }}>
+              <Text
+                as={Link}
+                to={`/library/exercises/${ex.id}`}
+                state={{ from: pathname }}
+                variant="body-md"
+                data-testid="preview-name-link"
+                data-exercise-id={ex.id}
+                style={{
+                  lineHeight: 1.3,
+                  color: 'inherit',
+                  textDecoration: 'none',
+                }}
+              >
+                {ex.name}
+                {addedIds.has(ex.id) && (
+                  <Text as="span" variant="mono-sm" tone="tertiary" style={{ marginLeft: 6, textTransform: 'uppercase' }}>
+                    · added
+                  </Text>
+                )}
+              </Text>
+              <Text
+                as="span"
+                variant="mono-sm"
+                tone="tertiary"
+                style={{ textTransform: 'uppercase' }}
+              >
+                {ex.sets}
+              </Text>
+            </Stack>
+            <Stack direction="row" gap={0} style={{ flexShrink: 0, paddingTop: 2 }}>
               <MonoChipButton
                 variant="ghost"
                 data-testid="preview-swap"
