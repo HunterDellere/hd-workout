@@ -39,6 +39,7 @@ import { AddGroupSheet } from '../components/AddGroupSheet';
 import { ReorderSectionsSheet } from '../components/ReorderSectionsSheet';
 import { PerformanceCard } from '../components/today/PerformanceCard';
 import { CollapsedPerformanceRow } from '../components/today/CollapsedPerformanceRow';
+import { WarmupCard } from '../components/today/WarmupCard';
 import { RestDay } from '../components/today/RestDay';
 import { SessionSummary } from '../components/today/SessionSummary';
 import { DayPlanner } from '../components/today/DayPlanner';
@@ -69,6 +70,7 @@ export function Today() {
 
   const {
     days: overlayDays,
+    activeProgram,
   } = useOverlay();
 
   const todayKey = activeSession?.dayKey ?? dayKeyForToday(settings.split);
@@ -306,6 +308,24 @@ export function Today() {
               </Stack>
             </div>
           )}
+
+          {(() => {
+            // Warmup card sits above the first training section. Data is
+            // read straight off the active program (not the hydrated
+            // day) because `warmup` is a synthetic program-only block
+            // that the catalog hydrator intentionally drops.
+            const warmup = activeProgram?.days?.[todayKey]?.warmup;
+            const hasLoggedAny = (activeSession?.performances ?? [])
+              .some((p) => (p.sets ?? []).some((s) => !s.isWarmup));
+            return (
+              <WarmupCard
+                warmup={warmup}
+                sessionId={activeSession?.id}
+                accent={accent}
+                hasLoggedAny={hasLoggedAny}
+              />
+            );
+          })()}
 
           {performancesBySection.map(({ key: sectionKey, performances }) => {
             const meta = sectionMeta(sectionKey);

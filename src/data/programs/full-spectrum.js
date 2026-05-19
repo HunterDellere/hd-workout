@@ -23,6 +23,15 @@ export const fullSpectrum = {
   defaultSplit: { 0: 'recovery', 1: 'push', 2: 'pull', 3: 'rest', 4: 'legs', 5: 'core', 6: 'rest' },
   days: {
     push: {
+      // General warmup — 3 movements, ~3 minutes. Renders as the
+      // WarmupCard at the top of /today; not a tracked section, no set
+      // logging. Specific (per-lift) ramping sets are handled by the
+      // WarmupLadderBlock on each foundational/compound performance.
+      warmup: [
+        { id: 'rec-band-pull-apart',   sets: '2 × 15',           rest: '0:20' },
+        { id: 'push-light-db-y-raise', sets: '2 × 8 each',       rest: '0:20' },
+        { id: 'rec-thoracic-rotation', sets: '6 each side',      rest: '0:20' },
+      ],
       // Trimmed default — one anchor compound + one accessory per section.
       // Swap/add affordances let you bring in variants. Goal: every section
       // is a focused menu, not a sprawl.
@@ -50,6 +59,11 @@ export const fullSpectrum = {
       ],
     },
     pull: {
+      warmup: [
+        { id: 'rec-thoracic-rotation', sets: '6 each side',      rest: '0:20' },
+        { id: 'rec-band-pull-apart',   sets: '2 × 15',           rest: '0:20' },
+        { id: 'rec-bird-dog',          sets: '2 × 6 each side',  rest: '0:20' },
+      ],
       'lats-vertical': [
         { id: 'pull-pullup',       sets: '4 × 5–10',  rest: '2:00–2:30' },
         { id: 'pull-lat-pulldown', sets: '4 × 8–12',  rest: '1:30–2:00' },
@@ -66,7 +80,12 @@ export const fullSpectrum = {
         { id: 'pull-hammer-curl',   sets: '3 × 10–12', rest: '1:30' },
       ],
       'rear-delt': [
-        { id: 'pull-rev-pec-deck', sets: '3 × 12–15', rest: '1:00' },
+        // Two-movement rear-delt block: machine for stable peak contraction,
+        // cable for the long-arc horizontal abduction. Posterior shoulder is
+        // chronically underdosed by pressing-heavy programs — two light
+        // movements is the floor for shoulder health.
+        { id: 'pull-rev-pec-deck',   sets: '3 × 12–15', rest: '1:00' },
+        { id: 'pull-cable-rear-delt', sets: '3 × 12–15', rest: '1:00' },
       ],
       'grip-forearms': [
         { id: 'pull-farmers-carry', sets: '3 × 40–60m', rest: '2:00' },
@@ -74,12 +93,21 @@ export const fullSpectrum = {
       ],
     },
     legs: {
+      warmup: [
+        { id: 'rec-hip-cars',          sets: '5 each direction each side', rest: '0:20' },
+        { id: 'rec-ankle-cars',        sets: '5 circles each direction each side', rest: '0:20' },
+        { id: 'core-dead-bug',         sets: '2 × 6 each side',  rest: '0:20' },
+      ],
       'quads-compound': [
         { id: 'legs-back-squat',   sets: '4 × 5–8',         rest: '3:00' },
         { id: 'legs-bgss',         sets: '3 × 8–10 each',   rest: '2:00' },
       ],
       'quads-iso': [
         { id: 'legs-leg-extension', sets: '3 × 12–15', rest: '1:30' },
+        // Unilateral lunge pattern — closes the symmetry-detection gap that
+        // bilateral squats and BGSS miss. Reverse lunge is the lowest-risk
+        // entry point (no forward shin slam, easier knee tracking).
+        { id: 'legs-reverse-lunge', sets: '3 × 8–10 each side', rest: '1:30' },
       ],
       'hamstrings': [
         { id: 'legs-rdl',          sets: '4 × 8–10',  rest: '2:30' },
@@ -102,6 +130,10 @@ export const fullSpectrum = {
       ],
     },
     core: {
+      warmup: [
+        { id: 'rec-bird-dog',          sets: '2 × 6 each side',  rest: '0:20' },
+        { id: 'rec-thoracic-rotation', sets: '6 each side',      rest: '0:20' },
+      ],
       'anti-rotation': [
         { id: 'core-pallof',   sets: '3 × 10–12 each side', rest: '1:00' },
         { id: 'core-dead-bug', sets: '3 × 8–10 each side',  rest: '0:45' },
@@ -115,7 +147,13 @@ export const fullSpectrum = {
         { id: 'core-suitcase-hold', sets: '3 × 30–45 sec each', rest: '1:00' },
       ],
       'rotation-power': [
-        { id: 'core-med-ball-throw', sets: '4 × 5 each side', rest: '1:30' },
+        // Two-movement rotation block: med-ball throw for ballistic
+        // power, cable chop for controlled rotation under load. Power
+        // alone (med ball) builds the spike but not the strength curve;
+        // the chop fills the slow-rotation gap that pure anti-rotation
+        // work never touches.
+        { id: 'core-med-ball-throw', sets: '4 × 5 each side',   rest: '1:30' },
+        { id: 'core-cable-chop',     sets: '3 × 10–12 each side', rest: '1:00' },
       ],
     },
     recovery: {
@@ -144,6 +182,18 @@ export const fullSpectrum = {
       ],
       'healthspan': [
         { id: 'rec-vo2-intervals',   sets: '4 × 4 min (3 min recovery)', rest: '3:00' },
+        // Zone 2 + VO2 is the canonical two-tier cardio prescription —
+        // VO2 builds the ceiling, Zone 2 builds the base. Both belong on
+        // the recovery day; the user can split them across the two rest
+        // days if recovery capacity allows.
+        { id: 'rec-zone-2-walk',     sets: '1 × 30–45 min',              rest: '—' },
+        // Joint CARs — full-ROM articular rotations the joints don't get
+        // anywhere else in a strength build. Hip CARs catch hip-capsule
+        // ROM the squat doesn't train; ankle CARs catch the silent
+        // dorsiflexion limitation that drives knee valgus and lumbar
+        // flexion in the squat. Both are 2-3 minute additions.
+        { id: 'rec-hip-cars',        sets: '2 × 5 each direction each side', rest: '0:30' },
+        { id: 'rec-ankle-cars',      sets: '2 × 5 circles each direction each side', rest: '0:30' },
         { id: 'rec-dead-hang',       sets: '3 × max effort',             rest: '2:00' },
         // Forearm prehab. Rice bucket is the omnidirectional rebuild;
         // finger extension is the neglected extensor side that all the

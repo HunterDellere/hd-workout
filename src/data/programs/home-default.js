@@ -24,6 +24,10 @@ export const homeDefault = {
   defaultSplit: { 0: 'recovery', 1: 'push', 2: 'pull', 3: 'rest', 4: 'legs', 5: 'core', 6: 'rest' },
   days: {
     push: {
+      warmup: [
+        { id: 'rec-band-pull-apart',   sets: '2 × 15',           rest: '0:20' },
+        { id: 'rec-thoracic-rotation', sets: '6 each side',      rest: '0:20' },
+      ],
       'chest-horizontal': [
         { id: 'push-pushup',          sets: '4 × 8–15',    rest: '1:30' },
         // Home adds a KB floor press as the heavier horizontal anchor;
@@ -40,18 +44,32 @@ export const homeDefault = {
         { id: 'push-pike-pushup',     sets: '3 × 6–12',    rest: '1:30' },
       ],
       'shoulders-rotator': [
-        // rec-band-pull-apart lives in recovery.js but is fully home-friendly
-        { id: 'rec-band-pull-apart',  sets: '3 × 15–20',   rest: '1:00' },
+        // Band pull-apart hits posterior shoulder + scapular retractors;
+        // band external rotation trains true ER under light load. The
+        // rotator-cuff "every push session" rule applies just as hard at
+        // home — pressing without cuff prehab is the fastest path to
+        // a shoulder that won't press at all.
+        { id: 'rec-band-pull-apart',     sets: '3 × 15–20',          rest: '1:00' },
+        { id: 'push-band-ext-rotation',  sets: '2 × 12–15 each side', rest: '0:45' },
       ],
       'shoulders-lateral': [
         { id: 'push-band-lateral',    sets: '3 × 12–20',   rest: '1:00' },
       ],
       'triceps': [
-        { id: 'push-band-pushdown',   sets: '3 × 12–15',   rest: '1:00' },
-        { id: 'push-diamond-pushup',  sets: '3 × 6–12',    rest: '1:30' },
+        { id: 'push-band-pushdown',     sets: '3 × 12–15',   rest: '1:00' },
+        // Long-head overhead-stretch work — the gap in the previous home
+        // build (band pushdown + diamond push-up both hit lateral/medial
+        // head; the long head only fires fully under overhead stretch).
+        { id: 'push-band-overhead-tri', sets: '3 × 10–12',   rest: '1:00' },
+        { id: 'push-diamond-pushup',    sets: '3 × 6–12',    rest: '1:30' },
       ],
     },
     pull: {
+      warmup: [
+        { id: 'rec-thoracic-rotation', sets: '6 each side',      rest: '0:20' },
+        { id: 'rec-band-pull-apart',   sets: '2 × 15',           rest: '0:20' },
+        { id: 'rec-bird-dog',          sets: '2 × 6 each side',  rest: '0:20' },
+      ],
       'lats-vertical': [
         { id: 'pull-pullup',          sets: '4 × 5–10',           rest: '2:00' },
         // Band-resisted lat pulldown for the days when the pull-up
@@ -79,6 +97,11 @@ export const homeDefault = {
       ],
     },
     legs: {
+      warmup: [
+        { id: 'rec-hip-cars',          sets: '5 each direction each side', rest: '0:20' },
+        { id: 'rec-ankle-cars',        sets: '5 circles each direction each side', rest: '0:20' },
+        { id: 'core-dead-bug',         sets: '2 × 6 each side',  rest: '0:20' },
+      ],
       'quads-compound': [
         { id: 'legs-goblet-squat',         sets: '4 × 8–15',           rest: '2:00' },
         // Heavier double-bell variant for when the goblet caps out;
@@ -96,14 +119,29 @@ export const homeDefault = {
         { id: 'legs-sl-rdl',          sets: '3 × 8 each side', rest: '1:30' },
       ],
       'glutes': [
-        { id: 'legs-glute-bridge',    sets: '3 × 12–20',   rest: '1:00' },
+        // Home glute work is bench-limited (no barbell, no thrust pad).
+        // Bumped to 4 sets with a 2-second peak hold — without external
+        // load we lean on time-under-tension to drive the stimulus.
+        // KB swing (in hamstrings above) is the heavy glute hinge driver
+        // for the home build.
+        { id: 'legs-glute-bridge',  sets: '4 × 12–20 (2s top hold)', rest: '1:00' },
       ],
       'calves': [
         { id: 'legs-standing-calf',   sets: '4 × 12–20 (single-leg)', rest: '1:00' },
         { id: 'legs-tib-raise',       sets: '3 × 15–20',   rest: '1:00' },
       ],
+      // Loaded carries close the legs session. Suitcase + farmer covers
+      // unilateral anti-lateral and bilateral grip/posture. Same structural
+      // role as in the gym build.
+      'carries': [
+        { id: 'legs-suitcase-carry',  sets: '3 × 30–40m each', rest: '1:30' },
+      ],
     },
     core: {
+      warmup: [
+        { id: 'rec-bird-dog',          sets: '2 × 6 each side',  rest: '0:20' },
+        { id: 'rec-thoracic-rotation', sets: '6 each side',      rest: '0:20' },
+      ],
       'anti-rotation': [
         { id: 'core-pallof',          sets: '3 × 10–12 each side (band)', rest: '1:00' },
         { id: 'core-dead-bug',        sets: '3 × 8–10 each side', rest: '0:45' },
@@ -116,6 +154,13 @@ export const homeDefault = {
       'anti-lateral': [
         { id: 'core-side-plank',      sets: '3 × 20–45 sec each', rest: '1:00' },
         { id: 'legs-suitcase-carry',  sets: '3 × 30s each side',  rest: '1:00' },
+      ],
+      // Rotation-power is the pattern home builds most often miss — no
+      // med ball, no cable column. KB russian twist (sitting upright, KB
+      // passed side-to-side at chest height, controlled) hits the trunk
+      // rotators with available kit.
+      'rotation-power': [
+        { id: 'core-russian-twist',   sets: '3 × 10–15 each side', rest: '1:00' },
       ],
     },
     recovery: {
@@ -140,6 +185,10 @@ export const homeDefault = {
       ],
       'healthspan': [
         { id: 'rec-zone-2-walk',      sets: '1 × 30–60 min',           rest: '—' },
+        // Joint CARs — zero-equipment, hits the ROM the home strength
+        // build doesn't otherwise touch.
+        { id: 'rec-hip-cars',         sets: '2 × 5 each direction each side', rest: '0:30' },
+        { id: 'rec-ankle-cars',       sets: '2 × 5 circles each direction each side', rest: '0:30' },
         { id: 'rec-dead-hang',        sets: '3 × max effort',          rest: '2:00' },
         // Home build already has farmer carries + towel hang + dead
         // hang — finger extension is the cheap prehab that balances

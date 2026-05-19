@@ -48,6 +48,35 @@ export function validateProgram(program, catalogByDay) {
       continue;
     }
     for (const [sectionKey, entries] of Object.entries(sections ?? {})) {
+      // 'warmup' is a synthetic program-level block — a curated set of
+      // movement-prep drills that renders as the WarmupCard above the
+      // first training section. Not a catalog section, never logged,
+      // intentionally outside the section-based session model. We still
+      // validate that the exercise ids resolve to the global catalog
+      // (handled below), but skip the per-day section check.
+      if (sectionKey === 'warmup') {
+        for (const entry of entries ?? []) {
+          if (!entry || !entry.id) {
+            issues.push({
+              kind: 'malformed-entry',
+              dayKey,
+              sectionKey,
+              message: `Program entry under "${dayKey}.${sectionKey}" is missing an id.`,
+            });
+            continue;
+          }
+          if (!allCatalogIds.has(entry.id)) {
+            issues.push({
+              kind: 'missing-exercise',
+              dayKey,
+              sectionKey,
+              exerciseId: entry.id,
+              message: `Program references exercise "${entry.id}" in "${dayKey}.${sectionKey}" but no catalog entry has that id.`,
+            });
+          }
+        }
+        continue;
+      }
       if (!catalogDay.has(sectionKey)) {
         issues.push({
           kind: 'missing-section',

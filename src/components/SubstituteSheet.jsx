@@ -12,75 +12,11 @@
 
 import { useState } from 'react';
 import { Sheet, Stack, Text, BrushDivider } from '../design-system/components';
-import { exercisesForPattern, patternToExercises } from '../data/derive';
-import { findExerciseAnywhere, rawCatalogList } from '../data';
+import { findExerciseAnywhere } from '../data';
 import { isExerciseExcludedByEquipment } from '../data/equipment';
+import { buildSwapCandidates } from '../data/swap-candidates';
 import { useSettings } from '../state/settings-context.js';
 import { ExerciseSheet } from './ExerciseSheet';
-
-function patternForExercise(exerciseId) {
-  const map = patternToExercises();
-  for (const [key, list] of Object.entries(map)) {
-    if (list.some((e) => e.id === exerciseId)) return key;
-  }
-  return null;
-}
-
-// Build the full swap candidate pool. Strategy, in priority order:
-//   1. Same-pattern alternates (existing behaviour) — when the current
-//      exercise belongs to a movement pattern, surface every catalog
-//      exercise tagged with that pattern.
-//   2. Same-section catalog peers — covers isolation sections
-//      (triceps, biceps, rear-delt, calves, adductors, etc.) that
-//      don't have a primary movement pattern.
-//   3. Shared-tag relatives — bridges curated subgroups
-//      (e.g. 'long-head', 'lateral-head' for triceps) so the user
-//      sees movements that train the same head/region first.
-// Output preserves order: pattern → section → tag, de-duplicated by id.
-function buildSwapCandidates(currentExerciseId) {
-  const current = currentExerciseId ? findExerciseAnywhere(currentExerciseId) : null;
-  if (!current) return { candidates: [], current: null, patternKey: null };
-
-  const sectionKey = current.section?.key ?? null;
-  const patternKey = patternForExercise(currentExerciseId);
-  const currentTags = new Set(current.exercise.tags ?? []);
-
-  const out = [];
-  const seen = new Set([currentExerciseId]);
-
-  // 1. Same pattern.
-  if (patternKey) {
-    for (const ex of exercisesForPattern(patternKey)) {
-      if (seen.has(ex.id)) continue;
-      seen.add(ex.id);
-      out.push(ex);
-    }
-  }
-
-  // 2 & 3. Walk the raw catalog for same-section peers and shared-tag
-  // relatives. We rank section peers ahead of cross-section tag matches.
-  const catalog = rawCatalogList();
-  const sectionPeers = [];
-  const tagPeers = [];
-  for (const ex of catalog) {
-    if (seen.has(ex.id)) continue;
-    const sameSection = sectionKey && ex._section?.key === sectionKey;
-    const sharedTag = (ex.tags ?? []).some((t) => currentTags.has(t));
-    if (sameSection) {
-      sectionPeers.push(ex);
-      seen.add(ex.id);
-    } else if (sharedTag) {
-      tagPeers.push(ex);
-      seen.add(ex.id);
-    }
-  }
-
-  return {
-    candidates: [...out, ...sectionPeers, ...tagPeers],
-    current,
-    patternKey,
-  };
-}
 
 function SwapRow({ exercise, onPick, onDetails, isFirst }) {
   return (

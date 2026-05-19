@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { warmupLadder, formatLadder } from './warmup';
+import { warmupLadder, formatLadder, shouldShowWarmupRamp } from './warmup';
+import { findExerciseById } from './index';
 
 describe('warmupLadder', () => {
   it('builds a 3-rung ladder at 40/60/80%', () => {
@@ -50,6 +51,50 @@ describe('warmupLadder', () => {
     // At threshold, 40% × 40kg = 16, rounds to 15 → never 0
     const ladder = warmupLadder(40, { unit: 'kg' });
     expect(ladder.every((r) => r.weight > 0)).toBe(true);
+  });
+});
+
+describe('shouldShowWarmupRamp', () => {
+  it('returns true for foundational lifts', () => {
+    expect(shouldShowWarmupRamp({ tags: ['compound', 'foundational'] })).toBe(true);
+    expect(shouldShowWarmupRamp({ tags: ['foundational'] })).toBe(true);
+  });
+
+  it('returns true for compound lifts that are not bodyweight', () => {
+    // RDL, hip thrust, OHP, BB row — none are foundational but all
+    // are loaded compounds that benefit from a ramp.
+    expect(shouldShowWarmupRamp({ tags: ['compound', 'hinge'] })).toBe(true);
+    expect(shouldShowWarmupRamp({ tags: ['compound', 'vertical-press'] })).toBe(true);
+  });
+
+  it('returns false for compound bodyweight lifts (pull-up, inverted row)', () => {
+    // Bodyweight ramps don't make sense — the ladder is load-based.
+    expect(shouldShowWarmupRamp({ tags: ['compound', 'bodyweight'] })).toBe(false);
+  });
+
+  it('returns false for isolation work and for empty/missing tags', () => {
+    expect(shouldShowWarmupRamp({ tags: ['isolation'] })).toBe(false);
+    expect(shouldShowWarmupRamp({ tags: [] })).toBe(false);
+    expect(shouldShowWarmupRamp({})).toBe(false);
+    expect(shouldShowWarmupRamp(null)).toBe(false);
+  });
+
+  // Concrete catalog regressions — the lifts the broadened gate was added
+  // to catch. If any of these stop showing a ramp the user expects, this
+  // test is the canary.
+  it.each([
+    ['legs-rdl',           true],
+    ['legs-hip-thrust',    true],
+    ['push-seated-db-ohp', true],
+    ['push-bb-bench',      true],   // foundational — still works
+    ['legs-back-squat',    true],   // foundational — still works
+    ['pull-pullup',        false],  // compound + bodyweight — opts out
+    ['pull-cable-row',     true],   // compound, loaded
+    ['push-cable-lateral', false],  // isolation
+  ])('catalog gate: %s → %s', (id, expected) => {
+    const found = findExerciseById(id);
+    expect(found, `catalog must define ${id}`).toBeTruthy();
+    expect(shouldShowWarmupRamp(found)).toBe(expected);
   });
 });
 

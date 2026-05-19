@@ -44,4 +44,40 @@ describe('validateProgram', () => {
     expect(issues).toHaveLength(1);
     expect(issues[0].kind).toBe('malformed-entry');
   });
+
+  describe('warmup synthetic section', () => {
+    // `warmup` is a program-level block (movement-prep drills) that doesn't
+    // exist in any catalog day. The validator must accept it as a special
+    // key — still checking exercise ids — while skipping the per-day
+    // section-key check that would otherwise flag it as missing-section.
+    it('accepts a warmup section even though no catalog day defines it', () => {
+      const program = {
+        key: 'p',
+        days: { push: { warmup: [{ id: 'bench' }], chest: [{ id: 'fly' }] } },
+      };
+      expect(validateProgram(program, catalog)).toEqual([]);
+    });
+
+    it('still flags unknown exercise ids inside a warmup section', () => {
+      const program = {
+        key: 'p',
+        days: { push: { warmup: [{ id: 'no-such-id' }] } },
+      };
+      const issues = validateProgram(program, catalog);
+      expect(issues).toHaveLength(1);
+      expect(issues[0].kind).toBe('missing-exercise');
+      expect(issues[0].sectionKey).toBe('warmup');
+    });
+
+    it('still flags malformed entries inside a warmup section', () => {
+      const program = {
+        key: 'p',
+        days: { push: { warmup: [{ sets: '2 × 10' }] } },
+      };
+      const issues = validateProgram(program, catalog);
+      expect(issues).toHaveLength(1);
+      expect(issues[0].kind).toBe('malformed-entry');
+      expect(issues[0].sectionKey).toBe('warmup');
+    });
+  });
 });

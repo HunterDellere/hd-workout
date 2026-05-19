@@ -7,7 +7,7 @@ import { useMemo, useState } from 'react';
 import { Stack, Text, MonoChipButton, MASTHEAD_HEIGHT_PX } from '../../design-system/components';
 import { findExerciseById } from '../../data';
 import { parsePrescription } from '../../data/prescription';
-import { warmupLadder } from '../../data/warmup';
+import { warmupLadder, shouldShowWarmupRamp } from '../../data/warmup';
 import { SetRow } from '../SetRow';
 import { DurationSetRow } from '../DurationSetRow';
 import { DistanceSetRow } from '../DistanceSetRow';
@@ -39,14 +39,6 @@ const adjustBtnStyle = {
   cursor: 'pointer',
 };
 
-// Warmup is only auto-suggested for the canonical heavy compounds
-// (tagged 'foundational' in the catalog). Bench, squat, deadlift,
-// front squat, OHP, etc. For everything else the lifter is unlikely
-// to need a structured ramp — we'd just be adding noise.
-function isFoundational(exercise) {
-  return Array.isArray(exercise?.tags) && exercise.tags.includes('foundational');
-}
-
 // Derive the working weight to ramp toward. Priority:
 //   1. The suggestion (today's intelligent target, if computed)
 //   2. The last top set from history
@@ -61,7 +53,7 @@ function WarmupLadderBlock({ exercise, suggestion, lastTop, unit, accent, hasLog
   // Auto-suppress once the user is into working sets — the warmup is
   // over by then and we shouldn't keep advertising it.
   if (hasLogged) return null;
-  if (!isFoundational(exercise)) return null;
+  if (!shouldShowWarmupRamp(exercise)) return null;
   const workingWeight = workingWeightFor(suggestion, lastTop);
   if (workingWeight == null) return null;
   const ladder = warmupLadder(workingWeight, { unit });

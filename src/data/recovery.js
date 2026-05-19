@@ -608,6 +608,33 @@ const recovery = {
           tags: ['healthspan', 'mobility', 'warm-up'],
         },
         {
+          id: 'rec-ankle-cars',
+          name: 'Ankle CARs + Dorsiflexion Mobility',
+          tier: 'A',
+          intent: 'warmup',
+          categories: ['healthspan', 'mobility'],
+          equipment: ['Mat or open floor', 'Optional: wall'],
+          primaryMuscles: ['Ankle capsule', 'Tibialis anterior'],
+          secondaryMuscles: ['Calf complex', 'Foot intrinsics'],
+          cues: [
+            'Seated, one leg crossed over the other — work the top ankle first',
+            'Slow controlled circles through full ROM: dorsiflex → invert → plantarflex → evert',
+            '5 circles each direction; the goal is the largest circle you can make',
+            'Wall variant: half-kneeling, drive the front knee past the toe to load dorsiflexion',
+            'Hold the deepest stretch 2–3 sec; never bounce',
+          ],
+          safetyNotes: [
+            'Ankle ROM is the silent gatekeeper — limited dorsiflexion forces compensations up the chain (knee valgus, lumbar flexion in the squat).',
+            'Slow is the point. If you can rush it, you\'re not at end-range.',
+          ],
+          variants: [
+            { name: 'Banded ankle distraction', note: 'Loop a band around the front ankle, anchored low; lunge forward to traction the joint.' },
+            { name: 'Knee-to-wall test', note: 'Diagnostic: front toe 4–5 in from wall; can the knee touch without the heel lifting?' },
+            { name: 'Calf-stretch on slant board', note: 'Static loading of dorsiflexion ROM.' },
+          ],
+          tags: ['healthspan', 'mobility', 'warm-up'],
+        },
+        {
           id: 'rec-thoracic-rotation',
           name: 'Open-Book Thoracic Rotation',
           tier: 'A',

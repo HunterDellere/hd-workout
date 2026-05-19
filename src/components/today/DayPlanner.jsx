@@ -29,6 +29,7 @@ import { MonoChipButton } from '../../design-system/components';
 import { TodayHero } from './TodayHero';
 import { PreviewSection } from './PreviewSection';
 import { BodyweightQuickLog } from './BodyweightQuickLog';
+import { WarmupCard } from './WarmupCard';
 import { estimateDayMinutes } from './estimateDayMinutes';
 
 // Map a day's exercises to their movement patterns so we can decide which
@@ -77,6 +78,7 @@ export function DayPlanner({ dayKey, viewMode = 'today' }) {
     resetDay,
     resetSection,
     setSectionOrder,
+    activeProgram,
   } = useOverlay();
 
   const [editSwap, setEditSwap] = useState(null);
@@ -176,6 +178,17 @@ export function DayPlanner({ dayKey, viewMode = 'today' }) {
           </Text>
         </div>
       )}
+
+      {/* Read-only warmup preview — same data shape as the in-session
+          WarmupCard, sourced directly from the program file. The hydrator
+          drops the synthetic `warmup` block, so we reach past `day` and
+          read it off the active program. Never collapsible here: this
+          is a planning surface, the user can't "dismiss" planning. */}
+      <WarmupCard
+        warmup={activeProgram?.days?.[dayKey]?.warmup}
+        accent={accent}
+        readOnly
+      />
 
       <Block gapTop={24}>
         <Stack direction="column" gap={4}>

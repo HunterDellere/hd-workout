@@ -50,8 +50,18 @@ export const longevity = {
       // Strength minimums: one heavy horizontal press, one heavy
       // vertical press, one quality lateral. Skip chest accessories
       // and tricep isolation — they don't move the longevity needle.
+      warmup: [
+        { id: 'rec-band-pull-apart',   sets: '2 × 15',           rest: '0:20' },
+        { id: 'push-light-db-y-raise', sets: '2 × 8 each',       rest: '0:20' },
+        { id: 'rec-thoracic-rotation', sets: '6 each side',      rest: '0:20' },
+      ],
       'shoulders-rotator': [
-        { id: 'push-face-pull',     sets: '3 × 12–15', rest: '1:00' },
+        // Rotator-cuff work is non-negotiable on every push day per the
+        // injury-prevention rules — face pull hits posterior cuff + scap
+        // retractors, ext-rot trains true external rotation under light
+        // load. Two low-cost movements buy decades of shoulder health.
+        { id: 'push-face-pull',      sets: '3 × 12–15', rest: '1:00' },
+        { id: 'push-cable-ext-rot',  sets: '2 × 12–15 each side', rest: '0:45' },
       ],
       'chest-horizontal': [
         { id: 'push-bb-bench',      sets: '3 × 5–8',   rest: '2:30' },
@@ -72,6 +82,11 @@ export const longevity = {
       // Pull session prioritizes the deadlift pattern (posterior
       // chain + trunk + grip — the most healthspan-dense lift) and
       // anti-pulldowns (shoulder girdle health).
+      warmup: [
+        { id: 'rec-thoracic-rotation', sets: '6 each side',      rest: '0:20' },
+        { id: 'rec-band-pull-apart',   sets: '2 × 15',           rest: '0:20' },
+        { id: 'rec-bird-dog',          sets: '2 × 6 each side',  rest: '0:20' },
+      ],
       'lats-vertical': [
         { id: 'pull-pullup',         sets: '3 × 5–10',          rest: '2:00' },
       ],
@@ -94,12 +109,22 @@ export const longevity = {
       ],
     },
     legs: {
+      warmup: [
+        { id: 'rec-hip-cars',          sets: '5 each direction each side', rest: '0:20' },
+        { id: 'rec-ankle-cars',        sets: '5 circles each direction each side', rest: '0:20' },
+        { id: 'core-dead-bug',         sets: '2 × 6 each side',  rest: '0:20' },
+      ],
       'quads-compound': [
         { id: 'legs-back-squat',     sets: '4 × 5–8',           rest: '3:00' },
         { id: 'legs-bgss',           sets: '3 × 8–10 each side', rest: '1:30' },
       ],
       'hamstrings': [
-        { id: 'legs-rdl',            sets: '3 × 6–10',          rest: '2:30' },
+        // Hamstring volume bumped to 4 sets and paired with a seated curl.
+        // The longevity build pulls deadlift out of pull day (frequency
+        // trade-off) so the hinge load needs to live on legs day to
+        // protect posterior-chain resilience as the lifter ages.
+        { id: 'legs-rdl',            sets: '4 × 6–10',          rest: '2:30' },
+        { id: 'legs-seated-curl',    sets: '2 × 10–12',         rest: '1:30' },
       ],
       'glutes': [
         { id: 'legs-hip-thrust',     sets: '3 × 8–12',          rest: '2:00' },
@@ -126,6 +151,10 @@ export const longevity = {
       // Tuesday's "core" day in this build is really a heavy-carry +
       // anti-rotation block. Two short carries + planks + an
       // overhead carry for shoulder integrity under load.
+      warmup: [
+        { id: 'rec-bird-dog',          sets: '2 × 6 each side',  rest: '0:20' },
+        { id: 'rec-thoracic-rotation', sets: '6 each side',      rest: '0:20' },
+      ],
       'anti-rotation': [
         { id: 'core-pallof',         sets: '3 × 10–12 each side', rest: '1:00' },
         { id: 'core-dead-bug',       sets: '3 × 8–10 each side',  rest: '0:45' },
@@ -164,6 +193,12 @@ export const longevity = {
         // base).
         { id: 'rec-vo2-intervals',   sets: '4 × 4 min (3 min recovery)', rest: '3:00' },
         { id: 'rec-zone-2-walk',     sets: '1 × 30–60 min',              rest: '—' },
+        // Joint CARs — the silent healthspan layer. Hip capsule and
+        // ankle dorsiflexion lose ROM first and force compensations
+        // up the chain. These are 2-minute additions that compound
+        // across decades.
+        { id: 'rec-hip-cars',        sets: '2 × 5 each direction each side', rest: '0:30' },
+        { id: 'rec-ankle-cars',      sets: '2 × 5 circles each direction each side', rest: '0:30' },
         { id: 'rec-dead-hang',       sets: '3 × max effort',             rest: '2:00' },
         // Grip and finger health is a healthspan staple — grip strength
         // is one of the strongest mortality predictors across cohorts.

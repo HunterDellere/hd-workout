@@ -64,3 +64,27 @@ export function formatLadder(ladder, unit) {
     .map((rung) => `${rung.weight}${unit} × ${rung.reps}`)
     .join(' · ');
 }
+
+/**
+ * Whether a given catalog exercise should get an auto-suggested warmup
+ * ramp on its PerformanceCard.
+ *
+ *   • Any `foundational` lift — bench, squat, deadlift, etc.
+ *   • Any `compound` lift that isn't pure bodyweight — RDL, OHP, BB row,
+ *     hip thrust, BGSS, leg press, pulldown, lat pulldown, etc.
+ *
+ * Bodyweight compounds (pull-up, push-up, inverted row) opt out: the
+ * ramp model is load-based, and the warmupLadder() weight threshold
+ * would suppress them anyway, but excluding them here keeps the gate
+ * intent explicit. Underloaded cases are filtered by the ladder itself
+ * (returns [] under ~40 kg / 90 lb).
+ *
+ * @param {{ tags?: string[] } | null} exercise
+ * @returns {boolean}
+ */
+export function shouldShowWarmupRamp(exercise) {
+  const tags = exercise?.tags;
+  if (!Array.isArray(tags)) return false;
+  if (tags.includes('foundational')) return true;
+  return tags.includes('compound') && !tags.includes('bodyweight');
+}

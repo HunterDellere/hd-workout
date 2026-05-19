@@ -824,6 +824,31 @@ export const push = {
           tags: ['compound', 'bodyweight', 'tricep-bias'],
         },
         {
+          id: 'push-band-overhead-tri',
+          name: 'Banded Overhead Tricep Extension',
+          tier: 'A',
+          equipment: ['Resistance band anchored low (under foot, door bottom)'],
+          primaryMuscles: ['Triceps brachii (long head)'],
+          secondaryMuscles: ['Triceps brachii (lateral head)'],
+          cues: [
+            'Anchor the band low; step away and over the band',
+            'Bring the band overhead with both hands; elbows next to the ears',
+            'Lower the hands behind the head — deep stretch on the long head',
+            'Drive up to full overhead extension; brief peak hold',
+            'Long head only fires fully under overhead-stretched conditions — this is the home version of the cable overhead extension',
+          ],
+          safetyNotes: [
+            'Maintain neutral lumbar — do not let the rib cage flare to extend the rep',
+            'Light band tension; high reps live here',
+          ],
+          variants: [
+            { name: 'Single-arm banded overhead', note: 'One arm at a time; pure isolation, easier balance.' },
+            { name: 'Light DB overhead extension', note: 'Two hands cupping one light DB — same pattern with a different load shape.' },
+            { name: 'Tall-kneeling banded overhead', note: 'Removes the lumbar-extension cheat entirely.' },
+          ],
+          tags: ['isolation', 'long-head', 'overhead-stretch'],
+        },
+        {
           id: 'push-band-pushdown',
           name: 'Banded Tricep Pushdown',
           tier: 'A',
