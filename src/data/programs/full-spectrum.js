@@ -23,14 +23,14 @@ export const fullSpectrum = {
   defaultSplit: { 0: 'recovery', 1: 'push', 2: 'pull', 3: 'rest', 4: 'legs', 5: 'core', 6: 'rest' },
   days: {
     push: {
-      // General warmup — 3 movements, ~3 minutes. Renders as the
-      // WarmupCard at the top of /today; not a tracked section, no set
-      // logging. Specific (per-lift) ramping sets are handled by the
-      // WarmupLadderBlock on each foundational/compound performance.
+      // True warmup — movement prep only, no loaded accessory work. These
+      // movements never overlap with the day's working sections. Specific
+      // (per-lift) ramping sets are handled by the WarmupLadderBlock on
+      // each foundational/compound performance, not here.
       warmup: [
-        { id: 'rec-band-pull-apart',   sets: '2 × 15',           rest: '0:20' },
-        { id: 'push-light-db-y-raise', sets: '2 × 8 each',       rest: '0:20' },
-        { id: 'rec-thoracic-rotation', sets: '6 each side',      rest: '0:20' },
+        { id: 'rec-arm-circles',       sets: '2 × 10 each direction', rest: '0:15' },
+        { id: 'rec-thoracic-rotation', sets: '6 each side',           rest: '0:15' },
+        { id: 'rec-cat-cow',           sets: '8 cycles',              rest: '0:15' },
       ],
       // Trimmed default — one anchor compound + one accessory per section.
       // Swap/add affordances let you bring in variants. Goal: every section
@@ -60,9 +60,9 @@ export const fullSpectrum = {
     },
     pull: {
       warmup: [
-        { id: 'rec-thoracic-rotation', sets: '6 each side',      rest: '0:20' },
-        { id: 'rec-band-pull-apart',   sets: '2 × 15',           rest: '0:20' },
-        { id: 'rec-bird-dog',          sets: '2 × 6 each side',  rest: '0:20' },
+        { id: 'rec-cat-cow',           sets: '8 cycles',              rest: '0:15' },
+        { id: 'rec-thoracic-rotation', sets: '6 each side',           rest: '0:15' },
+        { id: 'rec-walkouts',          sets: '6 reps',                rest: '0:20' },
       ],
       'lats-vertical': [
         { id: 'pull-pullup',       sets: '4 × 5–10',  rest: '2:00–2:30' },
@@ -94,9 +94,9 @@ export const fullSpectrum = {
     },
     legs: {
       warmup: [
-        { id: 'rec-hip-cars',          sets: '5 each direction each side', rest: '0:20' },
-        { id: 'rec-ankle-cars',        sets: '5 circles each direction each side', rest: '0:20' },
-        { id: 'core-dead-bug',         sets: '2 × 6 each side',  rest: '0:20' },
+        { id: 'rec-leg-swings',        sets: '10 each direction each leg', rest: '0:15' },
+        { id: 'rec-hip-cars',          sets: '5 each direction each side', rest: '0:15' },
+        { id: 'rec-ankle-cars',        sets: '5 circles each direction each side', rest: '0:15' },
       ],
       'quads-compound': [
         { id: 'legs-back-squat',   sets: '4 × 5–8',         rest: '3:00' },
@@ -131,8 +131,8 @@ export const fullSpectrum = {
     },
     core: {
       warmup: [
-        { id: 'rec-bird-dog',          sets: '2 × 6 each side',  rest: '0:20' },
-        { id: 'rec-thoracic-rotation', sets: '6 each side',      rest: '0:20' },
+        { id: 'rec-cat-cow',           sets: '8 cycles',              rest: '0:15' },
+        { id: 'rec-thoracic-rotation', sets: '6 each side',           rest: '0:15' },
       ],
       'anti-rotation': [
         { id: 'core-pallof',   sets: '3 × 10–12 each side', rest: '1:00' },

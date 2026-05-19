@@ -53,25 +53,26 @@ test('start a session and log a set, then reload to confirm persistence', async 
   await page.goto('./#/today');
   await page.getByTestId('start-session').click();
 
-  // First performance card carries the first SetRow.
-  const firstSetRow = page.getByTestId('set-row').first();
+  // Warmup is the first section now, but it's excluded from the
+  // auto-focus model — the first working performance gets focus on
+  // session start. Its set-row is the one we can fill with Load/Reps.
+  const firstWorkingSection = page.locator(
+    '[data-testid="section-group"]:not([data-section-key="warmup"])',
+  ).first();
+  const focusedWorkingCard = firstWorkingSection.getByTestId('performance-card').first();
+  const firstSetRow = focusedWorkingCard.getByTestId('set-row').first();
   await expect(firstSetRow).toBeVisible();
 
-  // Fill weight + reps via the text inputs (the stepper buttons share the
-  // aria-label root so we scope by role).
   const weightInput = firstSetRow.getByRole('textbox', { name: 'Load' });
   const repsInput = firstSetRow.getByRole('textbox', { name: 'Reps' });
   await weightInput.fill('100');
   await repsInput.fill('5');
-
   await firstSetRow.getByTestId('log-set-button').click();
 
-  // Wait for the set to land in the UI (the logged set surfaces as a summary
-  // row inside the same performance card). The storage layer is IDB-backed
-  // (Phase 2 slice 2); the visible row is the contract we care about.
-  const firstCard = page.getByTestId('performance-card').first();
-  await expect(firstCard).toContainText('100');
-  await expect(firstCard).toContainText('5');
+  // Same card is still focused (focus advances only when the lift's
+  // prescribed sets are met) — the logged set lands inside it.
+  await expect(focusedWorkingCard).toContainText('100');
+  await expect(focusedWorkingCard).toContainText('5');
 
   // Give the SessionProvider's persist effect time to flush to IDB before
   // we reload (the write is async; reloading too eagerly can race it).
@@ -80,10 +81,13 @@ test('start a session and log a set, then reload to confirm persistence', async 
   // Reload — the set must persist via IDB.
   await page.reload();
 
-  // After reload, the same first performance card should show the logged set.
-  const reloadedFirst = page.getByTestId('performance-card').first();
-  await expect(reloadedFirst).toContainText('100');
-  await expect(reloadedFirst).toContainText('5');
+  // After reload, the same first working performance card carries the
+  // logged set.
+  const reloadedCard = page.locator(
+    '[data-testid="section-group"]:not([data-section-key="warmup"])',
+  ).first().getByTestId('performance-card').first();
+  await expect(reloadedCard).toContainText('100');
+  await expect(reloadedCard).toContainText('5');
 });
 
 test('session bar appears on other routes when a session is active', async ({ page }) => {

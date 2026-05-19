@@ -51,9 +51,9 @@ export const longevity = {
       // vertical press, one quality lateral. Skip chest accessories
       // and tricep isolation — they don't move the longevity needle.
       warmup: [
-        { id: 'rec-band-pull-apart',   sets: '2 × 15',           rest: '0:20' },
-        { id: 'push-light-db-y-raise', sets: '2 × 8 each',       rest: '0:20' },
-        { id: 'rec-thoracic-rotation', sets: '6 each side',      rest: '0:20' },
+        { id: 'rec-arm-circles',       sets: '2 × 10 each direction', rest: '0:15' },
+        { id: 'rec-thoracic-rotation', sets: '6 each side',           rest: '0:15' },
+        { id: 'rec-cat-cow',           sets: '8 cycles',              rest: '0:15' },
       ],
       'shoulders-rotator': [
         // Rotator-cuff work is non-negotiable on every push day per the
@@ -83,9 +83,9 @@ export const longevity = {
       // chain + trunk + grip — the most healthspan-dense lift) and
       // anti-pulldowns (shoulder girdle health).
       warmup: [
-        { id: 'rec-thoracic-rotation', sets: '6 each side',      rest: '0:20' },
-        { id: 'rec-band-pull-apart',   sets: '2 × 15',           rest: '0:20' },
-        { id: 'rec-bird-dog',          sets: '2 × 6 each side',  rest: '0:20' },
+        { id: 'rec-cat-cow',           sets: '8 cycles',              rest: '0:15' },
+        { id: 'rec-thoracic-rotation', sets: '6 each side',           rest: '0:15' },
+        { id: 'rec-walkouts',          sets: '6 reps',                rest: '0:20' },
       ],
       'lats-vertical': [
         { id: 'pull-pullup',         sets: '3 × 5–10',          rest: '2:00' },
@@ -110,9 +110,9 @@ export const longevity = {
     },
     legs: {
       warmup: [
-        { id: 'rec-hip-cars',          sets: '5 each direction each side', rest: '0:20' },
-        { id: 'rec-ankle-cars',        sets: '5 circles each direction each side', rest: '0:20' },
-        { id: 'core-dead-bug',         sets: '2 × 6 each side',  rest: '0:20' },
+        { id: 'rec-leg-swings',        sets: '10 each direction each leg', rest: '0:15' },
+        { id: 'rec-hip-cars',          sets: '5 each direction each side', rest: '0:15' },
+        { id: 'rec-ankle-cars',        sets: '5 circles each direction each side', rest: '0:15' },
       ],
       'quads-compound': [
         { id: 'legs-back-squat',     sets: '4 × 5–8',           rest: '3:00' },
@@ -152,8 +152,8 @@ export const longevity = {
       // anti-rotation block. Two short carries + planks + an
       // overhead carry for shoulder integrity under load.
       warmup: [
-        { id: 'rec-bird-dog',          sets: '2 × 6 each side',  rest: '0:20' },
-        { id: 'rec-thoracic-rotation', sets: '6 each side',      rest: '0:20' },
+        { id: 'rec-cat-cow',           sets: '8 cycles',              rest: '0:15' },
+        { id: 'rec-thoracic-rotation', sets: '6 each side',           rest: '0:15' },
       ],
       'anti-rotation': [
         { id: 'core-pallof',         sets: '3 × 10–12 each side', rest: '1:00' },

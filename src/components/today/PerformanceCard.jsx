@@ -11,6 +11,7 @@ import { warmupLadder, shouldShowWarmupRamp } from '../../data/warmup';
 import { SetRow } from '../SetRow';
 import { DurationSetRow } from '../DurationSetRow';
 import { DistanceSetRow } from '../DistanceSetRow';
+import { CompletionSetRow } from '../CompletionSetRow';
 import { RestTimer } from '../RestTimer';
 import { ExerciseSheet } from '../ExerciseSheet';
 import { NoteField } from './NoteField';
@@ -524,7 +525,18 @@ export function PerformanceCard({
       )}
 
       <div style={{ marginTop: 20 }}>
-        {prescription.kind === 'distance' ? (
+        {performance.sectionKey === 'warmup' ? (
+          // Warmup drills use the completion row — no weight, no reps,
+          // just Done. Logged sets carry isWarmup:true so SessionProgress
+          // doesn't count them as working sets.
+          <CompletionSetRow
+            performance={performance}
+            prescription={prescription}
+            accent={accent}
+            onLogSet={(payload) => onLogSet(performance.id, payload)}
+            onDiscardSet={(setIdx) => onDiscardSet(performance.id, setIdx)}
+          />
+        ) : prescription.kind === 'distance' ? (
           <DistanceSetRow
             performance={performance}
             prescription={prescription}

@@ -25,10 +25,15 @@ export function CollapsedPerformanceRow({
   const ex = findExerciseById(performance.exerciseId);
   if (!ex) return null;
   const prescription = parsePrescription(performance.prescription?.sets ?? ex.sets);
-  const workingSetsLogged = (performance.sets ?? []).filter((s) => !s.isWarmup).length;
+  // Warmup-section sets are all isWarmup:true by definition — counting
+  // them as zero would never let the row mark complete. For warmup, the
+  // raw set count IS the working count.
+  const setsLogged = performance.sectionKey === 'warmup'
+    ? (performance.sets ?? []).length
+    : (performance.sets ?? []).filter((s) => !s.isWarmup).length;
   const setsTotal = prescription.setsTotal ?? null;
-  const isComplete = setsTotal != null && workingSetsLogged >= setsTotal;
-  const hasStarted = workingSetsLogged > 0;
+  const isComplete = setsTotal != null && setsLogged >= setsTotal;
+  const hasStarted = setsLogged > 0;
 
   // Three rendering states — drives the rail color, status chip, and
   // background tint. Order matters: complete > in-progress > pending.
@@ -159,7 +164,7 @@ export function CollapsedPerformanceRow({
               whiteSpace: 'nowrap',
             }}
           >
-            {setsTotal != null ? `${workingSetsLogged}/${setsTotal}` : `${workingSetsLogged}`}
+            {setsTotal != null ? `${setsLogged}/${setsTotal}` : `${setsLogged}`}
           </Text>
         ) : (
           <Text

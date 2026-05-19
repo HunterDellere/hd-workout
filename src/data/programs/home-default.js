@@ -25,8 +25,9 @@ export const homeDefault = {
   days: {
     push: {
       warmup: [
-        { id: 'rec-band-pull-apart',   sets: '2 × 15',           rest: '0:20' },
-        { id: 'rec-thoracic-rotation', sets: '6 each side',      rest: '0:20' },
+        { id: 'rec-arm-circles',       sets: '2 × 10 each direction', rest: '0:15' },
+        { id: 'rec-thoracic-rotation', sets: '6 each side',           rest: '0:15' },
+        { id: 'rec-cat-cow',           sets: '8 cycles',              rest: '0:15' },
       ],
       'chest-horizontal': [
         { id: 'push-pushup',          sets: '4 × 8–15',    rest: '1:30' },
@@ -66,9 +67,9 @@ export const homeDefault = {
     },
     pull: {
       warmup: [
-        { id: 'rec-thoracic-rotation', sets: '6 each side',      rest: '0:20' },
-        { id: 'rec-band-pull-apart',   sets: '2 × 15',           rest: '0:20' },
-        { id: 'rec-bird-dog',          sets: '2 × 6 each side',  rest: '0:20' },
+        { id: 'rec-cat-cow',           sets: '8 cycles',              rest: '0:15' },
+        { id: 'rec-thoracic-rotation', sets: '6 each side',           rest: '0:15' },
+        { id: 'rec-walkouts',          sets: '6 reps',                rest: '0:20' },
       ],
       'lats-vertical': [
         { id: 'pull-pullup',          sets: '4 × 5–10',           rest: '2:00' },
@@ -98,9 +99,9 @@ export const homeDefault = {
     },
     legs: {
       warmup: [
-        { id: 'rec-hip-cars',          sets: '5 each direction each side', rest: '0:20' },
-        { id: 'rec-ankle-cars',        sets: '5 circles each direction each side', rest: '0:20' },
-        { id: 'core-dead-bug',         sets: '2 × 6 each side',  rest: '0:20' },
+        { id: 'rec-leg-swings',        sets: '10 each direction each leg', rest: '0:15' },
+        { id: 'rec-hip-cars',          sets: '5 each direction each side', rest: '0:15' },
+        { id: 'rec-ankle-cars',        sets: '5 circles each direction each side', rest: '0:15' },
       ],
       'quads-compound': [
         { id: 'legs-goblet-squat',         sets: '4 × 8–15',           rest: '2:00' },
@@ -139,8 +140,8 @@ export const homeDefault = {
     },
     core: {
       warmup: [
-        { id: 'rec-bird-dog',          sets: '2 × 6 each side',  rest: '0:20' },
-        { id: 'rec-thoracic-rotation', sets: '6 each side',      rest: '0:20' },
+        { id: 'rec-cat-cow',           sets: '8 cycles',              rest: '0:15' },
+        { id: 'rec-thoracic-rotation', sets: '6 each side',           rest: '0:15' },
       ],
       'anti-rotation': [
         { id: 'core-pallof',          sets: '3 × 10–12 each side (band)', rest: '1:00' },

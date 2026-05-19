@@ -25,10 +25,15 @@ test('history is empty until a session is logged', async ({ page }) => {
 });
 
 test('an active session with logged sets surfaces in history with the in-progress badge', async ({ page }) => {
-  // Start session and log one set on /today.
+  // Start session and log one set on /today. Warmup is excluded from
+  // the auto-focus model, so the first working performance is focused
+  // by default — its set-row is the one we can fill with Load/Reps.
   await page.goto('./#/today');
   await page.getByTestId('start-session').click();
-  const firstSetRow = page.getByTestId('set-row').first();
+  const firstWorkingCard = page.locator(
+    '[data-testid="section-group"]:not([data-section-key="warmup"])',
+  ).first().getByTestId('performance-card').first();
+  const firstSetRow = firstWorkingCard.getByTestId('set-row').first();
   await firstSetRow.getByRole('textbox', { name: 'Load' }).fill('100');
   await firstSetRow.getByRole('textbox', { name: 'Reps' }).fill('5');
   await firstSetRow.getByTestId('log-set-button').click();

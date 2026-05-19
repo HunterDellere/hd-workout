@@ -39,7 +39,6 @@ import { AddGroupSheet } from '../components/AddGroupSheet';
 import { ReorderSectionsSheet } from '../components/ReorderSectionsSheet';
 import { PerformanceCard } from '../components/today/PerformanceCard';
 import { CollapsedPerformanceRow } from '../components/today/CollapsedPerformanceRow';
-import { WarmupCard } from '../components/today/WarmupCard';
 import { RestDay } from '../components/today/RestDay';
 import { SessionSummary } from '../components/today/SessionSummary';
 import { DayPlanner } from '../components/today/DayPlanner';
@@ -70,7 +69,6 @@ export function Today() {
 
   const {
     days: overlayDays,
-    activeProgram,
   } = useOverlay();
 
   const todayKey = activeSession?.dayKey ?? dayKeyForToday(settings.split);
@@ -107,14 +105,19 @@ export function Today() {
   // Wave 22 — focus mode. In-session view: one expanded card at a time,
   // others collapse to one-line summary rows. Focus starts at the first
   // incomplete performance and auto-advances when the current one fills
-  // its prescribed set count.
+  // its prescribed set count. Warmup performances are EXCLUDED from the
+  // auto-focus consideration — they live in their own section above the
+  // first working lift and the user opens / dismisses them at will. If
+  // we counted them as "first incomplete", focus would snap back to a
+  // warmup drill after every working set log, which is disruptive.
   const firstIncompleteId = useMemo(() => {
     if (!activeSession) return null;
     for (const p of activeSession.performances ?? []) {
+      if (p.sectionKey === 'warmup') continue;
       const prescription = parsePrescription(p.prescription?.sets ?? '');
-      const workingSets = (p.sets ?? []).filter((s) => !s.isWarmup).length;
+      const done = (p.sets ?? []).filter((s) => !s.isWarmup).length;
       const target = prescription.setsTotal ?? 1;
-      if (workingSets < target) return p.id;
+      if (done < target) return p.id;
     }
     // All complete — keep the last performance focused so the lifter
     // sees their final logged sets rather than collapsing everything.
@@ -309,35 +312,23 @@ export function Today() {
             </div>
           )}
 
-          {(() => {
-            // Warmup card sits above the first training section. Data is
-            // read straight off the active program (not the hydrated
-            // day) because `warmup` is a synthetic program-only block
-            // that the catalog hydrator intentionally drops.
-            const warmup = activeProgram?.days?.[todayKey]?.warmup;
-            const hasLoggedAny = (activeSession?.performances ?? [])
-              .some((p) => (p.sets ?? []).some((s) => !s.isWarmup));
-            return (
-              <WarmupCard
-                warmup={warmup}
-                sessionId={activeSession?.id}
-                accent={accent}
-                hasLoggedAny={hasLoggedAny}
-              />
-            );
-          })()}
-
           {performancesBySection.map(({ key: sectionKey, performances }) => {
             const meta = sectionMeta(sectionKey);
             // Section-level completion: count performances whose working
             // sets have met their prescribed total. Gives the user a
             // tangible "X of Y exercises done in this section" cue.
+            // The warmup section is the one exception: every logged set
+            // there is isWarmup:true by definition, so we count ALL
+            // logged sets toward completion instead of filtering them.
+            const isWarmupSection = sectionKey === 'warmup';
             const sectionTotals = performances.reduce((acc, p) => {
               const presc = parsePrescription(p.prescription?.sets ?? '');
               const target = presc.setsTotal ?? null;
-              const workingDone = (p.sets ?? []).filter((s) => !s.isWarmup).length;
+              const done = isWarmupSection
+                ? (p.sets ?? []).length
+                : (p.sets ?? []).filter((s) => !s.isWarmup).length;
               acc.total += 1;
-              if (target != null && workingDone >= target) acc.done += 1;
+              if (target != null && done >= target) acc.done += 1;
               return acc;
             }, { done: 0, total: 0 });
             const sectionComplete = sectionTotals.total > 0

@@ -109,6 +109,28 @@ function hydrateDayFrom(program, dayKey) {
   })();
 
   const sections = [];
+
+  // Synthetic 'warmup' section — programs can declare warmup drills under
+  // a `warmup` key on each day. No catalog day defines 'warmup' as a
+  // section; we materialize it here so the rest of the app (overlay,
+  // session, Today, DayPlanner) sees it as a normal section. The
+  // exercises still resolve against the global catalog like any other
+  // section entry — only the section title/blurb/key are synthesized.
+  const programWarmup = programDay.warmup;
+  if (Array.isArray(programWarmup) && programWarmup.length > 0) {
+    const warmupExercises = programWarmup
+      .map(hydrateExerciseEntry)
+      .filter(Boolean);
+    if (warmupExercises.length > 0) {
+      sections.push({
+        key: 'warmup',
+        title: 'Warmup',
+        blurb: null,
+        exercises: warmupExercises,
+      });
+    }
+  }
+
   for (const catalogSection of orderedSections) {
     const programSection = programDay[catalogSection.key];
     if (!programSection) continue;

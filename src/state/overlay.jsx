@@ -369,11 +369,6 @@ export function OverlayProvider({ children }) {
     overlay,
     hydrated,
     days,
-    // Expose the raw active program so non-section data (currently just
-    // the synthetic `warmup` block per day) can be read by surfaces that
-    // sit outside the catalog-hydrated section model. The hydrator
-    // intentionally drops `warmup` because it isn't a catalog section.
-    activeProgram,
     updateEntry,
     hideExercise,
     unhideExercise,
@@ -385,10 +380,9 @@ export function OverlayProvider({ children }) {
     resetSection,
     setSectionOrder,
     resetAllOverlays,
-  }), [overlay, hydrated, days, activeProgram, updateEntry, hideExercise,
-    unhideExercise, addExercise, addCustomSection, removeAddedExercise,
-    swapExerciseOverlay, resetDay, resetSection, setSectionOrder,
-    resetAllOverlays]);
+  }), [overlay, hydrated, days, updateEntry, hideExercise, unhideExercise,
+    addExercise, addCustomSection, removeAddedExercise, swapExerciseOverlay,
+    resetDay, resetSection, setSectionOrder, resetAllOverlays]);
 
   return <OverlayContext.Provider value={value}>{children}</OverlayContext.Provider>;
 }

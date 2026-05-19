@@ -62,9 +62,22 @@ describe('getDay', () => {
   });
 
   it('honours defaultSectionOrder when set', () => {
-    // Push has shoulders-rotator first per the catalog override.
+    // Push has shoulders-rotator first per the catalog override — but
+    // the synthetic 'warmup' section, when the program defines it,
+    // always precedes the catalog-ordered sections. So shoulders-rotator
+    // is the first CATALOG section after warmup.
     const push = getDay('push');
-    expect(push.sections[0].key).toBe('shoulders-rotator');
+    const catalogSections = push.sections.filter((s) => s.key !== 'warmup');
+    expect(catalogSections[0].key).toBe('shoulders-rotator');
+  });
+
+  it('surfaces synthetic warmup section first when the program defines warmup drills', () => {
+    const push = getDay('push');
+    expect(push.sections[0].key).toBe('warmup');
+    // Warmup section has its title synthesized; no blurb.
+    expect(push.sections[0].title).toBe('Warmup');
+    expect(push.sections[0].blurb).toBeNull();
+    expect(push.sections[0].exercises.length).toBeGreaterThan(0);
   });
 });
 
