@@ -373,6 +373,11 @@ export function SetRow({
   barWeight,
   plateInventory,
   plateCalculatorEnabled = true,
+  // Number of opening sets that should default to isWarmup:true. Derived
+  // upstream from the ramp ladder (foundational/compound lifts above the
+  // load floor get the 40/60/80% ladder — three rungs by default, so
+  // sets 1–3 are warmups, set 4+ are working). 0 disables auto-flagging.
+  autoWarmupRungs = 0,
 }) {
   // Reconcile auto-progression with the suggestion engine. The engine
   // sees the full RPE + stagnation history; auto-progression only sees
@@ -406,7 +411,21 @@ export function SetRow({
   const [weight, setWeight] = useState(defaultWeight);
   const [reps, setReps] = useState(defaultReps);
   const [rpe, setRpe] = useState(null);
-  const [isWarmup, setIsWarmup] = useState(false);
+  // Tri-state warmup flag:
+  //   null  → no explicit user choice this set; fall through to the
+  //           auto-default derived from the ramp ladder.
+  //   true  → user explicitly toggled warmup on (or auto-on confirmed).
+  //   false → user explicitly toggled warmup off (working set).
+  // Reset to null after each log so the next set re-derives.
+  const [warmupOverride, setWarmupOverride] = useState(null);
+  const nextSetIndex = performance.sets.length;
+  const isAutoWarmup = nextSetIndex < autoWarmupRungs;
+  const isWarmup = warmupOverride ?? isAutoWarmup;
+  // Distinguishes auto-flagged from user-confirmed warmups so the hint
+  // copy below only shows when the system inferred the flag — once the
+  // user has actively confirmed (or explicitly toggled), the hint is
+  // redundant and would feel naggy.
+  const showAutoWarmupHint = isWarmup && warmupOverride === null && isAutoWarmup;
   const [isDrop, setIsDrop] = useState(false);
   const haptic = useHaptics();
 
@@ -433,7 +452,10 @@ export function SetRow({
     });
     haptic('doubleTap');
     setRpe(null);
-    setIsWarmup(false);
+    // Clear the explicit override so the next set re-derives its auto
+    // default from the ladder (e.g., set 3 still defaults warmup, set 4
+    // flips to working).
+    setWarmupOverride(null);
     setIsDrop(false);
     // Keep weight; reset rpe + flags; nudge reps default for next set.
   }
@@ -570,8 +592,9 @@ export function SetRow({
             label="Warmup"
             active={isWarmup}
             onToggle={() => {
-              setIsWarmup((v) => !v);
-              if (!isWarmup) setIsDrop(false); // warmup + drop is nonsensical
+              const next = !isWarmup;
+              setWarmupOverride(next);
+              if (next) setIsDrop(false); // warmup + drop is nonsensical
             }}
             testId="flag-warmup"
           />
@@ -580,11 +603,28 @@ export function SetRow({
             active={isDrop}
             onToggle={() => {
               setIsDrop((v) => !v);
-              if (!isDrop) setIsWarmup(false);
+              if (!isDrop) setWarmupOverride(false);
             }}
             testId="flag-drop"
           />
         </Stack>
+
+        {showAutoWarmupHint && (
+          <Text
+            as="div"
+            variant="mono-sm"
+            tone="tertiary"
+            data-testid="auto-warmup-hint"
+            style={{
+              marginTop: -2,
+              fontFamily: 'var(--font-mono)',
+              fontSize: 11,
+              letterSpacing: '0.06em',
+            }}
+          >
+            Ramp set {nextSetIndex + 1} of {autoWarmupRungs} · tap Warmup to mark as working
+          </Text>
+        )}
 
         <Stack direction="row" gap={2} justify="space-between" align="center">
           {setsRemaining != null ? (

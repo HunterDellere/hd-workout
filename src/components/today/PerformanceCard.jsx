@@ -246,13 +246,33 @@ export function PerformanceCard({
   const hasLogged = performance.sets.length > 0;
   const suggestionText = suggestionLine(suggestion, unit);
 
+  // How many of the first N sets should auto-default to "warmup"? Same
+  // contract as the WarmupLadderBlock: only fires when the lift is a
+  // ramp-worthy compound AND the computed ladder has rungs (i.e., the
+  // working weight is above the load floor). The SetRow uses this to
+  // pre-flag the first N sets as warmups so the user doesn't have to
+  // remember to tap the toggle on every ramp rung.
+  const autoWarmupRungs = (() => {
+    if (!shouldShowWarmupRamp(ex)) return 0;
+    const workingWeight = workingWeightFor(suggestion, lastTop);
+    if (workingWeight == null) return 0;
+    return warmupLadder(workingWeight, { unit }).length;
+  })();
+
+  // Warmup performances render with reduced chrome — no "last time" or
+  // suggestion lines (irrelevant for movement-prep drills), no manual-
+  // log credit banner, tighter vertical padding. The user's main job in
+  // a warmup card is to read the prescription and tap Done.
+  const isWarmupSection = performance.sectionKey === 'warmup';
+
   return (
     <div
       data-testid="performance-card"
       data-performance-id={performance.id}
+      data-section-key={performance.sectionKey}
       style={{
-        marginTop: 40,
-        padding: '24px 0',
+        marginTop: isWarmupSection ? 20 : 40,
+        padding: isWarmupSection ? '14px 0' : '24px 0',
         borderTop: '1px solid var(--border-hairline)',
         // Wave 6.4 #35: focus ring picks up the day's pattern accent.
         '--focus-color': `var(--accent-${accent}-ink)`,
@@ -270,7 +290,7 @@ export function PerformanceCard({
               {performance.prescription?.sets ?? ex.sets}
               {performance.prescription?.rest && ` · ${performance.prescription.rest} rest`}
             </Text>
-            {onAdjustSets && (() => {
+            {!isWarmupSection && onAdjustSets && (() => {
               const raw = String(performance.prescription?.sets ?? '').trim();
               const m = raw.match(/^(\d+)/);
               const current = m ? Number.parseInt(m[1], 10) : null;
@@ -362,8 +382,10 @@ export function PerformanceCard({
           )}
           {/* Wave 5.2: last-time + suggestion stack into one quiet row each.
               Suggestion takes the accent ink; last-time stays tertiary so
-              the two lines never compete. */}
-          {lastTop && lastTop.top && (
+              the two lines never compete. Suppressed entirely for warmup
+              drills — history and progression suggestions don't apply to
+              movement prep. */}
+          {!isWarmupSection && lastTop && lastTop.top && (
             <Text
               as="span"
               variant="mono-sm"
@@ -376,7 +398,7 @@ export function PerformanceCard({
               {lastAgo ? ` · ${lastAgo}` : ''}
             </Text>
           )}
-          {suggestionText && (
+          {!isWarmupSection && suggestionText && (
             <Text
               as="span"
               variant="mono-sm"
@@ -414,7 +436,7 @@ export function PerformanceCard({
         </Stack>
       </Stack>
 
-      {!hasLogged && Array.isArray(manualEntriesToday) && manualEntriesToday.length > 0 && (
+      {!isWarmupSection && !hasLogged && Array.isArray(manualEntriesToday) && manualEntriesToday.length > 0 && (
         <div
           data-testid="manual-credit-banner"
           style={{
@@ -564,6 +586,7 @@ export function PerformanceCard({
             barWeight={barWeight}
             plateInventory={plateInventory}
             plateCalculatorEnabled={plateCalculatorEnabled}
+            autoWarmupRungs={autoWarmupRungs}
             onLogSet={(payload) => onLogSet(performance.id, payload)}
             onDiscardSet={(setIdx) => onDiscardSet(performance.id, setIdx)}
             prSetIds={prSetIds}

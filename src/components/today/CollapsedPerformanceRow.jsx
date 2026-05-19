@@ -25,13 +25,14 @@ export function CollapsedPerformanceRow({
   const ex = findExerciseById(performance.exerciseId);
   if (!ex) return null;
   const prescription = parsePrescription(performance.prescription?.sets ?? ex.sets);
-  // Warmup-section sets are all isWarmup:true by definition — counting
-  // them as zero would never let the row mark complete. For warmup, the
-  // raw set count IS the working count.
-  const setsLogged = performance.sectionKey === 'warmup'
-    ? (performance.sets ?? []).length
+  const isWarmup = performance.sectionKey === 'warmup';
+  // Warmup drills are binary — one tap to mark the whole bout done.
+  // CompletionSetRow caps logged sets at one regardless of the parsed
+  // setsTotal, so we mirror that contract here: any logged set = done.
+  const setsLogged = isWarmup
+    ? Math.min((performance.sets ?? []).length, 1)
     : (performance.sets ?? []).filter((s) => !s.isWarmup).length;
-  const setsTotal = prescription.setsTotal ?? null;
+  const setsTotal = isWarmup ? 1 : (prescription.setsTotal ?? null);
   const isComplete = setsTotal != null && setsLogged >= setsTotal;
   const hasStarted = setsLogged > 0;
 

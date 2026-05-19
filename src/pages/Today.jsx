@@ -317,18 +317,24 @@ export function Today() {
             // Section-level completion: count performances whose working
             // sets have met their prescribed total. Gives the user a
             // tangible "X of Y exercises done in this section" cue.
-            // The warmup section is the one exception: every logged set
-            // there is isWarmup:true by definition, so we count ALL
-            // logged sets toward completion instead of filtering them.
+            // The warmup section is binary per drill: each warmup
+            // PerformanceCard logs a single completion event regardless
+            // of the parsed setsTotal (CompletionSetRow renders one
+            // pill per drill — "8 cycles" or "2 × 10" is one bout).
+            // So a warmup performance is "done" iff it has any logged
+            // set. Working sections still use the prescribed-vs-logged
+            // working-set comparison.
             const isWarmupSection = sectionKey === 'warmup';
             const sectionTotals = performances.reduce((acc, p) => {
-              const presc = parsePrescription(p.prescription?.sets ?? '');
-              const target = presc.setsTotal ?? null;
-              const done = isWarmupSection
-                ? (p.sets ?? []).length
-                : (p.sets ?? []).filter((s) => !s.isWarmup).length;
               acc.total += 1;
-              if (target != null && done >= target) acc.done += 1;
+              if (isWarmupSection) {
+                if ((p.sets ?? []).length > 0) acc.done += 1;
+              } else {
+                const presc = parsePrescription(p.prescription?.sets ?? '');
+                const target = presc.setsTotal ?? null;
+                const done = (p.sets ?? []).filter((s) => !s.isWarmup).length;
+                if (target != null && done >= target) acc.done += 1;
+              }
               return acc;
             }, { done: 0, total: 0 });
             const sectionComplete = sectionTotals.total > 0
@@ -339,21 +345,22 @@ export function Today() {
                 data-testid="section-group"
                 data-section-key={sectionKey}
                 data-section-complete={sectionComplete ? '1' : '0'}
-                style={{ marginTop: 40 }}
+                style={{ marginTop: isWarmupSection ? 20 : 40 }}
               >
                 <Stack direction="row" align="center" justify="space-between" gap={2}>
-                  <Stack direction="row" align="center" gap={2}>
+                  <Stack direction="row" align="center" gap={2} style={{ minWidth: 0, flex: 1 }}>
                     <span
                       aria-hidden
                       style={{
                         display: 'inline-block',
                         width: 3,
-                        height: 16,
+                        height: isWarmupSection ? 12 : 16,
+                        flexShrink: 0,
                         borderRadius: 2,
                         background: sectionComplete
                           ? `var(--accent-${accent}-ink)`
                           : `var(--accent-${accent}-solid)`,
-                        opacity: sectionComplete ? 1 : 0.55,
+                        opacity: sectionComplete ? 1 : (isWarmupSection ? 0.35 : 0.55),
                       }}
                     />
                     <Text
@@ -362,10 +369,13 @@ export function Today() {
                       style={{
                         textTransform: 'uppercase',
                         letterSpacing: '0.14em',
-                        fontWeight: 600,
+                        fontWeight: isWarmupSection ? 400 : 600,
                         color: sectionComplete
                           ? `var(--accent-${accent}-ink)`
-                          : 'var(--text-secondary)',
+                          : (isWarmupSection ? 'var(--text-tertiary)' : 'var(--text-secondary)'),
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
                       }}
                     >
                       {meta.title}
@@ -381,6 +391,8 @@ export function Today() {
                         ? `var(--accent-${accent}-ink)`
                         : 'var(--text-tertiary)',
                       fontWeight: sectionComplete ? 600 : 400,
+                      flexShrink: 0,
+                      whiteSpace: 'nowrap',
                     }}
                   >
                     {sectionTotals.done}/{sectionTotals.total}

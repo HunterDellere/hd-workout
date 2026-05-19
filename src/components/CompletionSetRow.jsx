@@ -24,20 +24,26 @@
 import { Stack, Text } from '../design-system/components';
 import { useHaptics } from '../hooks/useHaptics';
 
+// Note: the parent passes `prescription` like it does to every other
+// set-row variant, but warmup drills are always a single Done tap
+// regardless of parsed setsTotal — so we don't destructure it here.
+// (React passes it as part of the rest spread silently.)
 export function CompletionSetRow({
   performance,
-  prescription,
   accent,
   onLogSet,
   onDiscardSet,
 }) {
   const haptic = useHaptics();
-  // Total pills come from the prescription; fall back to a single pill
-  // if the parser couldn't extract setsTotal (free-text prescriptions
-  // like "8 cycles" still resolve to one completion event).
-  const total = prescription.setsTotal ?? 1;
-  const completed = (performance.sets ?? []).length;
-  const next = Math.min(completed, total - 1);
+  // Warmup drills are always a single bout — the user does the whole
+  // prescription ("8 cycles", "2 × 10 each direction", "5 each direction
+  // each side") in one go, then taps done. Rendering N pills per drill
+  // both clutters the UI and misrepresents the practice: cat-cow's
+  // "8 cycles" is one continuous flow, not eight isolated sets. We
+  // intentionally ignore the parser's setsTotal here and render one pill.
+  const total = 1;
+  const completed = (performance.sets ?? []).length > 0 ? 1 : 0;
+  const next = completed >= total ? -1 : 0;
 
   function logOne(index) {
     // Only the next-up pill is tappable; ignore taps on later ones.

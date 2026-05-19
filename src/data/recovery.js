@@ -583,7 +583,7 @@ const recovery = {
         },
         {
           id: 'rec-hip-cars',
-          name: 'Hip CARs (Controlled Articular Rotations)',
+          name: 'Hip CARs',
           tier: 'S',
           intent: 'warmup',
           categories: ['healthspan', 'mobility'],
@@ -609,7 +609,7 @@ const recovery = {
         },
         {
           id: 'rec-ankle-cars',
-          name: 'Ankle CARs + Dorsiflexion Mobility',
+          name: 'Ankle CARs',
           tier: 'A',
           intent: 'warmup',
           categories: ['healthspan', 'mobility'],
@@ -636,7 +636,7 @@ const recovery = {
         },
         {
           id: 'rec-leg-swings',
-          name: 'Leg Swings (Front-Back + Side-Side)',
+          name: 'Leg Swings',
           tier: 'S',
           intent: 'warmup',
           categories: ['mobility'],
@@ -663,7 +663,7 @@ const recovery = {
         },
         {
           id: 'rec-arm-circles',
-          name: 'Arm Circles (Small → Large, Both Directions)',
+          name: 'Arm Circles',
           tier: 'A',
           intent: 'warmup',
           categories: ['mobility'],
@@ -715,7 +715,7 @@ const recovery = {
         },
         {
           id: 'rec-walkouts',
-          name: 'Walkouts (Inchworm to Plank)',
+          name: 'Walkouts',
           tier: 'A',
           intent: 'warmup',
           categories: ['mobility'],
@@ -741,7 +741,7 @@ const recovery = {
         },
         {
           id: 'rec-thoracic-rotation',
-          name: 'Open-Book Thoracic Rotation',
+          name: 'Open-Book T-Spine Rotation',
           tier: 'A',
           intent: 'warmup',
           categories: ['healthspan', 'mobility'],
