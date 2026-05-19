@@ -558,6 +558,9 @@ export function PerformanceCard({
             accent={accent}
             onLogSet={(payload) => onLogSet(performance.id, payload)}
             onDiscardSet={(setIdx) => onDiscardSet(performance.id, setIdx)}
+            onEditSet={onEditSet
+              ? (setIdx, patch) => onEditSet(performance.id, setIdx, patch)
+              : null}
           />
         ) : prescription.kind === 'distance' ? (
           <DistanceSetRow
