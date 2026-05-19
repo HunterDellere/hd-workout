@@ -103,6 +103,14 @@ export const longevity = {
       ],
       'glutes': [
         { id: 'legs-hip-thrust',     sets: '3 × 8–12',          rest: '2:00' },
+        // Glute medius drives lateral hip stability — directly tied to
+        // fall prevention and IT-band/knee health into later decades.
+        { id: 'legs-hip-abduction',  sets: '2 × 12–15',         rest: '1:00' },
+      ],
+      'adductors': [
+        // Groin strain is one of the most common late-life injuries.
+        // Copenhagen builds the adductor under stretch — cheap insurance.
+        { id: 'legs-copenhagen',     sets: '2 × 20–40 sec each', rest: '1:00' },
       ],
       'calves': [
         // Tib raise is the no-fall lift — anterior shin strength
@@ -172,6 +180,12 @@ export const longevity = {
       ],
       'balance': [
         { id: 'rec-single-leg-stand', sets: '2 × 1 min each side',       rest: '0:30' },
+      ],
+      'facial-cervical': [
+        // Cervical strength preserves head-righting reflex and reduces
+        // late-life dizziness and forward-head posture. Healthspan staple.
+        { id: 'rec-neck-flexion',    sets: '2 × 10–15', rest: '0:30' },
+        { id: 'rec-neck-extension',  sets: '2 × 10–15', rest: '0:30' },
       ],
     },
   },

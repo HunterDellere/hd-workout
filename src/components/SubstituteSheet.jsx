@@ -13,7 +13,7 @@
 import { useState } from 'react';
 import { Sheet, Stack, Text, BrushDivider } from '../design-system/components';
 import { exercisesForPattern, patternToExercises } from '../data/derive';
-import { findExerciseAnywhere } from '../data';
+import { findExerciseAnywhere, rawCatalogList } from '../data';
 import { isExerciseExcludedByEquipment } from '../data/equipment';
 import { useSettings } from '../state/settings-context.js';
 import { ExerciseSheet } from './ExerciseSheet';
@@ -24,6 +24,62 @@ function patternForExercise(exerciseId) {
     if (list.some((e) => e.id === exerciseId)) return key;
   }
   return null;
+}
+
+// Build the full swap candidate pool. Strategy, in priority order:
+//   1. Same-pattern alternates (existing behaviour) — when the current
+//      exercise belongs to a movement pattern, surface every catalog
+//      exercise tagged with that pattern.
+//   2. Same-section catalog peers — covers isolation sections
+//      (triceps, biceps, rear-delt, calves, adductors, etc.) that
+//      don't have a primary movement pattern.
+//   3. Shared-tag relatives — bridges curated subgroups
+//      (e.g. 'long-head', 'lateral-head' for triceps) so the user
+//      sees movements that train the same head/region first.
+// Output preserves order: pattern → section → tag, de-duplicated by id.
+function buildSwapCandidates(currentExerciseId) {
+  const current = currentExerciseId ? findExerciseAnywhere(currentExerciseId) : null;
+  if (!current) return { candidates: [], current: null, patternKey: null };
+
+  const sectionKey = current.section?.key ?? null;
+  const patternKey = patternForExercise(currentExerciseId);
+  const currentTags = new Set(current.exercise.tags ?? []);
+
+  const out = [];
+  const seen = new Set([currentExerciseId]);
+
+  // 1. Same pattern.
+  if (patternKey) {
+    for (const ex of exercisesForPattern(patternKey)) {
+      if (seen.has(ex.id)) continue;
+      seen.add(ex.id);
+      out.push(ex);
+    }
+  }
+
+  // 2 & 3. Walk the raw catalog for same-section peers and shared-tag
+  // relatives. We rank section peers ahead of cross-section tag matches.
+  const catalog = rawCatalogList();
+  const sectionPeers = [];
+  const tagPeers = [];
+  for (const ex of catalog) {
+    if (seen.has(ex.id)) continue;
+    const sameSection = sectionKey && ex._section?.key === sectionKey;
+    const sharedTag = (ex.tags ?? []).some((t) => currentTags.has(t));
+    if (sameSection) {
+      sectionPeers.push(ex);
+      seen.add(ex.id);
+    } else if (sharedTag) {
+      tagPeers.push(ex);
+      seen.add(ex.id);
+    }
+  }
+
+  return {
+    candidates: [...out, ...sectionPeers, ...tagPeers],
+    current,
+    patternKey,
+  };
 }
 
 function SwapRow({ exercise, onPick, onDetails, isFirst }) {
@@ -101,11 +157,7 @@ export function SubstituteSheet({ open, onClose, currentExerciseId, hasLoggedSet
   if (!open) return null;
 
   const excludedEquipment = settings?.excludedEquipment ?? [];
-  const current = currentExerciseId ? findExerciseAnywhere(currentExerciseId) : null;
-  const patternKey = current ? patternForExercise(currentExerciseId) : null;
-  const rawCandidates = patternKey
-    ? exercisesForPattern(patternKey).filter((e) => e.id !== currentExerciseId)
-    : [];
+  const { candidates: rawCandidates, current } = buildSwapCandidates(currentExerciseId);
   const candidates = rawCandidates.filter((e) => !isExerciseExcludedByEquipment(e, excludedEquipment));
   const hiddenByEquipment = rawCandidates.length - candidates.length;
 
@@ -141,7 +193,7 @@ export function SubstituteSheet({ open, onClose, currentExerciseId, hasLoggedSet
           <>
             <BrushDivider style={{ marginTop: 32 }} />
             <Text as="div" variant="mono-sm" tone="tertiary" style={{ marginTop: 24, textTransform: 'uppercase' }}>
-              Same pattern
+              Alternatives
             </Text>
             <ul
               data-testid="swap-list"
@@ -175,14 +227,14 @@ export function SubstituteSheet({ open, onClose, currentExerciseId, hasLoggedSet
             <BrushDivider style={{ marginTop: 32 }} />
             {hiddenByEquipment > 0 ? (
               <Text as="p" variant="body-lg" tone="secondary" style={{ marginTop: 24 }}>
-                All catalog alternatives for this pattern need equipment
-                you've excluded in Settings. Re-enable a tool to see swaps,
-                or skip the swap for now.
+                All catalog alternatives need equipment you've excluded in
+                Settings. Re-enable a tool to see swaps, or skip the swap
+                for now.
               </Text>
             ) : (
               <Text as="p" variant="body-lg" tone="secondary" style={{ marginTop: 24 }}>
-                No catalog alternatives for this pattern yet. As the catalog
-                fills in, this list will surface them.
+                No catalog alternatives yet. As the catalog fills in, this
+                list will surface them.
               </Text>
             )}
           </>

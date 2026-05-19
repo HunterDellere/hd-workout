@@ -42,6 +42,7 @@ export const ppl6 = {
       'triceps': [
         { id: 'push-rope-pushdown', sets: '3 × 10–15',  rest: '1:00' },
         { id: 'push-overhead-tri',  sets: '3 × 10–12',  rest: '1:30' },
+        { id: 'push-skull-crusher', sets: '3 × 8–12',   rest: '1:30' },
       ],
     },
     pull: {
@@ -84,12 +85,14 @@ export const ppl6 = {
       'glutes': [
         { id: 'legs-hip-thrust',     sets: '3 × 8–12',       rest: '2:00' },
         { id: 'legs-cable-kickback', sets: '3 × 12–15 each', rest: '1:00' },
+        { id: 'legs-hip-abduction',  sets: '3 × 12–15',      rest: '1:00' },
       ],
       'adductors': [
         { id: 'legs-hip-adduction', sets: '3 × 12–15',  rest: '1:00' },
       ],
       'calves': [
         { id: 'legs-standing-calf', sets: '4 × 8–12',   rest: '1:30' },
+        { id: 'legs-seated-calf',   sets: '3 × 12–15',  rest: '1:00' },
         { id: 'legs-tib-raise',     sets: '3 × 15–20',  rest: '1:00' },
       ],
     },
