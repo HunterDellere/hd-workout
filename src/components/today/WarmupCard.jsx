@@ -215,12 +215,7 @@ export function WarmupCard({ warmup, sessionId, accent, hasLoggedAny, readOnly =
             >
               Warmup
             </Text>
-            <Text
-              as="div"
-              variant="mono-sm"
-              tone="tertiary"
-              style={{ opacity: 0.7 }}
-            >
+            <Text as="div" variant="mono-sm" tone="tertiary">
               {drillCount} drill{drillCount === 1 ? '' : 's'} · ~{minutes} min
             </Text>
           </Stack>

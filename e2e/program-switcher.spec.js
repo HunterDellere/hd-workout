@@ -22,10 +22,11 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('switching to PPL changes the prescribed exercises on /today', async ({ page }) => {
-  // Full Spectrum push includes cable external rotation (push-cable-ext-rot).
-  // PPL push does not program it.
+  // PPL programs a dumbbell bench (push-db-bench) on push day to fill the
+  // extra horizontal-press volume that twice-weekly frequency calls for.
+  // Full Spectrum doesn't — it leans on barbell bench + fly + incline.
   await page.goto('./#/today');
-  await expect(page.locator('[data-testid="preview-row"][data-exercise-id="push-cable-ext-rot"]')).toBeVisible();
+  await expect(page.locator('[data-testid="preview-row"][data-exercise-id="push-db-bench"]')).toHaveCount(0);
 
   // Switch to PPL.
   await page.goto('./#/me/settings');
@@ -33,10 +34,10 @@ test('switching to PPL changes the prescribed exercises on /today', async ({ pag
   await page.locator('[data-testid="program-switcher"] [data-radio="ppl-6"]').click();
   await page.waitForTimeout(150);
 
-  // Back to /today — ext rotation should be gone (PPL doesn't program it).
+  // Back to /today — DB bench should now be programmed.
   await page.goto('./#/today');
-  await expect(page.locator('[data-testid="preview-row"][data-exercise-id="push-cable-ext-rot"]')).toHaveCount(0);
-  // But the bench is still there (both programs keep it).
+  await expect(page.locator('[data-testid="preview-row"][data-exercise-id="push-db-bench"]')).toBeVisible();
+  // Barbell bench is in both — sanity check the page rendered the right day.
   await expect(page.locator('[data-testid="preview-row"][data-exercise-id="push-bb-bench"]')).toBeVisible();
 });
 
