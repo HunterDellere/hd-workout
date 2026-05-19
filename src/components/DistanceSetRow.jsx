@@ -17,7 +17,119 @@ function fmtMeters(n) {
   return `${Math.round(n)}m`;
 }
 
-function LoggedDistanceSet({ set, isLast, onDiscard, perSide }) {
+function LoggedDistanceEditor({ set, perSide, onSave, onCancel, onDiscard }) {
+  const [distanceM, setDistanceM] = useState(set.distanceM ?? 0);
+  function save() {
+    onSave({ distanceM: Number(distanceM) || 0 });
+  }
+  return (
+    <div
+      data-testid="logged-set-editor"
+      data-set-index={set.index}
+      style={{ padding: '12px 0', borderTop: '1px solid var(--border-hairline)' }}
+    >
+      <Stack direction="row" align="center" gap={2} style={{ marginBottom: 8 }}>
+        <Text as="span" variant="mono-sm" tone="tertiary" style={{ width: 24, textTransform: 'uppercase' }}>
+          {String(set.index).padStart(2, '0')}
+        </Text>
+        <Text
+          as="span"
+          variant="mono-sm"
+          tone="tertiary"
+          style={{ textTransform: 'uppercase', letterSpacing: '0.12em' }}
+        >
+          Editing set
+          {perSide && set.side && (
+            <span style={{ marginLeft: 8 }}>· {set.side}</span>
+          )}
+        </Text>
+      </Stack>
+      <Stack direction="row" gap={2} align="center" wrap style={{ rowGap: 8 }}>
+        <button
+          type="button"
+          aria-label="Decrease distance"
+          onClick={() => setDistanceM((d) => Math.max(0, (Number(d) || 0) - 5))}
+          style={editStepBtnStyle}
+        >−</button>
+        <input
+          type="number"
+          inputMode="numeric"
+          value={distanceM ?? ''}
+          onChange={(e) => setDistanceM(e.target.value === '' ? 0 : Number(e.target.value))}
+          data-testid="edit-logged-distance"
+          aria-label="Distance in meters"
+          style={{ ...editInputStyle, width: 90, flex: '0 0 90px' }}
+        />
+        <Text as="span" variant="mono-sm" tone="tertiary">m</Text>
+        <button
+          type="button"
+          aria-label="Increase distance"
+          onClick={() => setDistanceM((d) => (Number(d) || 0) + 5)}
+          style={editStepBtnStyle}
+        >+</button>
+      </Stack>
+      <Stack direction="row" gap={2} justify="space-between" align="center" style={{ marginTop: 14 }}>
+        <button
+          type="button"
+          data-testid="edit-logged-discard"
+          onClick={() => onDiscard(set.index)}
+          style={{
+            all: 'unset',
+            cursor: 'pointer',
+            padding: '8px 10px',
+            color: 'var(--state-warn-ink, var(--text-tertiary))',
+            fontFamily: 'var(--font-mono)',
+            fontSize: 11,
+            letterSpacing: '0.10em',
+            textTransform: 'uppercase',
+          }}
+        >
+          Delete set
+        </button>
+        <Stack direction="row" gap={2}>
+          <Button variant="bare" size="sm" onClick={onCancel} data-testid="edit-logged-cancel">
+            Cancel
+          </Button>
+          <Button variant="primary" size="sm" onClick={save} data-testid="edit-logged-save">
+            Save
+          </Button>
+        </Stack>
+      </Stack>
+    </div>
+  );
+}
+
+const editStepBtnStyle = {
+  all: 'unset',
+  width: 36,
+  height: 36,
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  border: '1px solid var(--border-hairline)',
+  borderRadius: 4,
+  fontFamily: 'var(--font-mono)',
+  fontSize: 16,
+  color: 'var(--text-secondary)',
+  cursor: 'pointer',
+  flexShrink: 0,
+};
+
+const editInputStyle = {
+  height: 36,
+  border: '1px solid var(--border-strong)',
+  borderRadius: 4,
+  background: 'var(--surface-page)',
+  color: 'var(--text-primary)',
+  fontFamily: 'var(--font-mono)',
+  fontSize: 16,
+  textAlign: 'center',
+  outline: 'none',
+  padding: '0 6px',
+  WebkitAppearance: 'none',
+};
+
+function LoggedDistanceSet({ set, isLast, onDiscard, onEdit, perSide }) {
   const [offset, setOffset] = useState(0);
   const [tracking, setTracking] = useState(false);
   const startX = useRef(0);
@@ -102,6 +214,26 @@ function LoggedDistanceSet({ set, isLast, onDiscard, perSide }) {
             </Text>
           )}
         </Text>
+        {onEdit && (
+          <button
+            type="button"
+            aria-label={`Edit set ${set.index}`}
+            data-testid="edit-logged-set"
+            onClick={() => onEdit(set.index)}
+            style={{
+              all: 'unset',
+              cursor: 'pointer',
+              color: 'var(--text-tertiary)',
+              fontFamily: 'var(--font-mono)',
+              fontSize: 11,
+              textTransform: 'uppercase',
+              letterSpacing: '0.1em',
+              padding: '4px 8px',
+            }}
+          >
+            Edit
+          </button>
+        )}
         <button
           type="button"
           aria-label={`Discard set ${set.index}`}
@@ -130,7 +262,9 @@ export function DistanceSetRow({
   accent,
   onLogSet,
   onDiscardSet,
+  onEditSet,
 }) {
+  const [editingIndex, setEditingIndex] = useState(null);
   const perSide = prescription.perSide ?? false;
   const targetHigh = prescription.distanceHigh ?? prescription.distanceLow ?? 40;
   const targetLow = prescription.distanceLow ?? targetHigh;
@@ -162,15 +296,36 @@ export function DistanceSetRow({
     <div data-testid="set-row" data-performance-id={performance.id}>
       {performance.sets.length > 0 && (
         <div style={{ marginBottom: 12 }}>
-          {performance.sets.map((set, i) => (
-            <LoggedDistanceSet
-              key={set.index}
-              set={set}
-              isLast={i !== 0}
-              onDiscard={onDiscardSet}
-              perSide={perSide}
-            />
-          ))}
+          {performance.sets.map((set, i) => {
+            if (editingIndex === set.index && onEditSet) {
+              return (
+                <LoggedDistanceEditor
+                  key={set.index}
+                  set={set}
+                  perSide={perSide}
+                  onSave={(patch) => {
+                    onEditSet(set.index, patch);
+                    setEditingIndex(null);
+                  }}
+                  onCancel={() => setEditingIndex(null)}
+                  onDiscard={(idx) => {
+                    onDiscardSet(idx);
+                    setEditingIndex(null);
+                  }}
+                />
+              );
+            }
+            return (
+              <LoggedDistanceSet
+                key={set.index}
+                set={set}
+                isLast={i !== 0}
+                onDiscard={onDiscardSet}
+                onEdit={onEditSet ? (idx) => setEditingIndex(idx) : null}
+                perSide={perSide}
+              />
+            );
+          })}
         </div>
       )}
 

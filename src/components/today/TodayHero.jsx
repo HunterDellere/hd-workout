@@ -91,6 +91,12 @@ export function TodayHero({
   // without leaving Today. Wired by DayPlanner from useSettings.
   location,
   onSetLocation,
+  // One-day routine swap. When `onOpenSwapDay` is non-null, the hero
+  // shows a small "Swap day" chip so the lifter can switch to a different
+  // routine (e.g. Recovery instead of Push) for today only.
+  onOpenSwapDay = null,
+  swapDayActive = false,
+  scheduledDayKey = null,
 }) {
   const patternKey = DAY_PATTERN_KEY[dayKey] ?? 'mobility';
   return (
@@ -159,13 +165,28 @@ export function TodayHero({
           deliberate breathing room (with corner glyph) rather than
           looking abandoned on wide viewports. The card itself remains
           full-bleed to anchor the page. */}
-      <Stack direction="row" align="center" justify="space-between" gap={2}>
-        <Stack direction="row" align="center" gap={2}>
+      <Stack direction="row" align="center" justify="space-between" gap={2} wrap>
+        <Stack direction="row" align="center" gap={2} wrap>
           <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase', letterSpacing: '0.14em' }}>
             {labelOverride ?? `Today · ${todayKey}`}
           </Text>
+          {swapDayActive && scheduledDayKey && (
+            <Text
+              as="span"
+              variant="mono-sm"
+              tone="tertiary"
+              data-testid="today-override-tag"
+              style={{
+                textTransform: 'uppercase',
+                letterSpacing: '0.10em',
+                opacity: 0.75,
+              }}
+            >
+              · Swapped from {scheduledDayKey}
+            </Text>
+          )}
         </Stack>
-        <Stack direction="row" align="center" gap={2}>
+        <Stack direction="row" align="center" gap={2} wrap>
           {onSetLocation && (
             <Stack direction="row" gap={1} data-testid="hero-location">
               <LocationChip
@@ -181,6 +202,14 @@ export function TodayHero({
                 testId="hero-location-home"
               />
             </Stack>
+          )}
+          {onOpenSwapDay && (
+            <MonoChipButton
+              onClick={onOpenSwapDay}
+              data-testid="hero-swap-day"
+            >
+              Swap day
+            </MonoChipButton>
           )}
           {hasOverlay && (
             <MonoChipButton

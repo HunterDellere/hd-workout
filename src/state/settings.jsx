@@ -9,6 +9,7 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   SettingsContext,
   DEFAULT_SETTINGS,
+  localDateKey,
 } from './settings-context.js';
 import { loadFromStorage, saveToStorage, STORAGE_KEYS } from '../data/storage';
 import { migrate, stampSchemaVersion } from '../data/migrations';
@@ -107,6 +108,15 @@ export function SettingsProvider({ children }) {
       ...s,
       plateCalculatorEnabled: !!v,
     })),
+    // One-day routine swap. Stamps today's local date alongside the
+    // chosen dayKey so the override silently expires tomorrow.
+    setTodayOverride: (dayKey) => setSettings((s) => ({
+      ...s,
+      todayOverride: dayKey
+        ? { date: localDateKey(), dayKey }
+        : null,
+    })),
+    clearTodayOverride: () => setSettings((s) => ({ ...s, todayOverride: null })),
     toggleFavorite: (exerciseId) => setSettings((s) => {
       const current = s.favoriteExerciseIds ?? [];
       const next = current.includes(exerciseId)

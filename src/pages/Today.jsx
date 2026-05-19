@@ -30,13 +30,14 @@ import {
   autoProgressionFor,
 } from '../data/history';
 import { suggestNextLoad, annotatePRs } from '../data/intelligence';
-import { useSettings, dayKeyForToday } from '../state/settings-context.js';
+import { useSettings, effectiveTodayKey } from '../state/settings-context.js';
 import { useSession, lastLoggedAt } from '../state/session-context.js';
 import { useOverlay } from '../state/overlay-context.js';
 import { SubstituteSheet } from '../components/SubstituteSheet';
 import { SlotPicker } from '../components/SlotPicker';
 import { AddGroupSheet } from '../components/AddGroupSheet';
 import { ReorderSectionsSheet } from '../components/ReorderSectionsSheet';
+import { SwapDaySheet } from '../components/SwapDaySheet';
 import { PerformanceCard } from '../components/today/PerformanceCard';
 import { CollapsedPerformanceRow } from '../components/today/CollapsedPerformanceRow';
 import { RestDay } from '../components/today/RestDay';
@@ -47,13 +48,14 @@ import { useLongGap } from '../hooks/useLongGap';
 
 export function Today() {
   const navigate = useNavigate();
-  const { settings } = useSettings();
+  const { settings, setTodayOverride, clearTodayOverride } = useSettings();
   const {
     activeSession,
     archive,
     endSession,
     logSet,
     discardSet,
+    editSet,
     swapExercise,
     addPerformance,
     addSectionToActiveSession,
@@ -71,8 +73,14 @@ export function Today() {
     days: overlayDays,
   } = useOverlay();
 
-  const todayKey = activeSession?.dayKey ?? dayKeyForToday(settings.split);
+  // Compute today's effective key from settings — honours a one-day
+  // override stamped on settings.todayOverride (Recovery instead of Push
+  // for an under-the-weather day, etc.). The override silently expires
+  // when its stamped date no longer matches today.
+  const { dayKey: scheduledTodayKey, fromOverride, scheduledKey } = effectiveTodayKey(settings);
+  const todayKey = activeSession?.dayKey ?? scheduledTodayKey;
   const isRest = todayKey === 'rest';
+  const [swapDayOpen, setSwapDayOpen] = useState(false);
   // Pre-start preview reads the overlay-applied day so user edits show up;
   // active sessions read the snapshot the session was started with via
   // `activeSession.performances` directly, so overlay edits during a
@@ -208,7 +216,37 @@ export function Today() {
   }
 
   // ─── Branch: rest day ────────────────────────────────────────────────
-  if (isRest) return <RestDay />;
+  if (isRest) {
+    return (
+      <>
+        <RestDay
+          onOpenSwap={() => setSwapDayOpen(true)}
+          fromOverride={fromOverride}
+          scheduledKey={scheduledKey}
+          onResetToScheduled={clearTodayOverride}
+        />
+        <SwapDaySheet
+          open={swapDayOpen}
+          onClose={() => setSwapDayOpen(false)}
+          currentKey={todayKey}
+          scheduledKey={scheduledKey}
+          isOverridden={fromOverride}
+          onPick={(key) => {
+            if (key === scheduledKey && fromOverride) {
+              clearTodayOverride();
+            } else if (key !== todayKey) {
+              setTodayOverride(key);
+            }
+            setSwapDayOpen(false);
+          }}
+          onResetToScheduled={() => {
+            clearTodayOverride();
+            setSwapDayOpen(false);
+          }}
+        />
+      </>
+    );
+  }
 
   // ─── Branch: weekday has a key but the program doesn't define it ────
   if (!day) {
@@ -227,11 +265,39 @@ export function Today() {
             : 'The current weekday has no day assigned in your split.'}
         </Text>
         <BrushDivider style={{ marginTop: 32 }} />
-        <div style={{ marginTop: 24 }}>
+        <Stack direction="row" gap={2} style={{ marginTop: 24, flexWrap: 'wrap', rowGap: 8 }}>
           <Button as={Link} to="/me/settings" variant="soft" accent="stone" size="md">
             Edit your split
           </Button>
-        </div>
+          <Button
+            variant="bare"
+            accent="stone"
+            size="md"
+            onClick={() => setSwapDayOpen(true)}
+            data-testid="swap-day-from-stub"
+          >
+            Swap today's routine
+          </Button>
+        </Stack>
+        <SwapDaySheet
+          open={swapDayOpen}
+          onClose={() => setSwapDayOpen(false)}
+          currentKey={todayKey}
+          scheduledKey={scheduledKey}
+          isOverridden={fromOverride}
+          onPick={(key) => {
+            if (key === scheduledKey && fromOverride) {
+              clearTodayOverride();
+            } else if (key !== todayKey) {
+              setTodayOverride(key);
+            }
+            setSwapDayOpen(false);
+          }}
+          onResetToScheduled={() => {
+            clearTodayOverride();
+            setSwapDayOpen(false);
+          }}
+        />
       </Page>
     );
   }
@@ -240,7 +306,13 @@ export function Today() {
   return (
     <Page>
       {!activeSession ? (
-        <DayPlanner dayKey={todayKey} viewMode="today" />
+        <DayPlanner
+          dayKey={todayKey}
+          viewMode="today"
+          onOpenSwapDay={() => setSwapDayOpen(true)}
+          swapDayActive={fromOverride}
+          scheduledDayKey={scheduledKey}
+        />
       ) : (
         <>
           <Stack direction="row" align="center" gap={2}>
@@ -463,6 +535,7 @@ export function Today() {
                       onCreditManualEntry={creditManualEntry}
                       onLogSet={logSet}
                       onDiscardSet={discardSet}
+                      onEditSet={editSet}
                       onSwap={setSwapPerformanceId}
                       onStopRest={clearRestTimer}
                       onRemove={perf.addedInSession && perf.sets.length === 0
@@ -681,6 +754,31 @@ export function Today() {
       />
 
       {/* Pre-start overlay-editing sheets are owned by DayPlanner now. */}
+
+      {/* One-day routine swap. Suppressed during an active session — the
+          session is locked to the day it was started in; the user can swap
+          individual exercises but not the whole day. */}
+      {!activeSession && (
+        <SwapDaySheet
+          open={swapDayOpen}
+          onClose={() => setSwapDayOpen(false)}
+          currentKey={todayKey}
+          scheduledKey={scheduledKey}
+          isOverridden={fromOverride}
+          onPick={(key) => {
+            if (key === scheduledKey && fromOverride) {
+              clearTodayOverride();
+            } else if (key !== todayKey) {
+              setTodayOverride(key);
+            }
+            setSwapDayOpen(false);
+          }}
+          onResetToScheduled={() => {
+            clearTodayOverride();
+            setSwapDayOpen(false);
+          }}
+        />
+      )}
     </Page>
   );
 }

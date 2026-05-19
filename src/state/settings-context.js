@@ -61,6 +61,11 @@ export const DEFAULT_SETTINGS = {
   // Surfaced as a "Favorites" group at the top of /library when non-empty.
   // Single source of truth for star state on ExerciseSheet + Exercise page.
   favoriteExerciseIds: [],
+  // One-day routine swap. Stamped with the local YYYY-MM-DD it was set on
+  // so it only applies to today; tomorrow it's silently ignored and the
+  // user is back on their scheduled split. Use case: "I can't lift today,
+  // run recovery instead" — no permanent reshuffle.
+  todayOverride: null, // { date: 'YYYY-MM-DD', dayKey: string } | null
 };
 
 export const DAY_OPTIONS = ['push', 'pull', 'legs', 'core', 'recovery', 'rest'];
@@ -76,4 +81,25 @@ export const WEEKDAYS = [
 
 export function dayKeyForToday(split, now = new Date()) {
   return split[now.getDay()] ?? null;
+}
+
+// Local YYYY-MM-DD for `now`. Uses the host TZ — the override is meant to
+// be "today's calendar day" from the lifter's perspective, not UTC.
+export function localDateKey(now = new Date()) {
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+// Apply a one-day override to the regular split. Override is honoured only
+// when its stamped date matches today; otherwise we fall through to the
+// scheduled split. Returns { dayKey, fromOverride, scheduledKey }.
+export function effectiveTodayKey(settings, now = new Date()) {
+  const scheduledKey = dayKeyForToday(settings.split, now);
+  const ov = settings.todayOverride;
+  if (ov && ov.dayKey && ov.date === localDateKey(now)) {
+    return { dayKey: ov.dayKey, fromOverride: true, scheduledKey };
+  }
+  return { dayKey: scheduledKey, fromOverride: false, scheduledKey };
 }

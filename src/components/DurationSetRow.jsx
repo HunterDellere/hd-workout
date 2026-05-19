@@ -24,7 +24,120 @@ function fmtTime(sec, { signPositive = false } = {}) {
   return `${sign}${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 }
 
-function LoggedDurationSet({ set, isLast, onDiscard, perSide }) {
+function LoggedDurationEditor({ set, perSide, onSave, onCancel, onDiscard }) {
+  const [durationSec, setDurationSec] = useState(set.durationSec ?? 0);
+  const isRound = set.kind === 'rounds';
+  function save() {
+    onSave({ durationSec: Number(durationSec) || 0 });
+  }
+  return (
+    <div
+      data-testid="logged-set-editor"
+      data-set-index={set.index}
+      style={{ padding: '12px 0', borderTop: '1px solid var(--border-hairline)' }}
+    >
+      <Stack direction="row" align="center" gap={2} style={{ marginBottom: 8 }}>
+        <Text as="span" variant="mono-sm" tone="tertiary" style={{ width: 24, textTransform: 'uppercase' }}>
+          {String(set.index).padStart(2, '0')}
+        </Text>
+        <Text
+          as="span"
+          variant="mono-sm"
+          tone="tertiary"
+          style={{ textTransform: 'uppercase', letterSpacing: '0.12em' }}
+        >
+          {isRound ? `Editing round ${set.index}` : 'Editing set'}
+          {perSide && set.side && (
+            <span style={{ marginLeft: 8 }}>· {set.side}</span>
+          )}
+        </Text>
+      </Stack>
+      <Stack direction="row" gap={2} align="center" wrap style={{ rowGap: 8 }}>
+        <button
+          type="button"
+          aria-label="Decrease seconds"
+          onClick={() => setDurationSec((d) => Math.max(0, (Number(d) || 0) - 5))}
+          style={editStepBtnStyle}
+        >−</button>
+        <input
+          type="number"
+          inputMode="numeric"
+          value={durationSec ?? ''}
+          onChange={(e) => setDurationSec(e.target.value === '' ? 0 : Number(e.target.value))}
+          data-testid="edit-logged-duration"
+          aria-label="Duration in seconds"
+          style={{ ...editInputStyle, width: 90, flex: '0 0 90px' }}
+        />
+        <Text as="span" variant="mono-sm" tone="tertiary">sec</Text>
+      </Stack>
+      <Stack direction="row" gap={2} justify="space-between" align="center" style={{ marginTop: 14 }}>
+        <button
+          type="button"
+          data-testid="edit-logged-discard"
+          onClick={() => onDiscard(set.index)}
+          style={{
+            all: 'unset',
+            cursor: 'pointer',
+            padding: '8px 10px',
+            color: 'var(--state-warn-ink, var(--text-tertiary))',
+            fontFamily: 'var(--font-mono)',
+            fontSize: 11,
+            letterSpacing: '0.10em',
+            textTransform: 'uppercase',
+          }}
+        >
+          Delete set
+        </button>
+        <Stack direction="row" gap={2}>
+          <Button variant="bare" size="sm" onClick={onCancel} data-testid="edit-logged-cancel">
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={save}
+            data-testid="edit-logged-save"
+            disabled={Number.isNaN(Number(durationSec))}
+          >
+            Save
+          </Button>
+        </Stack>
+      </Stack>
+    </div>
+  );
+}
+
+const editStepBtnStyle = {
+  all: 'unset',
+  width: 36,
+  height: 36,
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  border: '1px solid var(--border-hairline)',
+  borderRadius: 4,
+  fontFamily: 'var(--font-mono)',
+  fontSize: 16,
+  color: 'var(--text-secondary)',
+  cursor: 'pointer',
+  flexShrink: 0,
+};
+
+const editInputStyle = {
+  height: 36,
+  border: '1px solid var(--border-strong)',
+  borderRadius: 4,
+  background: 'var(--surface-page)',
+  color: 'var(--text-primary)',
+  fontFamily: 'var(--font-mono)',
+  fontSize: 16,
+  textAlign: 'center',
+  outline: 'none',
+  padding: '0 6px',
+  WebkitAppearance: 'none',
+};
+
+function LoggedDurationSet({ set, isLast, onDiscard, onEdit, perSide }) {
   // Each logged set shows duration (or "round 1 of N"). Swipe-to-discard
   // matches SetRow's pointer pattern.
   const [offset, setOffset] = useState(0);
@@ -119,6 +232,26 @@ function LoggedDurationSet({ set, isLast, onDiscard, perSide }) {
             </>
           )}
         </Text>
+        {onEdit && (
+          <button
+            type="button"
+            aria-label={`Edit set ${set.index}`}
+            data-testid="edit-logged-set"
+            onClick={() => onEdit(set.index)}
+            style={{
+              all: 'unset',
+              cursor: 'pointer',
+              color: 'var(--text-tertiary)',
+              fontFamily: 'var(--font-mono)',
+              fontSize: 11,
+              textTransform: 'uppercase',
+              letterSpacing: '0.1em',
+              padding: '4px 8px',
+            }}
+          >
+            Edit
+          </button>
+        )}
         <button
           type="button"
           aria-label={`Discard set ${set.index}`}
@@ -147,7 +280,9 @@ export function DurationSetRow({
   accent,
   onLogSet,
   onDiscardSet,
+  onEditSet,
 }) {
+  const [editingIndex, setEditingIndex] = useState(null);
   // The catalog's prescription is the source of truth for hold time;
   // for rounds, holdSec is irrelevant and we just log a round event.
   const isRounds = prescription.kind === 'rounds';
@@ -226,15 +361,36 @@ export function DurationSetRow({
     <div data-testid="set-row" data-performance-id={performance.id}>
       {performance.sets.length > 0 && (
         <div style={{ marginBottom: 12 }}>
-          {performance.sets.map((set, i) => (
-            <LoggedDurationSet
-              key={set.index}
-              set={set}
-              isLast={i !== 0}
-              onDiscard={onDiscardSet}
-              perSide={perSide}
-            />
-          ))}
+          {performance.sets.map((set, i) => {
+            if (editingIndex === set.index && onEditSet) {
+              return (
+                <LoggedDurationEditor
+                  key={set.index}
+                  set={set}
+                  perSide={perSide}
+                  onSave={(patch) => {
+                    onEditSet(set.index, patch);
+                    setEditingIndex(null);
+                  }}
+                  onCancel={() => setEditingIndex(null)}
+                  onDiscard={(idx) => {
+                    onDiscardSet(idx);
+                    setEditingIndex(null);
+                  }}
+                />
+              );
+            }
+            return (
+              <LoggedDurationSet
+                key={set.index}
+                set={set}
+                isLast={i !== 0}
+                onDiscard={onDiscardSet}
+                onEdit={onEditSet ? (idx) => setEditingIndex(idx) : null}
+                perSide={perSide}
+              />
+            );
+          })}
         </div>
       )}
 

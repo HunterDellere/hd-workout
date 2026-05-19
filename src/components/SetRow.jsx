@@ -143,7 +143,292 @@ function RpeRow({ value, onChange, accent }) {
   );
 }
 
-function LoggedSet({ set, isLast, onDiscard, unitDisplay, isPR, justLogged }) {
+function LoggedSetEditor({ set, unitDisplay, onSave, onCancel, onDiscard }) {
+  // Mirrors the SetRow input shape but seeded from the existing logged
+  // values. Live state stays local — only commits when the user taps
+  // Save. Empty inputs read as null so we don't accidentally zero out a
+  // field the user didn't touch.
+  const [weight, setWeight] = useState(set.weight ?? '');
+  const [reps, setReps] = useState(set.reps ?? '');
+  const [rpe, setRpe] = useState(set.rpe ?? null);
+  const [isWarmup, setIsWarmupFlag] = useState(Boolean(set.isWarmup));
+  const [isDrop, setIsDropFlag] = useState(Boolean(set.isDrop));
+
+  const stepWeight = (delta) => setWeight((w) => {
+    const base = typeof w === 'number' ? w : (Number(w) || 0);
+    return Math.max(0, Math.round((base + delta) * 100) / 100);
+  });
+  const stepReps = (delta) => setReps((r) => {
+    const base = typeof r === 'number' ? r : (Number(r) || 0);
+    return Math.max(0, base + delta);
+  });
+
+  function save() {
+    onSave({
+      weight: weight === '' ? null : Number(weight),
+      reps: reps === '' ? null : Number(reps),
+      rpe,
+      isWarmup,
+      isDrop,
+    });
+  }
+
+  return (
+    <div
+      data-testid="logged-set-editor"
+      data-set-index={set.index}
+      style={{
+        padding: '12px 0',
+        borderTop: '1px solid var(--border-hairline)',
+      }}
+    >
+      <Stack direction="row" align="center" gap={2} style={{ marginBottom: 8 }}>
+        <Text as="span" variant="mono-sm" tone="tertiary" style={{ width: 24, textTransform: 'uppercase' }}>
+          {String(set.index).padStart(2, '0')}
+        </Text>
+        <Text
+          as="span"
+          variant="mono-sm"
+          tone="tertiary"
+          style={{ textTransform: 'uppercase', letterSpacing: '0.12em' }}
+        >
+          Editing set
+        </Text>
+      </Stack>
+      <Stack direction="row" gap={2} align="flex-end" wrap style={{ rowGap: 8 }}>
+        <Stack direction="column" gap={1} style={{ flex: '1 1 140px', minWidth: 0 }}>
+          <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase', letterSpacing: '0.12em' }}>
+            Load · {unitDisplay}
+          </Text>
+          <Stack direction="row" gap={1} align="center">
+            <button type="button" aria-label="Decrease load" onClick={() => stepWeight(unitDisplay === 'kg' ? -2.5 : -5)} style={editStepBtnStyle}>−</button>
+            <input
+              type="text"
+              inputMode="decimal"
+              value={weight}
+              onChange={(e) => {
+                const next = e.target.value.replace(/[^0-9.]/g, '');
+                setWeight(next === '' ? '' : Number(next));
+              }}
+              data-testid="edit-logged-weight"
+              aria-label="Load"
+              style={editInputStyle}
+            />
+            <button type="button" aria-label="Increase load" onClick={() => stepWeight(unitDisplay === 'kg' ? 2.5 : 5)} style={editStepBtnStyle}>+</button>
+          </Stack>
+        </Stack>
+        <Stack direction="column" gap={1} style={{ flex: '1 1 120px', minWidth: 0 }}>
+          <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase', letterSpacing: '0.12em' }}>
+            Reps
+          </Text>
+          <Stack direction="row" gap={1} align="center">
+            <button type="button" aria-label="Decrease reps" onClick={() => stepReps(-1)} style={editStepBtnStyle}>−</button>
+            <input
+              type="text"
+              inputMode="numeric"
+              value={reps}
+              onChange={(e) => {
+                const next = e.target.value.replace(/[^0-9]/g, '');
+                setReps(next === '' ? '' : Number(next));
+              }}
+              data-testid="edit-logged-reps"
+              aria-label="Reps"
+              style={editInputStyle}
+            />
+            <button type="button" aria-label="Increase reps" onClick={() => stepReps(1)} style={editStepBtnStyle}>+</button>
+          </Stack>
+        </Stack>
+      </Stack>
+
+      <Stack direction="row" gap={1} align="center" style={{ marginTop: 12 }} wrap>
+        <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase', letterSpacing: '0.12em', marginRight: 4 }}>
+          RPE
+        </Text>
+        {[6, 7, 8, 9, 10].map((v) => {
+          const active = rpe === v;
+          return (
+            <button
+              key={v}
+              type="button"
+              data-testid={`edit-logged-rpe-${v}`}
+              aria-pressed={active}
+              onClick={() => setRpe(active ? null : v)}
+              style={{
+                all: 'unset',
+                cursor: 'pointer',
+                width: 38,
+                height: 38,
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: 999,
+                border: '1px solid var(--border-hairline)',
+                background: active ? 'var(--text-primary)' : 'transparent',
+                color: active ? 'var(--surface-page)' : 'var(--text-secondary)',
+                fontFamily: 'var(--font-mono)',
+                fontSize: 12,
+                fontWeight: 600,
+              }}
+            >
+              {v}
+            </button>
+          );
+        })}
+        {rpe != null && (
+          <button
+            type="button"
+            data-testid="edit-logged-rpe-clear"
+            onClick={() => setRpe(null)}
+            style={{
+              all: 'unset',
+              cursor: 'pointer',
+              padding: '4px 8px',
+              fontFamily: 'var(--font-mono)',
+              fontSize: 11,
+              color: 'var(--text-tertiary)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.10em',
+            }}
+          >
+            Clear
+          </button>
+        )}
+      </Stack>
+
+      <Stack direction="row" gap={2} align="center" style={{ marginTop: 12 }} wrap>
+        <button
+          type="button"
+          role="checkbox"
+          aria-checked={isWarmup}
+          data-testid="edit-logged-warmup"
+          data-active={isWarmup ? '1' : '0'}
+          onClick={() => {
+            const next = !isWarmup;
+            setIsWarmupFlag(next);
+            if (next) setIsDropFlag(false);
+          }}
+          style={{
+            all: 'unset',
+            cursor: 'pointer',
+            padding: '6px 12px',
+            borderRadius: 4,
+            border: '1px solid var(--border-hairline)',
+            background: isWarmup ? 'var(--text-primary)' : 'transparent',
+            color: isWarmup ? 'var(--surface-page)' : 'var(--text-tertiary)',
+            fontFamily: 'var(--font-mono)',
+            fontSize: 11,
+            letterSpacing: '0.12em',
+            textTransform: 'uppercase',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          Warmup
+        </button>
+        <button
+          type="button"
+          role="checkbox"
+          aria-checked={isDrop}
+          data-testid="edit-logged-drop"
+          data-active={isDrop ? '1' : '0'}
+          onClick={() => {
+            const next = !isDrop;
+            setIsDropFlag(next);
+            if (next) setIsWarmupFlag(false);
+          }}
+          style={{
+            all: 'unset',
+            cursor: 'pointer',
+            padding: '6px 12px',
+            borderRadius: 4,
+            border: '1px solid var(--border-hairline)',
+            background: isDrop ? 'var(--text-primary)' : 'transparent',
+            color: isDrop ? 'var(--surface-page)' : 'var(--text-tertiary)',
+            fontFamily: 'var(--font-mono)',
+            fontSize: 11,
+            letterSpacing: '0.12em',
+            textTransform: 'uppercase',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          Drop set
+        </button>
+      </Stack>
+
+      <Stack direction="row" gap={2} justify="space-between" align="center" style={{ marginTop: 14 }}>
+        <button
+          type="button"
+          data-testid="edit-logged-discard"
+          onClick={() => onDiscard(set.index)}
+          style={{
+            all: 'unset',
+            cursor: 'pointer',
+            padding: '8px 10px',
+            color: 'var(--state-warn-ink, var(--text-tertiary))',
+            fontFamily: 'var(--font-mono)',
+            fontSize: 11,
+            letterSpacing: '0.10em',
+            textTransform: 'uppercase',
+          }}
+        >
+          Delete set
+        </button>
+        <Stack direction="row" gap={2}>
+          <Button
+            variant="bare"
+            size="sm"
+            onClick={onCancel}
+            data-testid="edit-logged-cancel"
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={save}
+            data-testid="edit-logged-save"
+            disabled={weight === '' || reps === ''}
+          >
+            Save
+          </Button>
+        </Stack>
+      </Stack>
+    </div>
+  );
+}
+
+const editStepBtnStyle = {
+  all: 'unset',
+  width: 36,
+  height: 36,
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  border: '1px solid var(--border-hairline)',
+  borderRadius: 4,
+  fontFamily: 'var(--font-mono)',
+  fontSize: 16,
+  color: 'var(--text-secondary)',
+  cursor: 'pointer',
+  flexShrink: 0,
+};
+
+const editInputStyle = {
+  flex: 1,
+  minWidth: 0,
+  height: 36,
+  border: '1px solid var(--border-strong)',
+  borderRadius: 4,
+  background: 'var(--surface-page)',
+  color: 'var(--text-primary)',
+  fontFamily: 'var(--font-mono)',
+  fontSize: 16,
+  textAlign: 'center',
+  outline: 'none',
+  padding: '0 6px',
+  WebkitAppearance: 'none',
+};
+
+function LoggedSet({ set, isLast, onDiscard, onEdit, unitDisplay, isPR, justLogged }) {
   // Swipe-to-discard: pointer-driven horizontal drag reveals a Delete
   // affordance under the row. Threshold is 56px (matches the visible
   // pull-tab); beyond that, releasing fires onDiscard. Keyboard / mouse
@@ -292,6 +577,26 @@ function LoggedSet({ set, isLast, onDiscard, unitDisplay, isPR, justLogged }) {
           RPE {set.rpe}
         </Text>
       )}
+      {onEdit && (
+        <button
+          type="button"
+          aria-label={`Edit set ${set.index}`}
+          data-testid="edit-logged-set"
+          onClick={() => onEdit(set.index)}
+          style={{
+            all: 'unset',
+            cursor: 'pointer',
+            color: 'var(--text-tertiary)',
+            fontFamily: 'var(--font-mono)',
+            fontSize: 11,
+            textTransform: 'uppercase',
+            letterSpacing: '0.1em',
+            padding: '4px 8px',
+          }}
+        >
+          Edit
+        </button>
+      )}
       <button
         type="button"
         aria-label={`Discard set ${set.index}`}
@@ -354,6 +659,7 @@ export function SetRow({
   unit,
   onLogSet,
   onDiscardSet,
+  onEditSet,
   prSetIds,
   // Last working top-set from the archive for this exercise — used to
   // pre-fill the first set's weight/reps when nothing's been logged yet
@@ -473,6 +779,10 @@ export function SetRow({
     : null;
   const prevLatestRef = useRef(latestSetIndex);
   const [justLandedIndex, setJustLandedIndex] = useState(null);
+  // Which logged-set row (by 1-based set.index) is currently in edit
+  // mode. Only one at a time — switching to another row collapses the
+  // first. `null` = no edit row open.
+  const [editingIndex, setEditingIndex] = useState(null);
   useEffect(() => {
     if (latestSetIndex !== prevLatestRef.current) {
       const isAdvance = latestSetIndex !== null
@@ -503,17 +813,38 @@ export function SetRow({
       `}</style>
       {performance.sets.length > 0 && (
         <div style={{ marginBottom: 12 }}>
-          {performance.sets.map((set, i) => (
-            <LoggedSet
-              key={set.index}
-              set={set}
-              isLast={i !== 0}
-              onDiscard={onDiscardSet}
-              unitDisplay={unit}
-              isPR={prSetIds?.has(`${performance.id}:${set.index}`) ?? false}
-              justLogged={set.index === justLandedIndex}
-            />
-          ))}
+          {performance.sets.map((set, i) => {
+            if (editingIndex === set.index && onEditSet) {
+              return (
+                <LoggedSetEditor
+                  key={set.index}
+                  set={set}
+                  unitDisplay={unit}
+                  onSave={(patch) => {
+                    onEditSet(set.index, patch);
+                    setEditingIndex(null);
+                  }}
+                  onCancel={() => setEditingIndex(null)}
+                  onDiscard={(idx) => {
+                    onDiscardSet(idx);
+                    setEditingIndex(null);
+                  }}
+                />
+              );
+            }
+            return (
+              <LoggedSet
+                key={set.index}
+                set={set}
+                isLast={i !== 0}
+                onDiscard={onDiscardSet}
+                onEdit={onEditSet ? (idx) => setEditingIndex(idx) : null}
+                unitDisplay={unit}
+                isPR={prSetIds?.has(`${performance.id}:${set.index}`) ?? false}
+                justLogged={set.index === justLandedIndex}
+              />
+            );
+          })}
         </div>
       )}
 
