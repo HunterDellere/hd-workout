@@ -48,6 +48,7 @@ export const homeDefault = {
       ],
       'triceps': [
         { id: 'push-band-pushdown',   sets: '3 × 12–15',   rest: '1:00' },
+        { id: 'push-diamond-pushup',  sets: '3 × 6–12',    rest: '1:30' },
       ],
     },
     pull: {
@@ -152,6 +153,10 @@ export const homeDefault = {
       ],
       'balance': [
         { id: 'rec-single-leg-stand', sets: '2 × 1 min each side', rest: '0:30' },
+      ],
+      'facial-cervical': [
+        { id: 'rec-neck-flexion',   sets: '2 × 10–15', rest: '0:30' },
+        { id: 'rec-neck-extension', sets: '2 × 10–15', rest: '0:30' },
       ],
       'mind-body': [
         { id: 'rec-sun-salutation-a', sets: '5 rounds', rest: '—' },

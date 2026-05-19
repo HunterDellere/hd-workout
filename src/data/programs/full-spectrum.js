@@ -46,6 +46,7 @@ export const fullSpectrum = {
       'triceps': [
         { id: 'push-rope-pushdown', sets: '3 × 10–15',  rest: '1:00' },
         { id: 'push-overhead-tri',  sets: '3 × 10–12',  rest: '1:30' },
+        { id: 'push-skull-crusher', sets: '3 × 8–12',   rest: '1:30' },
       ],
     },
     pull: {
@@ -69,6 +70,7 @@ export const fullSpectrum = {
       ],
       'grip-forearms': [
         { id: 'pull-farmers-carry', sets: '3 × 40–60m', rest: '2:00' },
+        { id: 'pull-wrist-curl',    sets: '2 × 12–15',  rest: '1:00' },
       ],
     },
     legs: {
@@ -84,13 +86,15 @@ export const fullSpectrum = {
         { id: 'legs-seated-curl',  sets: '3 × 10–12', rest: '1:30' },
       ],
       'glutes': [
-        { id: 'legs-hip-thrust',   sets: '4 × 8–12',  rest: '2:00' },
+        { id: 'legs-hip-thrust',    sets: '4 × 8–12',  rest: '2:00' },
+        { id: 'legs-hip-abduction', sets: '3 × 12–15', rest: '1:00' },
       ],
       'adductors': [
         { id: 'legs-copenhagen',   sets: '3 × 20–40 sec each', rest: '1:00' },
       ],
       'calves': [
         { id: 'legs-standing-calf', sets: '4 × 8–12',  rest: '1:30' },
+        { id: 'legs-seated-calf',   sets: '3 × 12–15', rest: '1:00' },
         { id: 'legs-tib-raise',     sets: '3 × 15–20', rest: '1:00' },
       ],
       'carries': [
@@ -155,6 +159,10 @@ export const fullSpectrum = {
       ],
       'balance': [
         { id: 'rec-single-leg-stand', sets: '2 × 1 min each side', rest: '0:30' },
+      ],
+      'facial-cervical': [
+        { id: 'rec-neck-flexion',    sets: '2 × 10–15',            rest: '0:30' },
+        { id: 'rec-neck-extension',  sets: '2 × 10–15',            rest: '0:30' },
       ],
       'mind-body': [
         { id: 'rec-sun-salutation-a', sets: '5 rounds', rest: '—' },
