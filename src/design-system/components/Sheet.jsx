@@ -1,6 +1,20 @@
 // Sheet — full-bleed bottom sheet shell.
 // Theme-reactive frame on CSS vars (Session 10). Drag-to-dismiss + escape +
 // scrim-tap-to-close + body-scroll-lock mechanics preserved.
+//
+// Close affordances (in order of discoverability):
+//   1. 44×44 ✕ button top-right of the sheet header (always visible).
+//   2. Tap-anywhere on the wide handle row (the 44px-tall band at the
+//      top of the sheet) — both the visual handle and the surrounding
+//      whitespace dismiss. Drag still works for muscle-memory.
+//   3. Tap the scrim (the dark backdrop behind the sheet).
+//   4. Escape key (desktop / hardware keyboards).
+//   5. Drag the sheet downward past 140px or with downward velocity.
+//
+// Mobile context: thumb reach on a 6.7" phone barely covers the top of
+// the screen, so the X is positioned at the top-right of the sheet (not
+// the page) and the handle row is a full-width hitbox to make
+// tap-to-close possible from anywhere along the top edge.
 
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useEffect } from 'react';
@@ -72,24 +86,82 @@ export function Sheet({ open, onClose, children, ariaLabel = 'Detail' }) {
               flexDirection: 'column',
             }}
           >
+            {/* Header row: wide tap-to-close band carrying the drag
+                handle, plus an explicit 44×44 ✕ close button anchored
+                top-right. The grid keeps the handle centred regardless
+                of the close button's width. */}
             <div
-              aria-hidden
               style={{
-                display: 'flex',
-                justifyContent: 'center',
-                padding: '10px 0 4px',
-                cursor: 'grab',
+                position: 'relative',
+                display: 'grid',
+                gridTemplateColumns: '52px 1fr 52px',
+                alignItems: 'center',
                 flexShrink: 0,
+                background: 'var(--surface-page)',
               }}
             >
-              <span
+              {/* Left spacer for visual symmetry with the close button. */}
+              <span aria-hidden style={{ minHeight: 44 }} />
+
+              {/* Drag handle + tap-to-close band. Spans the full middle
+                  column so the lifter can tap anywhere across the top
+                  band of the sheet to dismiss — no need to hit the small
+                  grabber line precisely. Drag still works for users who
+                  expect the iOS-style pull-down. */}
+              <button
+                type="button"
+                data-testid="sheet-close-handle"
+                aria-label="Close"
+                onClick={() => onClose?.()}
                 style={{
-                  width: 44,
-                  height: 4,
-                  borderRadius: 99,
-                  background: 'var(--border-strong)',
+                  all: 'unset',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minHeight: 44,
+                  cursor: 'pointer',
+                  WebkitTapHighlightColor: 'transparent',
                 }}
-              />
+              >
+                <span
+                  aria-hidden
+                  style={{
+                    width: 48,
+                    height: 5,
+                    borderRadius: 99,
+                    background: 'var(--border-strong)',
+                  }}
+                />
+              </button>
+
+              {/* Explicit ✕ close button. 44×44 hit target, top-right of
+                  the sheet (not the page) so thumb reach on tall phones
+                  doesn't require a stretch. */}
+              <button
+                type="button"
+                data-testid="sheet-close-x"
+                aria-label="Close"
+                onClick={() => onClose?.()}
+                style={{
+                  all: 'unset',
+                  cursor: 'pointer',
+                  width: 44,
+                  height: 44,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: 999,
+                  color: 'var(--text-secondary)',
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: 18,
+                  lineHeight: 1,
+                  justifySelf: 'end',
+                  marginRight: 8,
+                  WebkitTapHighlightColor: 'transparent',
+                }}
+              >
+                ✕
+              </button>
             </div>
             <div style={{ overflowY: 'auto', flex: 1 }}>
               {children}
