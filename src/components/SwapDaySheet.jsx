@@ -120,6 +120,10 @@ export function SwapDaySheet({
   onClose,
   currentKey,
   scheduledKey,
+  // Optional. When provided, the explainer copy names tomorrow's
+  // scheduled day for an unambiguous "Tomorrow: pull" framing. Without
+  // it, we fall back to a generic "back on schedule" line.
+  nextScheduledKey = null,
   isOverridden,
   onPick,
   onResetToScheduled,
@@ -148,10 +152,32 @@ export function SwapDaySheet({
           <Text as="h2" variant="display-lg" style={{ fontStyle: 'italic', marginTop: 6 }}>
             Pick a different routine
           </Text>
+          {/* Two-line explainer: what doesn't change, then what does come
+              next. Calling out tomorrow's *actual* scheduled day (from
+              the split) avoids the earlier bug where the copy promised
+              "back on push" by leaking today's scheduledKey into a
+              tomorrow statement. */}
           <Text as="p" variant="body-md" tone="secondary" style={{ marginTop: 8, maxWidth: 60 * 9 }}>
-            One-day swap — your weekly split doesn&apos;t change. Tomorrow you&apos;re back on
-            {scheduledKey ? ` ${scheduledKey}` : ' your schedule'}.
+            Just for today — your weekly split isn&apos;t changed.
+            {scheduledKey
+              ? ` Today was scheduled as ${scheduledKey}.`
+              : ''}
           </Text>
+          {nextScheduledKey && (
+            <Text
+              as="p"
+              variant="mono-sm"
+              tone="tertiary"
+              data-testid="swap-day-tomorrow-line"
+              style={{
+                marginTop: 6,
+                textTransform: 'uppercase',
+                letterSpacing: '0.12em',
+              }}
+            >
+              Tomorrow · {nextScheduledKey}
+            </Text>
+          )}
         </Stack>
 
         <BrushDivider style={{ marginTop: 28 }} />

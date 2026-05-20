@@ -77,7 +77,12 @@ export function Today() {
   // override stamped on settings.todayOverride (Recovery instead of Push
   // for an under-the-weather day, etc.). The override silently expires
   // when its stamped date no longer matches today.
-  const { dayKey: scheduledTodayKey, fromOverride, scheduledKey } = effectiveTodayKey(settings);
+  const {
+    dayKey: scheduledTodayKey,
+    fromOverride,
+    scheduledKey,
+    nextScheduledKey,
+  } = effectiveTodayKey(settings);
   const todayKey = activeSession?.dayKey ?? scheduledTodayKey;
   const isRest = todayKey === 'rest';
   const [swapDayOpen, setSwapDayOpen] = useState(false);
@@ -230,6 +235,7 @@ export function Today() {
           onClose={() => setSwapDayOpen(false)}
           currentKey={todayKey}
           scheduledKey={scheduledKey}
+          nextScheduledKey={nextScheduledKey}
           isOverridden={fromOverride}
           onPick={(key) => {
             if (key === scheduledKey && fromOverride) {
@@ -284,6 +290,7 @@ export function Today() {
           onClose={() => setSwapDayOpen(false)}
           currentKey={todayKey}
           scheduledKey={scheduledKey}
+          nextScheduledKey={nextScheduledKey}
           isOverridden={fromOverride}
           onPick={(key) => {
             if (key === scheduledKey && fromOverride) {
@@ -764,6 +771,7 @@ export function Today() {
           onClose={() => setSwapDayOpen(false)}
           currentKey={todayKey}
           scheduledKey={scheduledKey}
+          nextScheduledKey={nextScheduledKey}
           isOverridden={fromOverride}
           onPick={(key) => {
             if (key === scheduledKey && fromOverride) {

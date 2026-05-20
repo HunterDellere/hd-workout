@@ -94,12 +94,19 @@ export function localDateKey(now = new Date()) {
 
 // Apply a one-day override to the regular split. Override is honoured only
 // when its stamped date matches today; otherwise we fall through to the
-// scheduled split. Returns { dayKey, fromOverride, scheduledKey }.
+// scheduled split. Returns { dayKey, fromOverride, scheduledKey,
+// nextScheduledKey }, where nextScheduledKey is the next-day key from the
+// SAME weekly split — used by the swap-day sheet so it can promise the
+// user a correct "tomorrow: pull" instead of leaking today's scheduled
+// key into a tomorrow statement.
 export function effectiveTodayKey(settings, now = new Date()) {
   const scheduledKey = dayKeyForToday(settings.split, now);
+  const tomorrow = new Date(now);
+  tomorrow.setDate(now.getDate() + 1);
+  const nextScheduledKey = dayKeyForToday(settings.split, tomorrow);
   const ov = settings.todayOverride;
   if (ov && ov.dayKey && ov.date === localDateKey(now)) {
-    return { dayKey: ov.dayKey, fromOverride: true, scheduledKey };
+    return { dayKey: ov.dayKey, fromOverride: true, scheduledKey, nextScheduledKey };
   }
-  return { dayKey: scheduledKey, fromOverride: false, scheduledKey };
+  return { dayKey: scheduledKey, fromOverride: false, scheduledKey, nextScheduledKey };
 }
