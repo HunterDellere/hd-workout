@@ -16,8 +16,14 @@
 //   { kind: 'straight',   sets, repsLow, repsHigh }
 //   { kind: 'pyramid',    setsPerRep: [reps, reps, ...] }
 //   { kind: 'duration',   sets, holdSec, perSide }
+//   { kind: 'duration',   sets, holdSec, holdSchedule: [sec, sec, ...] }
 //   { kind: 'rounds',     rounds }
 //   { kind: 'free-text',  raw }
+//
+// A 'duration' result may carry a `holdSchedule` — a per-set list of hold
+// times (the McGill Big 3 descending ladder, '10/8/6/4/2s'). When present the
+// timer steps its target down the list set by set; `holdSec` is the first
+// (fallback) entry so consumers that ignore the schedule still see a target.
 //
 // straight/pyramid expose `repsMid` and `setsTotal` so consumers don't
 // need to discriminate when they just want the headline. duration/rounds
@@ -26,6 +32,13 @@
 const SET_REPS_SEP = /\s*[×x]\s*/i;
 const RANGE = /\s*[-–—]\s*/;
 const PYRAMID = /^\s*\d+(?:\s*\/\s*\d+)+\s*$/;
+// Hold pyramid: a slash-separated list of hold times — '10/8/6/4/2s',
+// '10/8/6/4/2 sec'. Distinguished from a reps pyramid ('10/8/6/4') by the
+// trailing time unit. Each entry is one isometric hold and the timer steps
+// the target down the list (the McGill Big 3 descending ladder). Matched
+// anywhere in the string so authored prescriptions can carry a descriptive
+// prefix like 'Descending holds: 10/8/6/4/2s'.
+const HOLD_PYRAMID = /(\d+(?:\s*\/\s*\d+)+)\s*(?:s|sec|secs|second|seconds)\b/i;
 // Time units: matches '30 sec', '30s', '2 min', '1.5 min'. The bare 'm'
 // alias is intentionally restricted to the long-form spellings here —
 // "min" / "minute(s)" — because a stand-alone "m" collides with the
@@ -193,6 +206,28 @@ export function parsePrescription(input) {
       perSide: PER_SIDE.test(raw),
       raw,
     };
+  }
+
+  // Hold pyramid: descending (or otherwise varying) isometric holds, e.g.
+  // 'Descending holds: 10/8/6/4/2s'. Tested before the reps-pyramid and the
+  // straight branches — both would otherwise mis-read the first number as a
+  // rep target and route this to the weighted SetRow. Emits a weight-free
+  // duration shape carrying the full schedule; DurationSetRow reads
+  // holdSchedule[setIndex] so the hold time counts down set by set.
+  const holdMatch = raw.match(HOLD_PYRAMID);
+  if (holdMatch) {
+    const holdSchedule = holdMatch[1].split('/').map((n) => Number.parseInt(n.trim(), 10));
+    if (holdSchedule.length > 1 && holdSchedule.every(Number.isFinite)) {
+      return {
+        kind: 'duration',
+        sets: holdSchedule.length,
+        setsTotal: holdSchedule.length,
+        holdSchedule,
+        holdSec: holdSchedule[0],
+        perSide: PER_SIDE.test(raw),
+        raw,
+      };
+    }
   }
 
   if (PYRAMID.test(raw)) {

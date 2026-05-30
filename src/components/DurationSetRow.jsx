@@ -286,8 +286,15 @@ export function DurationSetRow({
   // The catalog's prescription is the source of truth for hold time;
   // for rounds, holdSec is irrelevant and we just log a round event.
   const isRounds = prescription.kind === 'rounds';
-  const targetSec = prescription.holdSec ?? null;
   const perSide = prescription.perSide ?? false;
+  // Hold-pyramid prescriptions (McGill Big 3 '10/8/6/4/2s') carry a per-set
+  // ladder: the target steps down as each hold is logged. Clamp to the last
+  // entry so the timer still has a target if the lifter logs extra holds.
+  // Everything else uses the single authored hold time.
+  const holdSchedule = Array.isArray(prescription.holdSchedule) ? prescription.holdSchedule : null;
+  const targetSec = holdSchedule
+    ? (holdSchedule[Math.min(performance.sets.length, holdSchedule.length - 1)] ?? null)
+    : (prescription.holdSec ?? null);
 
   const [elapsed, setElapsed] = useState(0);
   const [running, setRunning] = useState(false);

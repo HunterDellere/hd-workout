@@ -180,9 +180,9 @@ export const homeDefault = {
       'spine-health': [
         // McGill Big 3 — mat-only, no equipment, ideal for the home
         // build. Trained as a unit in McGill's published order.
-        { id: 'rec-mcgill-curlup',    sets: '3 × 10/8/6/4/2s descending holds', rest: '0:30' },
-        { id: 'rec-mcgill-sideplank', sets: '3 × 10/8/6/4/2s descending each side', rest: '0:30' },
-        { id: 'rec-bird-dog',         sets: '3 × 8 (5s holds) each side', rest: '0:30' },
+        { id: 'rec-mcgill-curlup',    sets: 'Descending holds: 10/8/6/4/2s', rest: '0:10' },
+        { id: 'rec-mcgill-sideplank', sets: 'Descending holds: 10/8/6/4/2s', rest: '0:10' },
+        { id: 'rec-bird-dog',         sets: '8 × 5 sec each side', rest: '0:10' },
       ],
       'healthspan': [
         { id: 'rec-zone-2-walk',      sets: '1 × 30–60 min',           rest: '—' },

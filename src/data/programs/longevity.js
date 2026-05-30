@@ -182,9 +182,9 @@ export const longevity = {
         // McGill Big 3 — non-negotiable on a longevity build. Spine
         // resilience is what lets the centenarian still pick up a
         // grandchild. Trained in McGill's published order.
-        { id: 'rec-mcgill-curlup',    sets: '3 × 10/8/6/4/2s descending holds',      rest: '0:30' },
-        { id: 'rec-mcgill-sideplank', sets: '3 × 10/8/6/4/2s descending each side',  rest: '0:30' },
-        { id: 'rec-bird-dog',         sets: '3 × 8 (5s holds) each side',            rest: '0:30' },
+        { id: 'rec-mcgill-curlup',    sets: 'Descending holds: 10/8/6/4/2s',         rest: '0:10' },
+        { id: 'rec-mcgill-sideplank', sets: 'Descending holds: 10/8/6/4/2s',         rest: '0:10' },
+        { id: 'rec-bird-dog',         sets: '8 × 5 sec each side',                   rest: '0:10' },
       ],
       'healthspan': [
         // Norwegian 4×4 VO2max protocol — the single most-studied

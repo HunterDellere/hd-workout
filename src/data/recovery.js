@@ -298,6 +298,7 @@ const recovery = {
             'Body in a straight line — no hip sag or hike',
             'Hold the brace; breathe through the diaphragm, not the chest',
             'Descending holds: 10/8/6/4/2s. Rest 10s between',
+            'Run the full ladder on one side, then repeat on the other',
           ],
           safetyNotes: [
             'Knee version is the default. Foot version is for athletes with no back history.',
