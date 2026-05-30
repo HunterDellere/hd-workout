@@ -176,8 +176,8 @@ export const fullSpectrum = {
         // McGill's published order: anterior brace → lateral brace →
         // anti-rotation/extensor. Always together; the value is the
         // pattern, not any one piece.
-        { id: 'rec-mcgill-curlup',    sets: 'Descending holds: 10/8/6/4/2s', rest: '0:10' },
-        { id: 'rec-mcgill-sideplank', sets: 'Descending holds: 10/8/6/4/2s', rest: '0:10' },
+        { id: 'rec-mcgill-curlup',    sets: 'Descending holds: 10/8/6/4/2s each side', rest: '0:10' },
+        { id: 'rec-mcgill-sideplank', sets: 'Descending holds: 10/8/6/4/2s each side', rest: '0:10' },
         { id: 'rec-bird-dog',         sets: '8 × 5 sec each side', rest: '0:10' },
       ],
       'healthspan': [

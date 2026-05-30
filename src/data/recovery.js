@@ -267,11 +267,11 @@ const recovery = {
           primaryMuscles: ['Rectus abdominis', 'Obliques'],
           secondaryMuscles: ['Deep cervical flexors'],
           cues: [
-            'Supine; one knee bent, one leg straight (swap halfway)',
+            'Supine; one knee bent, one leg straight (switch the bent leg each side)',
             'Hands under the lower back to maintain the natural lumbar curve',
             'Lift head and shoulders ONLY — no rounding',
             'Brace the entire trunk; act as one rigid unit',
-            'Descending holds: 10s, 8s, 6s, 4s, 2s. Rest 10s between',
+            'Descending holds: 10/8/6/4/2s — each rung held both sides (L then R). Rest 10s between',
           ],
           safetyNotes: [
             'Designed by McGill specifically to train the core WITHOUT spinal flexion.',
@@ -297,8 +297,7 @@ const recovery = {
             'Top arm across the chest; bottom forearm flat',
             'Body in a straight line — no hip sag or hike',
             'Hold the brace; breathe through the diaphragm, not the chest',
-            'Descending holds: 10/8/6/4/2s. Rest 10s between',
-            'Run the full ladder on one side, then repeat on the other',
+            'Descending holds: 10/8/6/4/2s — each rung held both sides (L then R). Rest 10s between',
           ],
           safetyNotes: [
             'Knee version is the default. Foot version is for athletes with no back history.',

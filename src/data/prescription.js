@@ -218,13 +218,19 @@ export function parsePrescription(input) {
   if (holdMatch) {
     const holdSchedule = holdMatch[1].split('/').map((n) => Number.parseInt(n.trim(), 10));
     if (holdSchedule.length > 1 && holdSchedule.every(Number.isFinite)) {
+      const perSide = PER_SIDE.test(raw);
+      // Two-sided ladders (curl-up, side plank) run each rung on both sides
+      // before stepping down — 10s L, 10s R, then 8s L, 8s R, … — so the
+      // total hold count is twice the ladder length. DurationSetRow maps each
+      // logged hold back to its rung.
+      const setsTotal = perSide ? holdSchedule.length * 2 : holdSchedule.length;
       return {
         kind: 'duration',
-        sets: holdSchedule.length,
-        setsTotal: holdSchedule.length,
+        sets: setsTotal,
+        setsTotal,
         holdSchedule,
         holdSec: holdSchedule[0],
-        perSide: PER_SIDE.test(raw),
+        perSide,
         raw,
       };
     }

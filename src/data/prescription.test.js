@@ -35,7 +35,13 @@ describe('parsePrescription', () => {
   });
   it('parses a hold pyramid with a descriptive prefix "Descending holds: 10/8/6/4/2s"', () => {
     expect(parsePrescription('Descending holds: 10/8/6/4/2s')).toMatchObject({
-      kind: 'duration', holdSchedule: [10, 8, 6, 4, 2], setsTotal: 5, holdSec: 10,
+      kind: 'duration', holdSchedule: [10, 8, 6, 4, 2], setsTotal: 5, holdSec: 10, perSide: false,
+    });
+  });
+  it('doubles a two-sided hold ladder "Descending holds: 10/8/6/4/2s each side"', () => {
+    // Each rung is held on both sides before stepping down, so 5 rungs → 10 holds.
+    expect(parsePrescription('Descending holds: 10/8/6/4/2s each side')).toMatchObject({
+      kind: 'duration', holdSchedule: [10, 8, 6, 4, 2], setsTotal: 10, sets: 10, holdSec: 10, perSide: true,
     });
   });
   it('parses a hold pyramid with spaced unit "10 / 8 / 6 / 4 / 2 sec"', () => {

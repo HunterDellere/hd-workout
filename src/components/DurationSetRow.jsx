@@ -292,8 +292,14 @@ export function DurationSetRow({
   // entry so the timer still has a target if the lifter logs extra holds.
   // Everything else uses the single authored hold time.
   const holdSchedule = Array.isArray(prescription.holdSchedule) ? prescription.holdSchedule : null;
+  // Two-sided ladders hold each rung on both sides before stepping down, so
+  // two logged holds advance one rung (10s L, 10s R, then 8s L, 8s R, …).
+  // One-sided ladders step down with every hold.
+  const rungIdx = perSide
+    ? Math.floor(performance.sets.length / 2)
+    : performance.sets.length;
   const targetSec = holdSchedule
-    ? (holdSchedule[Math.min(performance.sets.length, holdSchedule.length - 1)] ?? null)
+    ? (holdSchedule[Math.min(rungIdx, holdSchedule.length - 1)] ?? null)
     : (prescription.holdSec ?? null);
 
   const [elapsed, setElapsed] = useState(0);
