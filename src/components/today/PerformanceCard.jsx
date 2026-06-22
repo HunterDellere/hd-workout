@@ -387,7 +387,7 @@ export function PerformanceCard({
               the two lines never compete. Suppressed entirely for warmup
               drills — history and progression suggestions don't apply to
               movement prep. */}
-          {!isWarmupSection && lastTop && lastTop.top && (
+          {!isWarmupSection && lastTop && lastTop.top && typeof lastTop.top.weight === 'number' && (
             <Text
               as="span"
               variant="mono-sm"

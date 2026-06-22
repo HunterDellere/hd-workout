@@ -66,6 +66,24 @@ describe('topSet', () => {
     ];
     expect(topSet(sets)).toBeNull();
   });
+  // Pure duration/distance work has no weight — it must still surface a
+  // representative set rather than being dropped.
+  it('returns a duration set for a time-only exercise', () => {
+    const sets = [
+      { kind: 'duration', durationSec: 30 },
+      { kind: 'duration', durationSec: 45 },
+    ];
+    expect(topSet(sets)).toMatchObject({ kind: 'duration', durationSec: 30 });
+  });
+  // When a weighted working set exists alongside a duration set, the
+  // weighted one wins so the "Last time" line shows real load.
+  it('prefers a weighted set over a duration set', () => {
+    const sets = [
+      { kind: 'duration', durationSec: 45 },
+      { weight: 80, reps: 6 },
+    ];
+    expect(topSet(sets)).toMatchObject({ weight: 80, reps: 6 });
+  });
 });
 
 describe('historyForExercise', () => {
