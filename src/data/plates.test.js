@@ -44,4 +44,16 @@ describe('plates', () => {
     expect(defaultBarFor('kg')).toBe(20);
     expect(defaultBarFor('lb')).toBe(45);
   });
+
+  it('uses lb defaults for an lb user with no configured inventory', () => {
+    // 225 lb, bar 45 → 90/side → 45 + 45 with lb plates, not kg denominations.
+    const r = platesPerSide(225, { barWeight: 45, unit: 'lb' });
+    expect(r.perSide).toEqual([45, 45]);
+    expect(r.residual).toBe(0);
+  });
+
+  it('explicit kg params are unaffected by the unit option', () => {
+    const r = platesPerSide(100, { barWeight: 20, plates: [25, 20, 15, 10, 5, 2.5, 1.25] });
+    expect(r.residual).toBe(0);
+  });
 });

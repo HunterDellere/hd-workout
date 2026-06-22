@@ -208,11 +208,17 @@ export function patternTrends(volumeFrame) {
  */
 export function prsThisMonth(archive, { now = new Date() } = {}) {
   if (!Array.isArray(archive) || archive.length === 0) return [];
-  const yyyymm = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  // Compare on local calendar fields on both sides. The previous code
+  // matched a UTC ISO prefix against a locally-derived YYYY-MM, so a
+  // session ended near a month boundary in a negative-offset timezone
+  // landed in the wrong month. Mirrors the dayStamp/startOfDay convention.
+  const nowY = now.getFullYear();
+  const nowM = now.getMonth();
   const out = [];
   for (const session of archive) {
-    const iso = session.endedAt ?? session.startedAt ?? '';
-    if (!iso.startsWith(yyyymm)) continue;
+    const d = new Date(session.endedAt ?? session.startedAt ?? 0);
+    if (Number.isNaN(d.getTime())) continue;
+    if (d.getFullYear() !== nowY || d.getMonth() !== nowM) continue;
     for (const perf of session.performances ?? []) {
       for (const set of perf.sets ?? []) {
         if (!set.pr) continue;

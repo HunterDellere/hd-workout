@@ -27,6 +27,7 @@ const STICKY_TOP_PX = MASTHEAD_HEIGHT_PX + SESSION_PROGRESS_HEIGHT_PX;
 // still tappable. Match the hairline aesthetic of the eyebrow row.
 const adjustBtnStyle = {
   all: 'unset',
+  position: 'relative',
   width: 28,
   height: 28,
   display: 'inline-flex',
@@ -302,6 +303,7 @@ export function PerformanceCard({
                     type="button"
                     aria-label="Remove a set from prescription"
                     data-testid="adjust-sets-down"
+                    data-hit="expand"
                     onClick={() => canDecrement && onAdjustSets(performance.id, -1)}
                     disabled={!canDecrement}
                     style={{
@@ -385,7 +387,7 @@ export function PerformanceCard({
               the two lines never compete. Suppressed entirely for warmup
               drills — history and progression suggestions don't apply to
               movement prep. */}
-          {!isWarmupSection && lastTop && lastTop.top && (
+          {!isWarmupSection && lastTop && lastTop.top && typeof lastTop.top.weight === 'number' && (
             <Text
               as="span"
               variant="mono-sm"

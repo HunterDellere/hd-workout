@@ -91,6 +91,7 @@ export function Today() {
   const [reorderOpen, setReorderOpen] = useState(false);
   const [endedSummary, setEndedSummary] = useState(null);
   const [endConfirming, setEndConfirming] = useState(false);
+  const [persistError, setPersistError] = useState(false);
   // Dismissal lives on the session blob so it survives reloads.
   const resumeDismissed = Boolean(activeSession?.resumePromptDismissed);
 
@@ -102,6 +103,26 @@ export function Today() {
     () => (activeSession ? annotatePRs(activeSession, archive) : null),
     [activeSession, archive],
   );
+
+  // Single end-session commit path shared by the primary "End" confirm and
+  // the long-gap resume prompt's "End now", so both honor the same persist-
+  // failure handling. endSession returns the completed blob on success, or
+  // { error: 'persist-failed', completed } when the archive write fails — in
+  // which case the active session is intentionally kept in memory so no
+  // logged work is lost, and we surface a grounded, retryable message.
+  const commitEndSession = async () => {
+    const result = await endSession();
+    if (result && result.error === 'persist-failed') {
+      setPersistError(true);
+      return;
+    }
+    setPersistError(false);
+    if (result && settings.intelligenceEnabled) {
+      setEndedSummary(result);
+    } else {
+      navigate('/');
+    }
+  };
   // Wave 22 — focus mode. In-session view: one expanded card at a time,
   // others collapse to one-line summary rows. Focus starts at the first
   // incomplete performance and auto-advances when the current one fills
@@ -273,6 +294,35 @@ export function Today() {
               set definition + the prescribed total. */}
           <SessionProgress session={annotatedSession} accent={accent} />
 
+          {persistError && (
+            <div
+              data-testid="persist-error"
+              role="alert"
+              style={{
+                marginTop: 24,
+                padding: 16,
+                border: '1px solid var(--accent-vermilion-ink, var(--border-strong))',
+                borderRadius: 6,
+                background: 'var(--surface-sunken)',
+              }}
+            >
+              <Text as="p" variant="body-md" tone="primary">
+                Couldn’t save your session. Your work is still here — nothing was lost.
+              </Text>
+              <Stack direction="row" gap={2} style={{ marginTop: 12 }}>
+                <Button
+                  variant="soft"
+                  accent={accent}
+                  size="sm"
+                  data-testid="persist-retry"
+                  onClick={() => commitEndSession()}
+                >
+                  Retry
+                </Button>
+              </Stack>
+            </div>
+          )}
+
           {longGap && !resumeDismissed && (
             <div
               data-testid="resume-prompt"
@@ -301,9 +351,13 @@ export function Today() {
                   variant="bare"
                   size="sm"
                   data-testid="resume-end"
-                  onClick={() => {
-                    endSession();
-                    navigate('/');
+                  onClick={async () => {
+                    dismissResumePrompt();
+                    // Route through the shared commit path so logged work is
+                    // protected exactly like the primary End control: a
+                    // persist failure keeps the session, and (with insights
+                    // on) the summary screen offers "Resume this session".
+                    await commitEndSession();
                   }}
                 >
                   End now
@@ -551,12 +605,7 @@ export function Today() {
                     data-testid="end-session-confirm"
                     onClick={async () => {
                       setEndConfirming(false);
-                      const completed = await endSession();
-                      if (completed && settings.intelligenceEnabled) {
-                        setEndedSummary(completed);
-                      } else {
-                        navigate('/');
-                      }
+                      await commitEndSession();
                     }}
                   >
                     End

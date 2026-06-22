@@ -15,7 +15,18 @@
 // empty / null so existing backups don't break.
 
 import { loadFromStorage, saveToStorage, STORAGE_KEYS } from './storage';
-import { migrate, migrateArray, stampSchemaVersion } from './migrations';
+import { migrate, migrateArray, stampSchemaVersion, CURRENT_SCHEMA_VERSION } from './migrations';
+
+// A blob's schemaVersion is ahead of what this app understands. Reject at
+// the validation boundary — applySnapshot would otherwise stampSchemaVersion
+// it back down to the current version, silently destroying newer data.
+function hasFutureSchema(blob) {
+  return Boolean(
+    blob && typeof blob === 'object'
+    && typeof blob.schemaVersion === 'number'
+    && blob.schemaVersion > CURRENT_SCHEMA_VERSION,
+  );
+}
 
 export const SNAPSHOT_VERSION = 2;
 
@@ -52,6 +63,13 @@ export function validateSnapshot(value) {
   }
   if (value.bodyweight != null && !Array.isArray(value.bodyweight)) {
     return { ok: false, error: 'bodyweight must be an array.' };
+  }
+  const blobs = [value.settings, value.activeSession, ...(Array.isArray(value.archive) ? value.archive : [])];
+  if (blobs.some(hasFutureSchema)) {
+    return {
+      ok: false,
+      error: `This backup was created by a newer version of the app (data format newer than v${CURRENT_SCHEMA_VERSION}). Update the app before importing.`,
+    };
   }
   return { ok: true };
 }

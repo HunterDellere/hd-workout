@@ -20,13 +20,17 @@
 //   Mon  · push      (strength compounds, low volume)
 //   Tue  · core      (carries + anti-rotation under load)
 //   Wed  · recovery  (VO2max intervals)
-//   Thu  · pull      (strength compounds, low volume)
-//   Fri  · legs      (squat / hinge anchors)
-//   Sat  · rest
+//   Thu  · pull      (strength compounds, low volume — incl. deadlift)
+//   Fri  · rest
+//   Sat  · legs      (squat + hinge anchors)
 //
 // The user can flip the split in Settings. This is the default
-// arrangement that best preserves strength recovery between
-// heavy compound days.
+// arrangement that best preserves strength recovery between heavy
+// compound days: the heavy deadlift (Thu pull) and the heavy
+// squat + RDL (Sat legs) are separated by a full rest day so the
+// posterior chain and spinal erectors recover between the two
+// highest axial loads of the week — the population this build
+// serves is the most sensitive to lumbar recovery.
 
 export const longevity = {
   key: 'longevity',
@@ -41,9 +45,9 @@ export const longevity = {
     1: 'push',     // Mon  · upper press
     2: 'core',     // Tue  · carries + anti-rotation
     3: 'recovery', // Wed  · VO2max intervals (rec-vo2-intervals)
-    4: 'pull',     // Thu  · upper pull
-    5: 'legs',     // Fri  · squat + hinge
-    6: 'rest',     // Sat
+    4: 'pull',     // Thu  · upper pull + deadlift
+    5: 'rest',     // Fri  · buffer between the week's two heaviest axial loads
+    6: 'legs',     // Sat  · squat + hinge
   },
   days: {
     push: {
@@ -142,6 +146,10 @@ export const longevity = {
         // is what catches you when you trip. Healthspan staple.
         { id: 'legs-tib-raise',      sets: '3 × 15–20',         rest: '1:00' },
         { id: 'legs-standing-calf',  sets: '3 × 10–15',         rest: '1:30' },
+        // Seated (knee-bent) calf isolates the soleus — overwhelmingly
+        // slow-twitch and tied to circulation, posture, and gait
+        // endurance in aging. Higher reps suit its fibre profile.
+        { id: 'legs-seated-calf',    sets: '3 × 12–15',         rest: '1:00' },
       ],
       'carries': [
         { id: 'legs-suitcase-carry', sets: '3 × 30–40m each',   rest: '1:30' },

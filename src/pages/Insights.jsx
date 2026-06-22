@@ -443,7 +443,8 @@ export function Insights() {
   }, [archive]);
 
   if (!settings.intelligenceEnabled) {
-    return <Navigate to="/me" replace />;
+    // Land on the actual Intelligence toggle, not one level short of it.
+    return <Navigate to="/me/settings" replace />;
   }
 
   const hasData = volume.weeks.length > 0 || streak.longest > 0;
@@ -463,21 +464,24 @@ export function Insights() {
         Personal records, weekly volume, and how often you actually show up.
       </Text>
       {!hasData && (
-        <Text
-          as="p"
-          variant="title-md"
-          tone="secondary"
-          style={{
-            marginTop: 28,
-            fontStyle: 'italic',
-            fontFamily: 'var(--font-serif)',
-            fontWeight: 300,
-            opacity: 0.78,
-            maxWidth: 60 * 9,
-          }}
-        >
-          {voiceFor('insights-empty') ?? 'Numbers want sets. Log a few and the picture sharpens.'}
-        </Text>
+        <>
+          <BrushDivider style={{ marginTop: 24 }} />
+          <Text
+            as="p"
+            variant="title-md"
+            tone="secondary"
+            style={{
+              marginTop: 28,
+              fontStyle: 'italic',
+              fontFamily: 'var(--font-serif)',
+              fontWeight: 300,
+              opacity: 0.78,
+              maxWidth: 60 * 9,
+            }}
+          >
+            {voiceFor('insights-empty') ?? 'Numbers want sets. Log a few and the picture sharpens.'}
+          </Text>
+        </>
       )}
 
       {/* Summary callout: streak, weekly delta, monthly PRs. Reads at a

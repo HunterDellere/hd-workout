@@ -14,9 +14,15 @@ export function topSet(sets) {
   if (!sets || sets.length === 0) return null;
   const working = sets.filter((s) => !s.isWarmup);
   if (working.length === 0) return null;
-  let best = working[0];
-  for (let i = 1; i < working.length; i++) {
-    const s = working[i];
+  // Prefer weighted sets so a real strength set always wins for strength
+  // exercises, but fall back to whatever working set exists so pure
+  // duration/distance movements (planks, carries, dead hangs) still report
+  // a representative top instead of being dropped.
+  const numeric = working.filter((s) => typeof s.weight === 'number');
+  const pool = numeric.length > 0 ? numeric : working;
+  let best = pool[0];
+  for (let i = 1; i < pool.length; i++) {
+    const s = pool[i];
     if (s.weight > best.weight) best = s;
     else if (s.weight === best.weight && s.reps > best.reps) best = s;
   }

@@ -29,7 +29,7 @@ export const legs = {
         {
           id: 'legs-back-squat',
           name: 'Barbell Back Squat',
-          tier: 'S',
+          role: 'foundational',
           equipment: ['Olympic barbell', 'Power rack with safeties', 'Optional belt'],
           primaryMuscles: ['Quadriceps', 'Gluteus maximus'],
           secondaryMuscles: ['Hamstrings', 'Adductors', 'Spinal erectors', 'Core'],
@@ -57,7 +57,7 @@ export const legs = {
         {
           id: 'legs-front-squat',
           name: 'Front Squat',
-          tier: 'S',
+          role: 'foundational',
           equipment: ['Olympic barbell', 'Power rack with safeties'],
           primaryMuscles: ['Quadriceps', 'Upper back', 'Core'],
           secondaryMuscles: ['Gluteus maximus', 'Adductors'],
@@ -82,7 +82,7 @@ export const legs = {
         {
           id: 'legs-leg-press',
           name: 'Leg Press',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Leg press machine (45° or horizontal)'],
           primaryMuscles: ['Quadriceps', 'Gluteus maximus'],
           secondaryMuscles: ['Hamstrings', 'Adductors'],
@@ -107,7 +107,7 @@ export const legs = {
         {
           id: 'legs-bgss',
           name: 'Bulgarian Split Squat',
-          tier: 'S',
+          role: 'foundational',
           equipment: ['Bench', 'Dumbbells or barbell'],
           primaryMuscles: ['Quadriceps', 'Gluteus maximus'],
           secondaryMuscles: ['Adductors', 'Hamstrings', 'Core'],
@@ -133,7 +133,7 @@ export const legs = {
         {
           id: 'legs-reverse-lunge',
           name: 'Reverse Lunge',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Dumbbells, kettlebells, or barbell (front-rack or back) — also bodyweight'],
           primaryMuscles: ['Quadriceps', 'Gluteus maximus'],
           secondaryMuscles: ['Hamstrings', 'Adductors', 'Core'],
@@ -159,7 +159,7 @@ export const legs = {
         {
           id: 'legs-hack-squat',
           name: 'Hack Squat Machine',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Hack squat machine'],
           primaryMuscles: ['Quadriceps (VMO, rectus femoris)'],
           secondaryMuscles: ['Gluteus maximus'],
@@ -183,7 +183,7 @@ export const legs = {
         {
           id: 'legs-goblet-squat',
           name: 'Goblet Squat',
-          tier: 'S',
+          role: 'foundational',
           equipment: ['Kettlebell or dumbbell'],
           primaryMuscles: ['Quadriceps', 'Gluteus maximus'],
           secondaryMuscles: ['Adductors', 'Core', 'Upper back'],
@@ -201,7 +201,7 @@ export const legs = {
           ],
           variants: [
             { name: 'Goblet box squat', note: 'Sit to a low box — depth control + glute load.' },
-            { name: 'Goblet squat with pulse', note: 'At the bottom, do 2-3 small pulses before standing — quad burner.' },
+            { name: 'Goblet squat with pulse', note: 'At the bottom, do 2-3 small pulses before standing — high quad demand.' },
             { name: 'Tempo goblet squat', note: '3-5 sec descent, 2 sec pause, drive up — beats heavier weight.' },
             { name: 'Heels-elevated goblet squat', note: 'Heels on a 1-2 inch plate — extreme quad bias.' },
           ],
@@ -210,7 +210,7 @@ export const legs = {
         {
           id: 'legs-kb-double-front-squat',
           name: 'Double KB Front-Rack Squat',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Two kettlebells (matched)'],
           primaryMuscles: ['Quadriceps', 'Gluteus maximus'],
           secondaryMuscles: ['Upper back', 'Core', 'Adductors'],
@@ -238,7 +238,7 @@ export const legs = {
         {
           id: 'legs-step-up',
           name: 'Step-Up',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Sturdy box, bench, or stair (knee height) — optional load (KB, DB, mace)'],
           primaryMuscles: ['Quadriceps', 'Gluteus maximus'],
           secondaryMuscles: ['Hamstrings', 'Adductors', 'Core'],
@@ -264,7 +264,7 @@ export const legs = {
         {
           id: 'legs-jump-squat',
           name: 'Jump Squat',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Open floor'],
           primaryMuscles: ['Quadriceps', 'Gluteus maximus'],
           secondaryMuscles: ['Calves', 'Hamstrings'],
@@ -298,7 +298,7 @@ export const legs = {
         {
           id: 'legs-leg-extension',
           name: 'Leg Extension',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Leg extension machine'],
           primaryMuscles: ['Quadriceps (rectus femoris, vasti)'],
           secondaryMuscles: [],
@@ -329,7 +329,7 @@ export const legs = {
         {
           id: 'legs-rdl',
           name: 'Romanian Deadlift',
-          tier: 'S',
+          role: 'foundational',
           equipment: ['Barbell or dumbbells'],
           primaryMuscles: ['Hamstrings', 'Gluteus maximus'],
           secondaryMuscles: ['Spinal erectors', 'Forearms'],
@@ -354,7 +354,7 @@ export const legs = {
         {
           id: 'legs-sl-rdl',
           name: 'Single-Leg RDL',
-          tier: 'S',
+          role: 'foundational',
           equipment: ['Dumbbell or kettlebell'],
           primaryMuscles: ['Hamstrings', 'Gluteus maximus'],
           secondaryMuscles: ['Glute medius (anti-rotation)', 'Core'],
@@ -378,7 +378,7 @@ export const legs = {
         {
           id: 'legs-seated-curl',
           name: 'Seated Leg Curl',
-          tier: 'S',
+          role: 'foundational',
           equipment: ['Seated leg curl machine'],
           primaryMuscles: ['Hamstrings'],
           secondaryMuscles: ['Gastrocnemius'],
@@ -401,7 +401,7 @@ export const legs = {
         {
           id: 'legs-good-morning',
           name: 'Good Morning',
-          tier: 'B',
+          role: 'accessory',
           equipment: ['Barbell'],
           primaryMuscles: ['Hamstrings', 'Spinal erectors', 'Gluteus maximus'],
           secondaryMuscles: [],
@@ -424,7 +424,7 @@ export const legs = {
         {
           id: 'legs-kb-swing',
           name: 'Kettlebell Swing',
-          tier: 'S',
+          role: 'foundational',
           equipment: ['Kettlebell'],
           primaryMuscles: ['Gluteus maximus', 'Hamstrings'],
           secondaryMuscles: ['Spinal erectors', 'Core', 'Grip', 'Cardiovascular system'],
@@ -443,7 +443,7 @@ export const legs = {
           variants: [
             { name: 'Russian swing (to chest)', note: 'Standard; KB stops at chest height. The default.' },
             { name: 'American swing (overhead)', note: 'KB finishes overhead; controversial — shoulder demand is high.' },
-            { name: 'Single-arm KB swing', note: 'Asymmetric load; brutal anti-rotation demand.' },
+            { name: 'Single-arm KB swing', note: 'Asymmetric load; high anti-rotation demand.' },
             { name: 'Heavy swing for 5-10', note: 'Low rep, high load — power application.' },
             { name: 'Light swing for 20+', note: 'Conditioning + glute density — the true workhorse.' },
           ],
@@ -454,12 +454,12 @@ export const legs = {
     {
       key: 'glutes',
       title: 'Glutes',
-      blurb: 'Direct glute work. Hip thrust is the king; carry it across the week.',
+      blurb: 'Direct glute work. The hip thrust is the anchor; carry it across the week.',
       exercises: [
         {
           id: 'legs-hip-thrust',
           name: 'Hip Thrust (Barbell)',
-          tier: 'S',
+          role: 'foundational',
           equipment: ['Barbell', 'Bench', 'Bar pad'],
           primaryMuscles: ['Gluteus maximus'],
           secondaryMuscles: ['Hamstrings', 'Adductors'],
@@ -485,7 +485,7 @@ export const legs = {
         {
           id: 'legs-pull-through',
           name: 'Cable Pull-Through',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Cable column at lowest', 'Rope handle'],
           primaryMuscles: ['Gluteus maximus', 'Hamstrings'],
           secondaryMuscles: ['Spinal erectors'],
@@ -507,7 +507,7 @@ export const legs = {
         {
           id: 'legs-glute-bridge',
           name: 'Glute Bridge',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Mat or floor (optional: kettlebell across hips)'],
           primaryMuscles: ['Gluteus maximus'],
           secondaryMuscles: ['Hamstrings', 'Core'],
@@ -523,7 +523,7 @@ export const legs = {
             'Hip thrust > glute bridge for load, but glute bridge is the activation pattern',
           ],
           variants: [
-            { name: 'Single-leg glute bridge', note: 'One foot lifted; brutal unilateral glute work.' },
+            { name: 'Single-leg glute bridge', note: 'One foot lifted; demanding unilateral glute work.' },
             { name: 'Marching glute bridge', note: 'Hold the top, march alternating knees up; anti-rotation bonus.' },
             { name: 'KB glute bridge', note: 'KB across the hip crease; loaded version.' },
             { name: 'Banded glute bridge', note: 'Band around knees; abduction + extension same time.' },
@@ -534,7 +534,7 @@ export const legs = {
         {
           id: 'legs-cable-kickback',
           name: 'Cable Kickback',
-          tier: 'B',
+          role: 'accessory',
           equipment: ['Low cable + ankle strap'],
           primaryMuscles: ['Gluteus maximus'],
           secondaryMuscles: ['Hamstrings'],
@@ -557,7 +557,7 @@ export const legs = {
         {
           id: 'legs-hip-abduction',
           name: 'Hip Abduction Machine',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Hip abduction machine'],
           primaryMuscles: ['Gluteus medius', 'Gluteus minimus'],
           secondaryMuscles: ['Gluteus maximus (upper fibers)'],
@@ -587,7 +587,7 @@ export const legs = {
         {
           id: 'legs-hip-adduction',
           name: 'Hip Adduction Machine',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Hip adduction machine'],
           primaryMuscles: ['Adductor magnus', 'Adductor longus', 'Adductor brevis'],
           secondaryMuscles: [],
@@ -610,7 +610,7 @@ export const legs = {
         {
           id: 'legs-copenhagen',
           name: 'Copenhagen Plank',
-          tier: 'S',
+          role: 'foundational',
           categories: ['imbalance'],
           equipment: ['Bench'],
           primaryMuscles: ['Adductors'],
@@ -635,7 +635,7 @@ export const legs = {
         {
           id: 'legs-cossack-squat',
           name: 'Cossack Squat',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Open floor (optional: KB or DB at chest for counterbalance)'],
           primaryMuscles: ['Adductors', 'Quadriceps', 'Gluteus maximus'],
           secondaryMuscles: ['Hamstrings', 'Hip mobility'],
@@ -667,7 +667,7 @@ export const legs = {
         {
           id: 'legs-standing-calf',
           name: 'Standing Calf Raise',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Standing calf machine OR Smith machine + block'],
           primaryMuscles: ['Gastrocnemius'],
           secondaryMuscles: ['Soleus'],
@@ -691,7 +691,7 @@ export const legs = {
         {
           id: 'legs-seated-calf',
           name: 'Seated Calf Raise',
-          tier: 'S',
+          role: 'foundational',
           equipment: ['Seated calf raise machine'],
           primaryMuscles: ['Soleus'],
           secondaryMuscles: [],
@@ -713,7 +713,7 @@ export const legs = {
         {
           id: 'legs-tib-raise',
           name: 'Tibialis Raise',
-          tier: 'B',
+          role: 'accessory',
           equipment: ['Wall OR tib bar / banded'],
           primaryMuscles: ['Tibialis anterior'],
           secondaryMuscles: [],
@@ -744,7 +744,7 @@ export const legs = {
         {
           id: 'legs-suitcase-carry',
           name: 'Suitcase Carry',
-          tier: 'S',
+          role: 'foundational',
           categories: ['imbalance', 'spine'],
           equipment: ['Single DB or KB'],
           primaryMuscles: ['Obliques', 'Quadratus lumborum', 'Glute medius'],

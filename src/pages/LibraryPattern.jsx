@@ -18,9 +18,7 @@ import {
 import { patternAccent, space as spaceScale } from '../design-system/tokens';
 import { exercisesForPattern } from '../data/derive';
 import { PATTERN_BY_KEY } from '../data/patterns';
-
-const TIER_ORDER = { S: 0, A: 1, B: 2, C: 3 };
-function tierRank(tier) { return TIER_ORDER[tier] ?? 99; }
+import { roleLabel, roleRank } from '../data/role';
 
 function ExerciseRow({ exercise, isFirst }) {
   return (
@@ -54,9 +52,9 @@ function ExerciseRow({ exercise, isFirst }) {
             {exercise.sets ?? ''}{exercise.rest ? `  ·  rest ${exercise.rest}` : ''}
           </Text>
         </Stack>
-        {exercise.tier ? (
-          <Text as="span" variant="mono-sm" tone="tertiary">
-            Tier {exercise.tier}
+        {roleLabel(exercise.role) ? (
+          <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
+            {roleLabel(exercise.role)}
           </Text>
         ) : null}
       </Link>
@@ -73,7 +71,7 @@ export function LibraryPattern() {
   const exercises = useMemo(() => {
     if (!known) return [];
     return [...exercisesForPattern(movementKey)].sort((a, b) => {
-      const t = tierRank(a.tier) - tierRank(b.tier);
+      const t = roleRank(a.role) - roleRank(b.role);
       return t !== 0 ? t : a.name.localeCompare(b.name);
     });
   }, [movementKey, known]);

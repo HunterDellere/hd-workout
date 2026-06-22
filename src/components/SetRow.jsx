@@ -296,8 +296,10 @@ function LoggedSet({ set, isLast, onDiscard, unitDisplay, isPR, justLogged }) {
         type="button"
         aria-label={`Discard set ${set.index}`}
         onClick={() => onDiscard(set.index)}
+        data-hit="expand"
         style={{
           all: 'unset',
+          position: 'relative',
           cursor: 'pointer',
           color: 'var(--text-tertiary)',
           fontFamily: 'var(--font-mono)',
@@ -437,7 +439,7 @@ export function SetRow({
     const n = typeof weight === 'number' ? weight : Number(weight);
     if (!Number.isFinite(n) || n <= 0) return null;
     const bar = Number.isFinite(barWeight) ? barWeight : defaultBarFor(unit);
-    return platesPerSide(n, { barWeight: bar, plates: plateInventory });
+    return platesPerSide(n, { barWeight: bar, plates: plateInventory, unit });
   })();
 
   function handleLog() {

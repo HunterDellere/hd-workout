@@ -19,6 +19,7 @@ import { patternAccent, dayLineageAccent, space as spaceScale } from '../design-
 import { PATTERNS } from '../data/patterns';
 import { dayList, rawCatalogList, findExerciseById } from '../data';
 import { exercisesForPattern } from '../data/derive';
+import { roleLabel } from '../data/role';
 import { useSettings } from '../state/settings-context.js';
 
 function GroupHeader({ id, label, count }) {
@@ -236,11 +237,6 @@ function SearchHitRow({ exercise, isFirst }) {
             {day} · {exercise._section?.title ?? ''}
           </Text>
         </Stack>
-        {exercise.tier && (
-          <Text as="span" variant="mono-sm" tone="tertiary">
-            T{exercise.tier}
-          </Text>
-        )}
       </Link>
     </li>
   );
@@ -387,9 +383,9 @@ export function Library() {
                         </span>
                         <Stack direction="column" gap={1} style={{ flex: 1, minWidth: 0 }}>
                           <Text as="span" variant="title-md">{ex.name}</Text>
-                          {ex.tier && (
+                          {roleLabel(ex.role) && (
                             <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>
-                              Tier {ex.tier}
+                              {roleLabel(ex.role)}
                             </Text>
                           )}
                         </Stack>

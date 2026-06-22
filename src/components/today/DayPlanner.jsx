@@ -20,6 +20,7 @@ import { useSession } from '../../state/session-context.js';
 import { useOverlay } from '../../state/overlay-context.js';
 import { voiceFor } from '../../data/voice';
 import { recoveryDebt } from '../../data/intelligence';
+import { getProgram } from '../../data/programs';
 import { patternToExercises } from '../../data/derive';
 import { SubstituteSheet } from '../SubstituteSheet';
 import { SlotPicker } from '../SlotPicker';
@@ -111,6 +112,7 @@ export function DayPlanner({ dayKey, viewMode = 'today' }) {
   const estMinutes = estimateDayMinutes(day);
   const heroVoice = voiceFor(dayKey);
   const programKey = settings.activeProgramKey ?? 'full-spectrum';
+  const programName = getProgram(programKey)?.name ?? null;
   const hasOverlay = Boolean(overlay?.[programKey]?.[dayKey]);
   const sessionActive = Boolean(activeSession);
 
@@ -134,6 +136,7 @@ export function DayPlanner({ dayKey, viewMode = 'today' }) {
         dayKey={dayKey}
         todayKey={heroLabel.split(' · ')[1]}
         labelOverride={heroLabel}
+        programName={programName}
         exerciseCount={exerciseCount}
         sectionCount={sectionCount}
         estMinutes={estMinutes}

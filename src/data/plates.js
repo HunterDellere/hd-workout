@@ -29,15 +29,17 @@ export function defaultBarFor(unit) {
  * @param {object} opts
  * @param {number} opts.barWeight  bar weight (e.g. 20kg / 45lb)
  * @param {number[]} opts.plates   plate weights available, descending
+ * @param {'kg'|'lb'} opts.unit    unit, used to pick the right defaults when
+ *                                 barWeight/plates are not supplied
  * @returns {{ perSide: number[], residual: number } | null}
  */
-export function platesPerSide(totalWeight, { barWeight, plates } = {}) {
+export function platesPerSide(totalWeight, { barWeight, plates, unit } = {}) {
   if (!Number.isFinite(totalWeight) || totalWeight <= 0) return null;
-  const bar = Number.isFinite(barWeight) ? barWeight : DEFAULT_BAR_KG;
+  const bar = Number.isFinite(barWeight) ? barWeight : defaultBarFor(unit);
   if (totalWeight <= bar) return null;
   const inventory = (plates && plates.length > 0)
     ? [...plates].sort((a, b) => b - a)
-    : DEFAULT_PLATES_KG;
+    : defaultPlatesFor(unit);
 
   let perSide = (totalWeight - bar) / 2;
   if (perSide <= 0) return null;

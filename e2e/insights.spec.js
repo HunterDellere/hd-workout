@@ -84,11 +84,13 @@ test('insights route is reachable when flag is on', async ({ page }) => {
   await expect(page.getByTestId('pr-rollup')).toBeVisible();
 });
 
-test('insights route redirects to /me when flag is off', async ({ page }) => {
+test('insights route redirects to /me/settings when flag is off', async ({ page }) => {
+  // When intelligence is off the surface is hidden; the redirect lands the
+  // user on the actual Intelligence toggle (in Settings), not one level short.
   await seedIdb(page, { archive: SEED_ARCHIVE, intelligenceEnabled: false });
   await page.goto('./#/insights');
   await page.reload();
-  await expect(page).toHaveURL(/#\/me$/);
+  await expect(page).toHaveURL(/#\/me\/settings$/);
 });
 
 test('history strip surfaces PR chip on a PR row', async ({ page }) => {

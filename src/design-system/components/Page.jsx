@@ -39,8 +39,11 @@ export function Page({
     ...style,
   };
 
+  // id="main" + tabIndex=-1 make every page the skip-link target and a
+  // programmatic focus landing point. Defaults here so callers don't repeat
+  // it; a caller may still override via ...rest.
   return (
-    <As style={computed} {...rest}>
+    <As id="main" tabIndex={-1} style={computed} {...rest}>
       {children}
     </As>
   );

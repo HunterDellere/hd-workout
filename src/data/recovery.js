@@ -56,7 +56,7 @@ const recovery = {
         {
           id: 'rec-band-pull-apart',
           name: 'Band Pull-Apart',
-          tier: 'S',
+          role: 'foundational',
           intent: 'corrective',
           categories: ['posture'],
           equipment: ['Light resistance band'],
@@ -82,7 +82,7 @@ const recovery = {
         {
           id: 'rec-prone-ytw',
           name: 'Prone Y-T-W',
-          tier: 'S',
+          role: 'foundational',
           intent: 'corrective',
           categories: ['posture'],
           equipment: ['Flat bench or floor', 'Optional: 1–2 kg light plates'],
@@ -108,7 +108,7 @@ const recovery = {
         {
           id: 'rec-wall-slide',
           name: 'Wall Slide',
-          tier: 'S',
+          role: 'foundational',
           intent: 'corrective',
           categories: ['posture', 'mobility'],
           equipment: ['Flat wall'],
@@ -133,7 +133,7 @@ const recovery = {
         {
           id: 'rec-chin-tuck',
           name: 'Chin Tuck',
-          tier: 'A',
+          role: 'primary-alt',
           intent: 'corrective',
           categories: ['posture', 'facial'],
           equipment: ['Wall or floor'],
@@ -158,7 +158,7 @@ const recovery = {
         {
           id: 'rec-thoracic-extension',
           name: 'Foam Roller Thoracic Extension',
-          tier: 'A',
+          role: 'primary-alt',
           intent: 'warmup',
           categories: ['posture', 'mobility'],
           equipment: ['Foam roller'],
@@ -194,7 +194,7 @@ const recovery = {
         {
           id: 'rec-1arm-row',
           name: 'Single-Arm Dumbbell Row',
-          tier: 'S',
+          role: 'foundational',
           intent: 'main',
           categories: ['imbalance'],
           equipment: ['Dumbbell', 'Flat bench'],
@@ -222,7 +222,7 @@ const recovery = {
         {
           id: 'rec-1leg-rdl',
           name: 'Single-Leg Romanian Deadlift',
-          tier: 'S',
+          role: 'foundational',
           intent: 'main',
           categories: ['imbalance'],
           equipment: ['Dumbbell or kettlebell'],
@@ -260,7 +260,7 @@ const recovery = {
         {
           id: 'rec-mcgill-curlup',
           name: 'McGill Curl-Up',
-          tier: 'S',
+          role: 'foundational',
           intent: 'corrective',
           categories: ['spine'],
           equipment: ['Mat'],
@@ -286,7 +286,7 @@ const recovery = {
         {
           id: 'rec-mcgill-sideplank',
           name: 'McGill Side Plank',
-          tier: 'S',
+          role: 'foundational',
           intent: 'corrective',
           categories: ['spine'],
           equipment: ['Mat'],
@@ -311,7 +311,7 @@ const recovery = {
         {
           id: 'rec-bird-dog',
           name: 'Bird Dog',
-          tier: 'S',
+          role: 'foundational',
           intent: 'corrective',
           categories: ['spine'],
           equipment: ['Mat'],
@@ -338,7 +338,7 @@ const recovery = {
         {
           id: 'rec-glute-bridge-brace',
           name: 'Braced Glute Bridge',
-          tier: 'A',
+          role: 'primary-alt',
           intent: 'activation',
           categories: ['spine', 'posture'],
           equipment: ['Mat'],
@@ -375,7 +375,7 @@ const recovery = {
         {
           id: 'rec-vo2-intervals',
           name: 'VO2-Style Intervals',
-          tier: 'S',
+          role: 'foundational',
           intent: 'finisher',
           categories: ['healthspan', 'cardio'],
           equipment: ['Bike, rower, or running surface'],
@@ -401,7 +401,7 @@ const recovery = {
         {
           id: 'rec-90-90-hip',
           name: '90-90 Hip Mobility',
-          tier: 'A',
+          role: 'primary-alt',
           intent: 'warmup',
           categories: ['healthspan', 'mobility'],
           equipment: ['Mat'],
@@ -426,11 +426,11 @@ const recovery = {
         {
           id: 'rec-dead-hang',
           name: 'Dead Hang',
-          tier: 'S',
+          role: 'foundational',
           intent: 'finisher',
           categories: ['healthspan', 'grip'],
           equipment: ['Pull-up bar'],
-          primaryMuscles: ['Forearm flexors', 'Lats', 'Shoulder decompressors'],
+          primaryMuscles: ['Forearm flexors', 'Lats', 'Shoulder stabilizers'],
           secondaryMuscles: ['Thoracic extensors'],
           cues: [
             'Pronated grip, shoulder-width',
@@ -443,7 +443,7 @@ const recovery = {
             'Excellent for shoulder healthspan — counteracts decades of arms-down posture.',
           ],
           variants: [
-            { name: 'L-sit hang', note: 'Knees up at 90°; brutal core demand.' },
+            { name: 'L-sit hang', note: 'Knees up at 90°; high core demand.' },
             { name: 'Weighted hang', note: 'Vest or belt-loaded; trained as a max-effort lift.' },
             { name: 'One-arm hang', note: 'Advanced; grip and shoulder strength benchmark.' },
           ],
@@ -452,7 +452,7 @@ const recovery = {
         {
           id: 'rec-rice-bucket',
           name: 'Rice Bucket',
-          tier: 'A',
+          role: 'primary-alt',
           intent: 'corrective',
           categories: ['healthspan', 'grip'],
           equipment: ['5-gallon bucket', '20+ lb of dry rice (long grain)'],
@@ -480,7 +480,7 @@ const recovery = {
         {
           id: 'rec-finger-extension',
           name: 'Finger Extension (Rubber Band)',
-          tier: 'A',
+          role: 'primary-alt',
           intent: 'corrective',
           categories: ['healthspan', 'grip'],
           equipment: ['Small rubber band (orthodontic-style) OR hair tie'],
@@ -508,7 +508,7 @@ const recovery = {
         {
           id: 'rec-heel-walk',
           name: 'Heel Walks',
-          tier: 'B',
+          role: 'accessory',
           intent: 'warmup',
           categories: ['healthspan', 'mobility'],
           equipment: ['Open floor'],
@@ -532,7 +532,7 @@ const recovery = {
         {
           id: 'rec-zone-2-walk',
           name: 'Zone-2 Walk / Ruck',
-          tier: 'S',
+          role: 'foundational',
           intent: 'main',
           categories: ['healthspan', 'cardio'],
           equipment: ['Walking surface', 'Optional: weighted pack (5–15 kg)'],
@@ -559,7 +559,7 @@ const recovery = {
         {
           id: 'rec-30-30-intervals',
           name: '30/30 Intervals',
-          tier: 'A',
+          role: 'primary-alt',
           intent: 'finisher',
           categories: ['healthspan', 'cardio'],
           equipment: ['Bike, rower, or running surface'],
@@ -577,14 +577,14 @@ const recovery = {
           ],
           variants: [
             { name: '20/40s', note: '20s on, 40s off — more rest, useful early in a training block.' },
-            { name: '40/20s', note: '40s on, 20s off — brutal; do once you have a base.' },
+            { name: '40/20s', note: '40s on, 20s off — demanding; do once you have a base.' },
           ],
           tags: ['healthspan', 'cardio', 'conditioning'],
         },
         {
           id: 'rec-hip-cars',
           name: 'Hip CARs',
-          tier: 'S',
+          role: 'foundational',
           intent: 'warmup',
           categories: ['healthspan', 'mobility'],
           equipment: ['Mat or open floor'],
@@ -610,7 +610,7 @@ const recovery = {
         {
           id: 'rec-ankle-cars',
           name: 'Ankle CARs',
-          tier: 'A',
+          role: 'primary-alt',
           intent: 'warmup',
           categories: ['healthspan', 'mobility'],
           equipment: ['Mat or open floor', 'Optional: wall'],
@@ -637,7 +637,7 @@ const recovery = {
         {
           id: 'rec-leg-swings',
           name: 'Leg Swings',
-          tier: 'S',
+          role: 'foundational',
           intent: 'warmup',
           categories: ['mobility'],
           equipment: ['Wall or rail for balance'],
@@ -664,7 +664,7 @@ const recovery = {
         {
           id: 'rec-arm-circles',
           name: 'Arm Circles',
-          tier: 'A',
+          role: 'primary-alt',
           intent: 'warmup',
           categories: ['mobility'],
           equipment: ['Open floor'],
@@ -690,7 +690,7 @@ const recovery = {
         {
           id: 'rec-cat-cow',
           name: 'Cat-Cow',
-          tier: 'S',
+          role: 'foundational',
           intent: 'warmup',
           categories: ['mobility', 'spine'],
           equipment: ['Mat'],
@@ -716,7 +716,7 @@ const recovery = {
         {
           id: 'rec-walkouts',
           name: 'Walkouts',
-          tier: 'A',
+          role: 'primary-alt',
           intent: 'warmup',
           categories: ['mobility'],
           equipment: ['Open floor'],
@@ -742,7 +742,7 @@ const recovery = {
         {
           id: 'rec-thoracic-rotation',
           name: 'Open-Book T-Spine Rotation',
-          tier: 'A',
+          role: 'primary-alt',
           intent: 'warmup',
           categories: ['healthspan', 'mobility'],
           equipment: ['Mat'],
@@ -767,7 +767,7 @@ const recovery = {
         {
           id: 'rec-kb-windmill',
           name: 'KB Windmill',
-          tier: 'A',
+          role: 'primary-alt',
           intent: 'main',
           categories: ['healthspan', 'mobility', 'imbalance'],
           equipment: ['Kettlebell (1)'],
@@ -807,7 +807,7 @@ const recovery = {
         {
           id: 'rec-neck-flexion',
           name: 'Cervical Flexion (Light)',
-          tier: 'A',
+          role: 'primary-alt',
           intent: 'corrective',
           categories: ['facial'],
           equipment: ['Light plate (2.5–5 kg)', 'Bench or floor'],
@@ -834,7 +834,7 @@ const recovery = {
         {
           id: 'rec-neck-extension',
           name: 'Cervical Extension (Light)',
-          tier: 'A',
+          role: 'primary-alt',
           intent: 'corrective',
           categories: ['facial'],
           equipment: ['Light plate (2.5–5 kg)', 'Bench'],
@@ -860,7 +860,7 @@ const recovery = {
         {
           id: 'rec-mewing',
           name: 'Tongue Posture (Mewing-Adjacent)',
-          tier: 'C',
+          role: 'accessory',
           intent: 'corrective',
           categories: ['facial'],
           equipment: ['None'],
@@ -900,7 +900,7 @@ const recovery = {
         {
           id: 'rec-pigeon-stretch',
           name: 'Pigeon Stretch',
-          tier: 'A',
+          role: 'primary-alt',
           intent: 'corrective',
           categories: ['mobility'],
           equipment: ['Floor', 'Optional: yoga block'],
@@ -926,7 +926,7 @@ const recovery = {
         {
           id: 'rec-frog-stretch',
           name: 'Frog Stretch',
-          tier: 'A',
+          role: 'primary-alt',
           intent: 'corrective',
           categories: ['mobility'],
           equipment: ['Floor', 'Padding for knees'],
@@ -952,7 +952,7 @@ const recovery = {
         {
           id: 'rec-couch-stretch',
           name: 'Couch Stretch',
-          tier: 'S',
+          role: 'foundational',
           intent: 'corrective',
           categories: ['mobility', 'posture'],
           equipment: ['Wall or couch', 'Padding for the down knee'],
@@ -978,7 +978,7 @@ const recovery = {
         {
           id: 'rec-90-90-hold',
           name: '90-90 Hip Hold',
-          tier: 'A',
+          role: 'primary-alt',
           intent: 'corrective',
           categories: ['mobility'],
           equipment: ['Floor'],
@@ -1003,7 +1003,7 @@ const recovery = {
         {
           id: 'rec-supine-hamstring',
           name: 'Supine Hamstring Stretch',
-          tier: 'A',
+          role: 'primary-alt',
           intent: 'corrective',
           categories: ['mobility'],
           equipment: ['Floor', 'Strap or towel'],
@@ -1029,7 +1029,7 @@ const recovery = {
         {
           id: 'rec-doorway-pec',
           name: 'Doorway Pec Stretch',
-          tier: 'S',
+          role: 'foundational',
           intent: 'corrective',
           categories: ['posture', 'mobility'],
           equipment: ['Doorway'],
@@ -1055,7 +1055,7 @@ const recovery = {
         {
           id: 'rec-childs-pose',
           name: 'Child\'s Pose',
-          tier: 'A',
+          role: 'primary-alt',
           intent: 'corrective',
           categories: ['mobility', 'spine'],
           equipment: ['Floor', 'Optional: bolster'],
@@ -1080,7 +1080,7 @@ const recovery = {
         {
           id: 'rec-sun-salutation-flow',
           name: 'Forward Fold → Down Dog Flow',
-          tier: 'A',
+          role: 'primary-alt',
           intent: 'corrective',
           categories: ['mobility'],
           equipment: ['Floor'],
@@ -1118,7 +1118,7 @@ const recovery = {
         {
           id: 'rec-wall-posture-check',
           name: 'Wall Posture Check',
-          tier: 'S',
+          role: 'foundational',
           intent: 'corrective',
           categories: ['posture'],
           equipment: ['Wall'],
@@ -1143,7 +1143,7 @@ const recovery = {
         {
           id: 'rec-ribs-down',
           name: 'Ribs-Down Drill',
-          tier: 'S',
+          role: 'foundational',
           intent: 'corrective',
           categories: ['posture'],
           equipment: ['None'],
@@ -1168,7 +1168,7 @@ const recovery = {
         {
           id: 'rec-desk-reset',
           name: 'Desk Reset Sequence',
-          tier: 'A',
+          role: 'primary-alt',
           intent: 'corrective',
           categories: ['posture'],
           equipment: ['Chair', 'Desk'],
@@ -1207,7 +1207,7 @@ const recovery = {
         {
           id: 'rec-single-leg-stand',
           name: 'Single-Leg Stand',
-          tier: 'S',
+          role: 'foundational',
           intent: 'corrective',
           categories: ['imbalance'],
           equipment: ['Floor'],
@@ -1234,7 +1234,7 @@ const recovery = {
         {
           id: 'rec-tandem-walk',
           name: 'Tandem Walk',
-          tier: 'A',
+          role: 'primary-alt',
           intent: 'corrective',
           categories: ['imbalance'],
           equipment: ['Hallway or straight line'],
@@ -1260,7 +1260,7 @@ const recovery = {
         {
           id: 'rec-vestibular-gaze',
           name: 'Vestibular Gaze Stabilisation',
-          tier: 'B',
+          role: 'accessory',
           intent: 'corrective',
           categories: ['imbalance'],
           equipment: ['None'],
@@ -1286,7 +1286,7 @@ const recovery = {
         {
           id: 'rec-rocking-balance',
           name: 'Rocking Balance Drill',
-          tier: 'B',
+          role: 'accessory',
           intent: 'corrective',
           categories: ['imbalance'],
           equipment: ['Floor', 'Optional: balance pad'],
@@ -1325,7 +1325,7 @@ const recovery = {
         {
           id: 'rec-foam-roll-tspine',
           name: 'T-Spine Foam Roll',
-          tier: 'S',
+          role: 'foundational',
           intent: 'corrective',
           categories: ['mobility', 'posture'],
           equipment: ['Foam roller'],
@@ -1351,7 +1351,7 @@ const recovery = {
         {
           id: 'rec-foam-roll-quads',
           name: 'Quad Foam Roll',
-          tier: 'A',
+          role: 'primary-alt',
           intent: 'corrective',
           categories: ['mobility'],
           equipment: ['Foam roller'],
@@ -1377,7 +1377,7 @@ const recovery = {
         {
           id: 'rec-lacrosse-glute',
           name: 'Lacrosse Ball Glute / Piriformis',
-          tier: 'S',
+          role: 'foundational',
           intent: 'corrective',
           categories: ['mobility'],
           equipment: ['Lacrosse ball or trigger ball'],
@@ -1403,7 +1403,7 @@ const recovery = {
         {
           id: 'rec-foam-roll-lats',
           name: 'Lat Foam Roll',
-          tier: 'A',
+          role: 'primary-alt',
           intent: 'corrective',
           categories: ['mobility', 'posture'],
           equipment: ['Foam roller'],
@@ -1428,7 +1428,7 @@ const recovery = {
         {
           id: 'rec-lacrosse-plantar',
           name: 'Plantar Fascia Ball Roll',
-          tier: 'A',
+          role: 'primary-alt',
           intent: 'corrective',
           categories: ['mobility', 'healthspan'],
           equipment: ['Lacrosse ball or tennis ball'],
@@ -1467,7 +1467,7 @@ const recovery = {
         {
           id: 'rec-sun-salutation-a',
           name: 'Sun Salutation A',
-          tier: 'A',
+          role: 'primary-alt',
           intent: 'main',
           categories: ['mobility'],
           equipment: ['Floor'],
@@ -1493,7 +1493,7 @@ const recovery = {
         {
           id: 'rec-qigong-eight-brocades',
           name: 'Eight Brocades (Ba Duan Jin)',
-          tier: 'A',
+          role: 'primary-alt',
           intent: 'corrective',
           categories: ['mobility', 'healthspan'],
           equipment: ['Floor'],
@@ -1518,7 +1518,7 @@ const recovery = {
         {
           id: 'rec-tai-chi-opening',
           name: 'Tai Chi Opening Form',
-          tier: 'A',
+          role: 'primary-alt',
           intent: 'corrective',
           categories: ['imbalance', 'mobility'],
           equipment: ['Floor'],

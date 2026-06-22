@@ -19,7 +19,7 @@ export const core = {
         {
           id: 'core-pallof',
           name: 'Pallof Press',
-          tier: 'S',
+          role: 'foundational',
           equipment: ['Cable column at chest height', 'D-handle'],
           primaryMuscles: ['Obliques', 'Transverse abdominis'],
           secondaryMuscles: ['Glute medius', 'Shoulder stabilizers'],
@@ -45,7 +45,7 @@ export const core = {
         {
           id: 'core-cable-chop',
           name: 'Cable Chop (High-to-Low)',
-          tier: 'S',
+          role: 'foundational',
           equipment: ['Cable column at shoulder height OR top', 'D-handle or rope'],
           primaryMuscles: ['Obliques'],
           secondaryMuscles: ['Lats', 'Glutes', 'Core'],
@@ -70,7 +70,7 @@ export const core = {
         {
           id: 'core-cable-lift',
           name: 'Cable Lift (Low-to-High)',
-          tier: 'S',
+          role: 'foundational',
           equipment: ['Cable column at hip height OR floor', 'D-handle or rope'],
           primaryMuscles: ['Obliques'],
           secondaryMuscles: ['Shoulders', 'Glutes', 'Core'],
@@ -95,7 +95,7 @@ export const core = {
         {
           id: 'core-dead-bug',
           name: 'Dead Bug',
-          tier: 'A',
+          role: 'primary-alt',
           categories: ['spine'],
           equipment: ['Floor mat'],
           primaryMuscles: ['Rectus abdominis', 'Transverse abdominis'],
@@ -127,7 +127,7 @@ export const core = {
         {
           id: 'core-ab-wheel',
           name: 'Ab Wheel Rollout',
-          tier: 'S',
+          role: 'foundational',
           equipment: ['Ab wheel', 'Floor pad for knees'],
           primaryMuscles: ['Rectus abdominis', 'Obliques'],
           secondaryMuscles: ['Latissimus dorsi', 'Serratus anterior'],
@@ -152,7 +152,7 @@ export const core = {
         {
           id: 'core-plank',
           name: 'Plank Variations',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Floor mat'],
           primaryMuscles: ['Rectus abdominis', 'Transverse abdominis'],
           secondaryMuscles: ['Glutes', 'Shoulders'],
@@ -167,7 +167,7 @@ export const core = {
             'Quality over duration — 30 strict seconds beats 2 sloppy minutes',
           ],
           variants: [
-            { name: 'RKC plank', note: 'Max contract everything for 10–20 sec — brutal intensity.' },
+            { name: 'RKC plank', note: 'Max contract everything for 10–20 sec — very high intensity.' },
             { name: 'Plank with hip extension', note: 'Lift one leg; adds glute and anti-rotation.' },
             { name: 'Ring / TRX plank', note: 'Instability multiplies demand.' },
             { name: 'Weighted plank', note: 'Plate on the back — pure progressive overload.' },
@@ -177,7 +177,7 @@ export const core = {
         {
           id: 'core-bear-crawl',
           name: 'Bear Crawl',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Open floor'],
           primaryMuscles: ['Core (full)', 'Shoulders', 'Quadriceps'],
           secondaryMuscles: ['Glutes', 'Grip', 'Cardiovascular system'],
@@ -203,7 +203,7 @@ export const core = {
         {
           id: 'core-hollow-body',
           name: 'Hollow Body Hold',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Floor mat'],
           primaryMuscles: ['Rectus abdominis', 'Hip flexors'],
           secondaryMuscles: ['Obliques'],
@@ -227,7 +227,7 @@ export const core = {
         {
           id: 'core-mountain-climber',
           name: 'Mountain Climber',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Open floor'],
           primaryMuscles: ['Core (full)', 'Hip flexors'],
           secondaryMuscles: ['Shoulders', 'Cardiovascular system'],
@@ -253,7 +253,7 @@ export const core = {
         {
           id: 'core-toe-touch',
           name: 'Toe Touch',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Floor mat'],
           primaryMuscles: ['Rectus abdominis'],
           secondaryMuscles: ['Hip flexors'],
@@ -285,7 +285,7 @@ export const core = {
         {
           id: 'core-side-plank',
           name: 'Side Plank',
-          tier: 'S',
+          role: 'foundational',
           equipment: ['Floor mat'],
           primaryMuscles: ['Obliques', 'Quadratus lumborum'],
           secondaryMuscles: ['Glute medius', 'Shoulder stabilizers'],
@@ -311,7 +311,7 @@ export const core = {
         {
           id: 'core-suitcase-hold',
           name: 'Suitcase Hold / Carry',
-          tier: 'S',
+          role: 'foundational',
           equipment: ['Heavy single DB or KB'],
           primaryMuscles: ['Obliques', 'Quadratus lumborum'],
           secondaryMuscles: ['Glute medius', 'Forearm flexors'],
@@ -335,7 +335,7 @@ export const core = {
         {
           id: 'core-single-arm-press',
           name: 'Single-Arm Overhead Press',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Dumbbell or kettlebell'],
           primaryMuscles: ['Obliques', 'Transverse abdominis'],
           secondaryMuscles: ['Deltoid', 'Triceps', 'Glute medius'],
@@ -366,7 +366,7 @@ export const core = {
         {
           id: 'core-med-ball-throw',
           name: 'Rotational Med Ball Throw',
-          tier: 'S',
+          role: 'foundational',
           equipment: ['Medicine ball (heavy or rebounder ball)', 'Sturdy wall'],
           primaryMuscles: ['Obliques'],
           secondaryMuscles: ['Glutes', 'Lats', 'Shoulders'],
@@ -391,7 +391,7 @@ export const core = {
         {
           id: 'core-russian-twist',
           name: 'Russian Twist (Weighted)',
-          tier: 'B',
+          role: 'accessory',
           equipment: ['Plate, DB, or medicine ball'],
           primaryMuscles: ['Obliques'],
           secondaryMuscles: ['Rectus abdominis', 'Hip flexors'],
@@ -415,7 +415,7 @@ export const core = {
         {
           id: 'core-landmine-rotation',
           name: 'Landmine Rotation',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Barbell + landmine attachment'],
           primaryMuscles: ['Obliques', 'Transverse abdominis'],
           secondaryMuscles: ['Shoulders', 'Hips'],
