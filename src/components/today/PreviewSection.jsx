@@ -79,8 +79,9 @@ export function PreviewSection({
               // Two-column flex: name+details stack vertically on the
               // left (so long prescription strings like "3 × 10/8/6/4/2s
               // descending holds" never collide with the name), actions
-              // float right. The tier mark hangs in a fixed-width gutter
-              // so the name column starts at the same x across rows.
+              // float right. A fixed-width gutter keeps the name column
+              // starting at the same x across rows. (The old esports-style
+              // tier letter that lived here was removed — see VISION.md.)
               display: 'flex',
               alignItems: 'flex-start',
               gap: 12,
@@ -88,25 +89,7 @@ export function PreviewSection({
               borderTop: i === 0 ? 'none' : '1px solid var(--border-hairline)',
             }}
           >
-            {ex.tier ? (
-              <Text
-                as="span"
-                variant="mono-sm"
-                style={{
-                  flexShrink: 0,
-                  width: 12,
-                  paddingTop: 4,
-                  color: ex.tier === 'S'
-                    ? `var(--accent-${accent}-ink)`
-                    : 'var(--text-tertiary)',
-                  opacity: ex.tier === 'S' ? 0.95 : 0.55,
-                  fontWeight: 600,
-                  fontSize: 10,
-                }}
-              >
-                {ex.tier}
-              </Text>
-            ) : <span style={{ flexShrink: 0, width: 12 }} />}
+            <span aria-hidden style={{ flexShrink: 0, width: 12 }} />
             <Stack direction="column" gap={1} style={{ flex: 1, minWidth: 0 }}>
               <Text
                 as={Link}

@@ -30,7 +30,7 @@ export const push = {
         {
           id: 'push-bb-bench',
           name: 'Barbell Bench Press',
-          tier: 'S',
+          role: 'foundational',
           equipment: ['Flat bench', 'Olympic barbell', 'Power rack with safeties'],
           primaryMuscles: ['Pectoralis major (sternal)'],
           secondaryMuscles: ['Anterior deltoid', 'Triceps brachii'],
@@ -57,7 +57,7 @@ export const push = {
         {
           id: 'push-db-bench',
           name: 'Dumbbell Bench Press',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Adjustable bench', 'Dumbbells'],
           primaryMuscles: ['Pectoralis major'],
           secondaryMuscles: ['Anterior deltoid', 'Triceps brachii'],
@@ -81,7 +81,7 @@ export const push = {
         {
           id: 'push-cable-fly-mid',
           name: 'Cable Chest Fly (Mid)',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Dual cable column', 'D-handles'],
           primaryMuscles: ['Pectoralis major (sternal)'],
           secondaryMuscles: ['Anterior deltoid'],
@@ -106,7 +106,7 @@ export const push = {
         {
           id: 'push-machine-chest-press',
           name: 'Machine Chest Press',
-          tier: 'B',
+          role: 'accessory',
           equipment: ['Hammer Strength press OR converging plate-loaded press'],
           primaryMuscles: ['Pectoralis major'],
           secondaryMuscles: ['Anterior deltoid', 'Triceps brachii'],
@@ -128,7 +128,7 @@ export const push = {
         {
           id: 'push-pushup',
           name: 'Push-Up',
-          tier: 'S',
+          role: 'foundational',
           equipment: ['Open floor'],
           primaryMuscles: ['Pectoralis major', 'Triceps brachii', 'Anterior deltoid'],
           secondaryMuscles: ['Core', 'Serratus anterior'],
@@ -155,7 +155,7 @@ export const push = {
         {
           id: 'push-band-press',
           name: 'Banded Chest Press',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Resistance band anchored at chest height behind you'],
           primaryMuscles: ['Pectoralis major', 'Triceps brachii', 'Anterior deltoid'],
           secondaryMuscles: ['Core', 'Serratus anterior'],
@@ -180,7 +180,7 @@ export const push = {
         {
           id: 'push-archer-pushup',
           name: 'Archer Push-Up',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Open floor'],
           primaryMuscles: ['Pectoralis major', 'Triceps brachii', 'Anterior deltoid'],
           secondaryMuscles: ['Core', 'Serratus anterior', 'Obliques'],
@@ -205,7 +205,7 @@ export const push = {
         {
           id: 'push-kb-floor-press',
           name: 'Kettlebell Floor Press',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Kettlebell (1–2)', 'Open floor'],
           primaryMuscles: ['Pectoralis major', 'Triceps brachii'],
           secondaryMuscles: ['Anterior deltoid', 'Core'],
@@ -237,7 +237,7 @@ export const push = {
         {
           id: 'push-incline-db',
           name: 'Incline Dumbbell Press',
-          tier: 'S',
+          role: 'foundational',
           equipment: ['Adjustable bench at 30–45°', 'Dumbbells'],
           primaryMuscles: ['Pectoralis major (clavicular)'],
           secondaryMuscles: ['Anterior deltoid', 'Triceps brachii'],
@@ -262,7 +262,7 @@ export const push = {
         {
           id: 'push-low-high-fly',
           name: 'Low-to-High Cable Fly',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Dual cable column at lowest setting', 'D-handles'],
           primaryMuscles: ['Pectoralis major (clavicular)'],
           secondaryMuscles: ['Anterior deltoid'],
@@ -285,7 +285,7 @@ export const push = {
         {
           id: 'push-decline-pushup',
           name: 'Decline Push-Up',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Open floor', 'Bench OR chair OR low table for feet'],
           primaryMuscles: ['Pectoralis major (clavicular)', 'Anterior deltoid'],
           secondaryMuscles: ['Triceps brachii', 'Core', 'Serratus anterior'],
@@ -317,7 +317,7 @@ export const push = {
         {
           id: 'push-seated-db-ohp',
           name: 'Seated Dumbbell OHP',
-          tier: 'S',
+          role: 'foundational',
           equipment: ['Bench with vertical back support', 'Dumbbells'],
           primaryMuscles: ['Anterior deltoid', 'Medial deltoid'],
           secondaryMuscles: ['Triceps brachii', 'Upper trapezius'],
@@ -343,7 +343,7 @@ export const push = {
         {
           id: 'push-bb-ohp',
           name: 'Barbell OHP (Seated)',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Olympic barbell', 'Upright bench in rack'],
           primaryMuscles: ['Anterior deltoid'],
           secondaryMuscles: ['Medial deltoid', 'Triceps brachii', 'Upper trapezius'],
@@ -367,7 +367,7 @@ export const push = {
         {
           id: 'push-kb-strict-press',
           name: 'Kettlebell Strict Press',
-          tier: 'S',
+          role: 'foundational',
           equipment: ['Kettlebell (1–2)'],
           primaryMuscles: ['Anterior deltoid', 'Medial deltoid'],
           secondaryMuscles: ['Triceps brachii', 'Upper pectoralis', 'Core'],
@@ -394,7 +394,7 @@ export const push = {
         {
           id: 'push-pike-pushup',
           name: 'Pike Push-Up',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Open floor (optional: foam blocks)'],
           primaryMuscles: ['Anterior deltoid', 'Medial deltoid'],
           secondaryMuscles: ['Triceps brachii', 'Upper trapezius'],
@@ -419,7 +419,7 @@ export const push = {
         {
           id: 'push-machine-shoulder',
           name: 'Machine Shoulder Press',
-          tier: 'B',
+          role: 'accessory',
           equipment: ['Selectorized or plate-loaded shoulder press machine'],
           primaryMuscles: ['Anterior deltoid'],
           secondaryMuscles: ['Medial deltoid', 'Triceps brachii'],
@@ -440,7 +440,7 @@ export const push = {
         {
           id: 'push-band-ohp',
           name: 'Banded Overhead Press',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Resistance band, both feet on it for double-strand anchor'],
           primaryMuscles: ['Anterior deltoid', 'Medial deltoid'],
           secondaryMuscles: ['Triceps brachii', 'Upper trapezius', 'Core'],
@@ -472,7 +472,7 @@ export const push = {
         {
           id: 'push-cable-lateral',
           name: 'Cable Lateral Raise',
-          tier: 'S',
+          role: 'foundational',
           equipment: ['Low cable', 'D-handle'],
           primaryMuscles: ['Medial deltoid'],
           secondaryMuscles: ['Supraspinatus', 'Upper trapezius'],
@@ -497,7 +497,7 @@ export const push = {
         {
           id: 'push-upright-row',
           name: 'Upright Row (Wide)',
-          tier: 'B',
+          role: 'accessory',
           equipment: ['Cable + rope OR EZ-bar OR dumbbells'],
           primaryMuscles: ['Medial deltoid'],
           secondaryMuscles: ['Upper trapezius', 'Biceps brachii'],
@@ -520,7 +520,7 @@ export const push = {
         {
           id: 'push-band-lateral',
           name: 'Banded Lateral Raise',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Light loop band OR tube band with handle'],
           primaryMuscles: ['Medial deltoid'],
           secondaryMuscles: ['Supraspinatus', 'Upper trapezius'],
@@ -552,7 +552,7 @@ export const push = {
         {
           id: 'push-face-pull',
           name: 'Face Pull',
-          tier: 'S',
+          role: 'foundational',
           equipment: ['Rope attachment', 'Cable at eye level'],
           primaryMuscles: ['Posterior deltoid', 'External rotators (infraspinatus, teres minor)'],
           secondaryMuscles: ['Mid trapezius', 'Rhomboids'],
@@ -577,7 +577,7 @@ export const push = {
         {
           id: 'push-cable-ext-rot',
           name: 'Cable External Rotation',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Low cable', 'D-handle', 'Optional towel for elbow pad'],
           primaryMuscles: ['Infraspinatus', 'Teres minor'],
           secondaryMuscles: ['Posterior deltoid'],
@@ -600,7 +600,7 @@ export const push = {
         {
           id: 'push-band-face-pull',
           name: 'Banded Face Pull',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Resistance band anchored at face height'],
           primaryMuscles: ['Rear deltoid', 'External rotators', 'Mid trapezius'],
           secondaryMuscles: ['Rotator cuff'],
@@ -624,7 +624,7 @@ export const push = {
         {
           id: 'push-band-ext-rotation',
           name: 'Banded External Rotation',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Light resistance band anchored at elbow height'],
           primaryMuscles: ['Infraspinatus', 'Teres minor'],
           secondaryMuscles: ['Posterior deltoid'],
@@ -648,7 +648,7 @@ export const push = {
         {
           id: 'push-mace-360',
           name: 'Mace 360',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Steel mace (7–15 lb)'],
           primaryMuscles: ['Shoulder stabilizers', 'Rotator cuff', 'Upper back'],
           secondaryMuscles: ['Grip', 'Core', 'Forearms'],
@@ -674,7 +674,7 @@ export const push = {
         {
           id: 'push-light-db-y-raise',
           name: 'Light DB Y-Raise',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Light dumbbells (3–6 lb / 1.5–3 kg)'],
           primaryMuscles: ['Lower trapezius', 'Rear deltoid'],
           secondaryMuscles: ['Mid trapezius', 'Rotator cuff'],
@@ -706,7 +706,7 @@ export const push = {
         {
           id: 'push-rope-pushdown',
           name: 'Cable Rope Pushdown',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Cable + rope', 'High pulley'],
           primaryMuscles: ['Triceps brachii (lateral head)'],
           secondaryMuscles: ['Triceps brachii (medial head)'],
@@ -730,7 +730,7 @@ export const push = {
         {
           id: 'push-overhead-tri',
           name: 'Overhead Cable Tricep Extension',
-          tier: 'S',
+          role: 'foundational',
           equipment: ['Cable + rope', 'High OR low pulley'],
           primaryMuscles: ['Triceps brachii (long head)'],
           secondaryMuscles: ['Triceps brachii (lateral head)'],
@@ -753,7 +753,7 @@ export const push = {
         {
           id: 'push-skull-crusher',
           name: 'Skull Crusher (EZ-Bar)',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['EZ-curl bar', 'Flat bench'],
           primaryMuscles: ['Triceps brachii'],
           secondaryMuscles: [],
@@ -778,7 +778,7 @@ export const push = {
         {
           id: 'push-dip',
           name: 'Dip',
-          tier: 'B',
+          role: 'accessory',
           equipment: ['Parallel dip bars OR assisted dip machine'],
           primaryMuscles: ['Triceps brachii', 'Pectoralis major (lower)'],
           secondaryMuscles: ['Anterior deltoid'],
@@ -801,7 +801,7 @@ export const push = {
         {
           id: 'push-diamond-pushup',
           name: 'Diamond Push-Up',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Open floor'],
           primaryMuscles: ['Triceps brachii', 'Pectoralis major (sternal)'],
           secondaryMuscles: ['Anterior deltoid', 'Core'],
@@ -826,7 +826,7 @@ export const push = {
         {
           id: 'push-band-overhead-tri',
           name: 'Banded Overhead Tricep Extension',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Resistance band anchored low (under foot, door bottom)'],
           primaryMuscles: ['Triceps brachii (long head)'],
           secondaryMuscles: ['Triceps brachii (lateral head)'],
@@ -851,7 +851,7 @@ export const push = {
         {
           id: 'push-band-pushdown',
           name: 'Banded Tricep Pushdown',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Resistance band anchored overhead (door, pull-up bar, etc.)'],
           primaryMuscles: ['Triceps brachii'],
           secondaryMuscles: [],

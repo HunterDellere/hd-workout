@@ -136,11 +136,6 @@ function PickRow({ exercise, onPick, onDetails, isFirst }) {
         >
           Details
         </button>
-        {exercise.tier && (
-          <Text as="span" variant="mono-sm" tone="tertiary">
-            T{exercise.tier}
-          </Text>
-        )}
       </Stack>
     </div>
   );

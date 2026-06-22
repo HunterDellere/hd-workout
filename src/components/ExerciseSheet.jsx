@@ -26,13 +26,7 @@ import { HistoryStrip } from './HistoryStrip';
 import { ExerciseArc } from './ExerciseArc';
 import { FavoriteStar } from './FavoriteStar';
 import { useSession } from '../state/session-context.js';
-
-const TIER_LABEL = {
-  S: 'Foundational',
-  A: 'Primary alt',
-  B: 'Accessory',
-  C: 'Accessory',
-};
+import { ROLE_LABEL_LONG } from '../data/role';
 
 function StatRow({ label, value, accent }) {
   return (
@@ -156,7 +150,7 @@ export function ExerciseSheet({ open, onClose, exercise }) {
   // slate if the day is unknown.
   const DAY_TO_ACCENT = { push: 'rust', pull: 'sea', legs: 'sand', core: 'sky' };
   const accent = DAY_TO_ACCENT[exercise._day] ?? 'stone';
-  const tierLabel = TIER_LABEL[exercise.tier] ?? exercise.tier;
+  const roleLabel = ROLE_LABEL_LONG[exercise.role] ?? '';
 
   // Wave 6.4: if there's an in-flight performance for this exercise, surface
   // the active session's prescription instead of the catalog's "—". Catalog
@@ -179,9 +173,7 @@ export function ExerciseSheet({ open, onClose, exercise }) {
       >
         <Stack direction="row" align="flex-start" justify="space-between" gap={3}>
           <Stack direction="column" gap={1} style={{ flex: 1, minWidth: 0 }}>
-            <Eyebrow accent={accent}>
-              Tier {exercise.tier}  ·  {tierLabel}
-            </Eyebrow>
+            {roleLabel && <Eyebrow accent={accent}>{roleLabel}</Eyebrow>}
             <Text
               as="h2"
               variant="display-lg"

@@ -98,24 +98,7 @@ export function CollapsedPerformanceRow({
         }}
       />
       <Stack direction="row" align="center" gap={3}>
-        {ex.tier ? (
-          <Text
-            as="span"
-            variant="mono-sm"
-            style={{
-              width: 14,
-              flexShrink: 0,
-              color: ex.tier === 'S'
-                ? `var(--accent-${accent}-ink)`
-                : 'var(--text-tertiary)',
-              opacity: ex.tier === 'S' ? 0.95 : 0.6,
-              fontWeight: 600,
-              fontSize: 10,
-            }}
-          >
-            {ex.tier}
-          </Text>
-        ) : <span style={{ width: 14, flexShrink: 0 }} />}
+        <span aria-hidden style={{ width: 14, flexShrink: 0 }} />
         <Text
           as="span"
           variant="title-md"

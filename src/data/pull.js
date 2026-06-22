@@ -28,7 +28,7 @@ export const pull = {
         {
           id: 'pull-pullup',
           name: 'Pull-Up / Chin-Up',
-          tier: 'S',
+          role: 'foundational',
           equipment: ['Pull-up bar'],
           primaryMuscles: ['Latissimus dorsi', 'Biceps brachii (chin-up bias)'],
           secondaryMuscles: ['Mid trapezius', 'Rhomboids', 'Posterior deltoid'],
@@ -56,7 +56,7 @@ export const pull = {
         {
           id: 'pull-lat-pulldown',
           name: 'Lat Pulldown (Wide Overhand)',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Cable column with wide pulldown bar'],
           primaryMuscles: ['Latissimus dorsi'],
           secondaryMuscles: ['Mid trapezius', 'Rhomboids', 'Biceps brachii'],
@@ -80,7 +80,7 @@ export const pull = {
         {
           id: 'pull-straight-arm-pulldown',
           name: 'Straight-Arm Cable Pulldown',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['High cable + rope or straight bar'],
           primaryMuscles: ['Latissimus dorsi'],
           secondaryMuscles: ['Teres major', 'Long head of triceps'],
@@ -102,7 +102,7 @@ export const pull = {
         {
           id: 'pull-band-pulldown',
           name: 'Banded Pulldown',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Resistance band anchored overhead'],
           primaryMuscles: ['Latissimus dorsi', 'Lower trapezius'],
           secondaryMuscles: ['Biceps brachii', 'Rear deltoid'],
@@ -134,7 +134,7 @@ export const pull = {
         {
           id: 'pull-cable-row',
           name: 'Seated Cable Row (V-Bar)',
-          tier: 'S',
+          role: 'foundational',
           equipment: ['Low cable column', 'V-handle'],
           primaryMuscles: ['Mid trapezius', 'Rhomboids', 'Latissimus dorsi'],
           secondaryMuscles: ['Posterior deltoid', 'Biceps brachii', 'Spinal erectors'],
@@ -159,7 +159,7 @@ export const pull = {
         {
           id: 'pull-db-row',
           name: 'Single-Arm DB Row',
-          tier: 'S',
+          role: 'foundational',
           equipment: ['Flat bench', 'Dumbbell'],
           primaryMuscles: ['Latissimus dorsi', 'Mid trapezius'],
           secondaryMuscles: ['Rhomboids', 'Posterior deltoid', 'Biceps brachii'],
@@ -184,7 +184,7 @@ export const pull = {
         {
           id: 'pull-machine-row',
           name: 'Machine Row (Chest-Supported)',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Chest-supported row machine'],
           primaryMuscles: ['Mid trapezius', 'Rhomboids', 'Latissimus dorsi'],
           secondaryMuscles: ['Posterior deltoid', 'Biceps brachii'],
@@ -206,7 +206,7 @@ export const pull = {
         {
           id: 'pull-kb-row',
           name: 'KB Single-Arm Row',
-          tier: 'S',
+          role: 'foundational',
           equipment: ['Kettlebell', 'Sturdy bench or chair for support'],
           primaryMuscles: ['Latissimus dorsi', 'Mid trapezius'],
           secondaryMuscles: ['Rhomboids', 'Posterior deltoid', 'Biceps brachii', 'Core'],
@@ -231,7 +231,7 @@ export const pull = {
         {
           id: 'pull-band-row',
           name: 'Banded Row',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Resistance band anchored at chest height'],
           primaryMuscles: ['Latissimus dorsi', 'Mid trapezius', 'Rhomboids'],
           secondaryMuscles: ['Posterior deltoid', 'Biceps brachii'],
@@ -256,7 +256,7 @@ export const pull = {
         {
           id: 'pull-bb-row',
           name: 'Barbell Bent-Over Row',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Olympic barbell'],
           primaryMuscles: ['Latissimus dorsi', 'Mid trapezius', 'Rhomboids'],
           secondaryMuscles: ['Spinal erectors', 'Posterior deltoid', 'Biceps brachii'],
@@ -281,7 +281,7 @@ export const pull = {
         {
           id: 'pull-tbar-row',
           name: 'T-Bar Row',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Landmine attachment', 'Olympic barbell', 'V-handle or close-grip attachment'],
           primaryMuscles: ['Latissimus dorsi', 'Mid trapezius', 'Rhomboids'],
           secondaryMuscles: ['Posterior deltoid', 'Biceps brachii', 'Spinal erectors'],
@@ -305,7 +305,7 @@ export const pull = {
         {
           id: 'pull-inverted-row',
           name: 'Inverted Row',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Sturdy bar at hip-to-chest height OR TRX/rings OR low table'],
           primaryMuscles: ['Latissimus dorsi', 'Mid trapezius', 'Rhomboids'],
           secondaryMuscles: ['Biceps brachii', 'Rear deltoid', 'Core'],
@@ -337,7 +337,7 @@ export const pull = {
         {
           id: 'pull-back-extension',
           name: 'Hyperextension / Back Extension',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['GHD or Roman chair', 'Optional DB or plate'],
           primaryMuscles: ['Spinal erectors', 'Gluteus maximus'],
           secondaryMuscles: ['Hamstrings'],
@@ -362,7 +362,7 @@ export const pull = {
         {
           id: 'pull-deadlift',
           name: 'Deadlift (Conventional)',
-          tier: 'S',
+          role: 'foundational',
           equipment: ['Olympic barbell', 'Bumper plates', 'Optional belt + chalk'],
           primaryMuscles: ['Gluteus maximus', 'Hamstrings', 'Spinal erectors'],
           secondaryMuscles: ['Latissimus dorsi', 'Trapezius', 'Forearms'],
@@ -395,7 +395,7 @@ export const pull = {
         {
           id: 'pull-bb-curl',
           name: 'Barbell / EZ-Bar Curl',
-          tier: 'S',
+          role: 'foundational',
           equipment: ['Barbell or EZ-curl bar'],
           primaryMuscles: ['Biceps brachii'],
           secondaryMuscles: ['Brachialis', 'Forearm flexors'],
@@ -420,7 +420,7 @@ export const pull = {
         {
           id: 'pull-bayesian-curl',
           name: 'Bayesian Cable Curl',
-          tier: 'S',
+          role: 'foundational',
           equipment: ['Cable column at lowest setting', 'D-handle'],
           primaryMuscles: ['Biceps brachii (long head)'],
           secondaryMuscles: ['Brachialis'],
@@ -443,7 +443,7 @@ export const pull = {
         {
           id: 'pull-incline-db-curl',
           name: 'Incline DB Curl',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Adjustable bench at 45–60°', 'Dumbbells'],
           primaryMuscles: ['Biceps brachii (long head)'],
           secondaryMuscles: [],
@@ -466,7 +466,7 @@ export const pull = {
         {
           id: 'pull-hammer-curl',
           name: 'Hammer Curl',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Dumbbells or cable + rope'],
           primaryMuscles: ['Brachialis', 'Brachioradialis'],
           secondaryMuscles: ['Biceps brachii'],
@@ -489,7 +489,7 @@ export const pull = {
         {
           id: 'pull-concentration-curl',
           name: 'Concentration Curl',
-          tier: 'B',
+          role: 'accessory',
           equipment: ['Dumbbell', 'Bench'],
           primaryMuscles: ['Biceps brachii (peak)'],
           secondaryMuscles: [],
@@ -511,7 +511,7 @@ export const pull = {
         {
           id: 'pull-kb-curl',
           name: 'KB Curl',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Kettlebell (1–2)'],
           primaryMuscles: ['Biceps brachii', 'Brachialis'],
           secondaryMuscles: ['Forearm flexors'],
@@ -542,7 +542,7 @@ export const pull = {
         {
           id: 'pull-rev-pec-deck',
           name: 'Reverse Pec Deck',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Reverse pec deck machine'],
           primaryMuscles: ['Posterior deltoid'],
           secondaryMuscles: ['Mid trapezius', 'Rhomboids'],
@@ -566,7 +566,7 @@ export const pull = {
         {
           id: 'pull-cable-rear-delt',
           name: 'Cable Rear Delt Pull (Eye-Level)',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Cable column at eye level', 'D-handle'],
           primaryMuscles: ['Posterior deltoid'],
           secondaryMuscles: ['Infraspinatus', 'Teres minor'],
@@ -588,7 +588,7 @@ export const pull = {
         {
           id: 'pull-mace-10-2',
           name: 'Mace 10-2-360',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Steel mace (7–15 lb)'],
           primaryMuscles: ['Rear deltoid', 'Upper back', 'Rotator cuff'],
           secondaryMuscles: ['Grip', 'Forearms', 'Core'],
@@ -620,7 +620,7 @@ export const pull = {
         {
           id: 'pull-farmers-carry',
           name: 'Farmer\'s Carry',
-          tier: 'S',
+          role: 'foundational',
           equipment: ['Heavy DBs or farmer\'s handles'],
           primaryMuscles: ['Forearm flexors (grip)', 'Upper trapezius', 'Core'],
           secondaryMuscles: ['Glutes', 'Spinal erectors'],
@@ -647,7 +647,7 @@ export const pull = {
         {
           id: 'pull-wrist-curl',
           name: 'Wrist Curl + Reverse Wrist Curl',
-          tier: 'B',
+          role: 'accessory',
           equipment: ['Dumbbell or barbell', 'Bench'],
           primaryMuscles: ['Forearm flexors', 'Forearm extensors'],
           secondaryMuscles: [],
@@ -672,7 +672,7 @@ export const pull = {
         {
           id: 'pull-grip-trainer',
           name: 'Grip Trainer (Adjustable Spring)',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Adjustable spring grip trainer (e.g. Captains of Crush, IronMind)'],
           primaryMuscles: ['Finger flexors', 'Forearm flexors'],
           secondaryMuscles: ['Hand intrinsics', 'Wrist stabilizers'],
@@ -698,7 +698,7 @@ export const pull = {
         {
           id: 'pull-plate-pinch',
           name: 'Plate Pinch Hold',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Two flat plates (10–25 lb each)'],
           primaryMuscles: ['Thumb adductor', 'Finger flexors', 'Forearm flexors'],
           secondaryMuscles: ['Wrist stabilizers'],
@@ -725,7 +725,7 @@ export const pull = {
         {
           id: 'pull-towel-hang',
           name: 'Towel Hang',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Pull-up bar', 'Two thick gym towels'],
           primaryMuscles: ['Forearm flexors', 'Finger flexors', 'Lats'],
           secondaryMuscles: ['Grip endurance', 'Shoulder decompressors'],
@@ -751,7 +751,7 @@ export const pull = {
         {
           id: 'pull-wrist-roller',
           name: 'Wrist Roller',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Wrist roller (broomstick + rope + small plate) or commercial version'],
           primaryMuscles: ['Forearm flexors', 'Forearm extensors', 'Wrist stabilizers'],
           secondaryMuscles: ['Shoulders (isometric hold)'],
@@ -777,7 +777,7 @@ export const pull = {
         {
           id: 'pull-fat-grip-pull',
           name: 'Fat-Grip Pull (Bar or DB)',
-          tier: 'A',
+          role: 'primary-alt',
           equipment: ['Fat Gripz (or DIY: rolled towel) over a bar or DB handle', 'Pull-up bar OR rowing implement'],
           primaryMuscles: ['Forearm flexors', 'Brachialis', 'Lats', 'Mid trapezius'],
           secondaryMuscles: ['Grip', 'Biceps brachii'],

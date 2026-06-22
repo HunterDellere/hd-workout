@@ -7,41 +7,11 @@
 
 import { Stack, Surface, Tag, Text } from '../design-system/components';
 import { dayLineageAccent, radius as radiusScale } from '../design-system/tokens';
-
-const TIER_LABEL = {
-  S: 'Foundational',
-  A: 'Primary alt',
-  B: 'Accessory',
-};
-
-function tierStyles(tier, accentName) {
-  // Wave 4.1 #26: tier chips are wash + accent ink across the board.
-  // The previous solid accent-ink fill on S tier competed with the day
-  // accent rule + the log-set button for visual climax. S now keeps a
-  // 1px accent-ink border so it still reads as "the heavy mark" without
-  // a full fill.
-  if (tier === 'S') {
-    return {
-      background: `var(--accent-${accentName}-wash)`,
-      color: `var(--accent-${accentName}-ink)`,
-      border: `1px solid var(--accent-${accentName}-ink)`,
-    };
-  }
-  if (tier === 'A') {
-    return {
-      background: `var(--accent-${accentName}-wash)`,
-      color: `var(--accent-${accentName}-ink)`,
-    };
-  }
-  return {
-    background: 'var(--surface-sunken)',
-    color: 'var(--text-tertiary)',
-  };
-}
+import { roleLabel } from '../data/role';
 
 export function ExerciseCardV2({ exercise, dayKey, onOpen, index = 0 }) {
   const accentName = dayLineageAccent[dayKey] ?? 'stone';
-  const tier = tierStyles(exercise.tier, accentName);
+  const role = roleLabel(exercise.role);
   const tags = exercise.tags ?? [];
   const visibleTags = tags.slice(0, 3);
   const overflow = tags.length - visibleTags.length;
@@ -55,7 +25,7 @@ export function ExerciseCardV2({ exercise, dayKey, onOpen, index = 0 }) {
       onClick={onOpen}
       data-testid="exercise-card-v2"
       data-day={dayKey}
-      data-tier={exercise.tier}
+      data-role={exercise.role}
       style={{
         position: 'relative',
         textAlign: 'left',
@@ -77,28 +47,17 @@ export function ExerciseCardV2({ exercise, dayKey, onOpen, index = 0 }) {
         }}
       />
       <Stack direction="row" gap={3} align="flex-start">
-        <span
-          aria-hidden
-          title={TIER_LABEL[exercise.tier]}
-          style={{
-            flexShrink: 0,
-            width: 34,
-            height: 34,
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderRadius: radiusScale.md,
-            fontFamily: 'var(--font-mono)',
-            fontSize: 13,
-            fontWeight: 600,
-            letterSpacing: '0.04em',
-            lineHeight: 1,
-            ...tier,
-          }}
-        >
-          {exercise.tier}
-        </span>
         <Stack direction="column" gap={2} style={{ flex: 1, minWidth: 0 }}>
+          {role && (
+            <Text
+              as="span"
+              variant="mono-sm"
+              tone="tertiary"
+              style={{ textTransform: 'uppercase', letterSpacing: '0.08em' }}
+            >
+              {role}
+            </Text>
+          )}
           <Text as="span" variant="title-md" tone="primary">
             {exercise.name}
           </Text>
