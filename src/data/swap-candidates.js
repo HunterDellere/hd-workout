@@ -38,16 +38,37 @@ export const GENERIC_TAGS = new Set([
 
 const MUSCLE_PEER_FALLBACK_THRESHOLD = 3;
 
+// Ballistic intent tags. A heavy bilateral grind (e.g. back squat) and a
+// jump squat share the same pattern/section but are not load-equivalent —
+// offering one as a substitute for the other does not preserve the slot's
+// training intent. We exclude these candidates when the current exercise
+// is a foundational grind compound (see isBallisticIntent).
+const BALLISTIC_TAGS = new Set(['plyometric', 'power']);
+
+function hasBallisticIntent(tags) {
+  return (tags ?? []).some((t) => BALLISTIC_TAGS.has(t));
+}
+
 export function buildSwapCandidates(currentExerciseId) {
   const current = currentExerciseId ? findExerciseAnywhere(currentExerciseId) : null;
   if (!current) return { candidates: [], current: null, patternKey: null };
 
   const sectionKey = current.section?.key ?? null;
   const patternKey = patternForExercise(currentExerciseId);
+  const currentRawTags = current.exercise.tags ?? [];
   const currentTags = new Set(
-    (current.exercise.tags ?? []).filter((t) => !GENERIC_TAGS.has(t)),
+    currentRawTags.filter((t) => !GENERIC_TAGS.has(t)),
   );
   const currentPrimary = new Set(current.exercise.primaryMuscles ?? []);
+
+  // A foundational grind compound: heavy, deliberate, load-driven. When the
+  // slot is one of these, never offer a ballistic (plyometric/power) peer
+  // as a substitute — it would not preserve the training intent.
+  const isFoundationalGrind =
+    currentRawTags.includes('foundational')
+    && currentRawTags.includes('compound')
+    && !hasBallisticIntent(currentRawTags);
+  const excludeBallistic = (ex) => !(isFoundationalGrind && hasBallisticIntent(ex.tags));
 
   const out = [];
   const seen = new Set([currentExerciseId]);
@@ -56,6 +77,7 @@ export function buildSwapCandidates(currentExerciseId) {
     for (const ex of exercisesForPattern(patternKey)) {
       if (seen.has(ex.id)) continue;
       seen.add(ex.id);
+      if (!excludeBallistic(ex)) continue;
       out.push(ex);
     }
   }
@@ -66,6 +88,7 @@ export function buildSwapCandidates(currentExerciseId) {
   const musclePeers = [];
   for (const ex of catalog) {
     if (seen.has(ex.id)) continue;
+    if (!excludeBallistic(ex)) { seen.add(ex.id); continue; }
     const sameSection = sectionKey && ex._section?.key === sectionKey;
     const sharedTag = currentTags.size > 0
       && (ex.tags ?? []).some((t) => !GENERIC_TAGS.has(t) && currentTags.has(t));

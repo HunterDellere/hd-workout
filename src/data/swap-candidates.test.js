@@ -69,6 +69,18 @@ describe('buildSwapCandidates', () => {
     expect(candidates.find((c) => c.id === 'push-bb-bench')).toBeUndefined();
   });
 
+  it('excludes ballistic (plyometric/power) peers when swapping a foundational grind compound', () => {
+    // Back squat is a foundational grind compound (['compound',
+    // 'foundational', 'bilateral']). Jump squat shares the squat pattern
+    // but is ballistic (['compound', 'power', 'plyometric']) — it is not a
+    // load-equivalent substitute and must not be offered.
+    const { candidates } = buildSwapCandidates('legs-back-squat');
+    expect(candidates.length).toBeGreaterThan(0);
+    expect(candidates.find((c) => c.id === 'legs-jump-squat')).toBeUndefined();
+    // Legitimate grind equivalents are retained.
+    expect(candidates.find((c) => c.id === 'legs-front-squat')).toBeDefined();
+  });
+
   it('falls back to primary-muscle peers only when higher tiers are thin', () => {
     // A movement with NO pattern + sparse section peers + no shared
     // specific tags should still return enough candidates to be useful.
