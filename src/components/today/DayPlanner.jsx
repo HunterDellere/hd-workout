@@ -62,7 +62,15 @@ const PATTERN_LABEL = {
   'healthspan': 'healthspan',
 };
 
-export function DayPlanner({ dayKey, viewMode = 'today' }) {
+export function DayPlanner({
+  dayKey,
+  viewMode = 'today',
+  // Only the /today view passes a swap-day handler; /:dayKey is the
+  // planner for a specific day and doesn't need it.
+  onOpenSwapDay = null,
+  swapDayActive = false,
+  scheduledDayKey = null,
+}) {
   const navigate = useNavigate();
   const { settings, setLocation } = useSettings();
   const { activeSession, archive, startSession } = useSession();
@@ -151,6 +159,10 @@ export function DayPlanner({ dayKey, viewMode = 'today' }) {
         // active session is locked to the location it was started in.
         location={settings.location ?? 'gym'}
         onSetLocation={sessionActive ? null : setLocation}
+        // One-day routine swap — wired through from /today only.
+        onOpenSwapDay={onOpenSwapDay}
+        swapDayActive={swapDayActive}
+        scheduledDayKey={scheduledDayKey}
       />
 
       <BodyweightQuickLog />

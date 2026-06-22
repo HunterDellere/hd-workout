@@ -257,6 +257,37 @@ export function SessionProvider({ children }) {
       });
     },
 
+    // In-place edit of a logged set during an active session. Patch is
+    // shallow-merged into the existing set so callers can fix one field
+    // (e.g. drop a typo'd reps value) without re-supplying weight/unit/rpe.
+    // The set index is preserved; the only fields we never overwrite from
+    // a caller are the canonical `index` and the original `loggedAt`
+    // timestamp — those identify the set across the session.
+    editSet(performanceId, setIndex, patch) {
+      if (!patch || typeof patch !== 'object') return;
+      setSession((s) => {
+        if (!s) return s;
+        const performances = s.performances.map((p) => {
+          if (p.id !== performanceId) return p;
+          const sets = p.sets.map((set) => {
+            if (set.index !== setIndex) return set;
+            const next = { ...set, ...patch, index: set.index, loggedAt: set.loggedAt };
+            // Coerce empty strings back to null so the archive shape stays
+            // numeric where it expects numbers.
+            for (const key of ['weight', 'reps', 'rpe', 'durationSec', 'distanceM']) {
+              if (next[key] === '') next[key] = null;
+            }
+            // Strip undefined toggle flags so they don't pollute the blob.
+            if (next.isWarmup === false) delete next.isWarmup;
+            if (next.isDrop === false) delete next.isDrop;
+            return next;
+          });
+          return { ...p, sets };
+        });
+        return { ...s, performances };
+      });
+    },
+
     // Write a freeform note onto a performance. The schema has supported
     // performance.notes since session creation but no UI ever wrote to it
     // until Wave 3.1. Empty string is the canonical "no note" state.

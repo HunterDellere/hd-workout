@@ -214,6 +214,7 @@ export function PerformanceCard({
   suggestion,
   onLogSet,
   onDiscardSet,
+  onEditSet,
   onSwap,
   onStopRest,
   onRemove,
@@ -559,6 +560,9 @@ export function PerformanceCard({
             accent={accent}
             onLogSet={(payload) => onLogSet(performance.id, payload)}
             onDiscardSet={(setIdx) => onDiscardSet(performance.id, setIdx)}
+            onEditSet={onEditSet
+              ? (setIdx, patch) => onEditSet(performance.id, setIdx, patch)
+              : null}
           />
         ) : prescription.kind === 'distance' ? (
           <DistanceSetRow
@@ -567,6 +571,9 @@ export function PerformanceCard({
             accent={accent}
             onLogSet={(payload) => onLogSet(performance.id, payload)}
             onDiscardSet={(setIdx) => onDiscardSet(performance.id, setIdx)}
+            onEditSet={onEditSet
+              ? (setIdx, patch) => onEditSet(performance.id, setIdx, patch)
+              : null}
           />
         ) : prescription.kind === 'duration' || prescription.kind === 'rounds' ? (
           <DurationSetRow
@@ -575,6 +582,9 @@ export function PerformanceCard({
             accent={accent}
             onLogSet={(payload) => onLogSet(performance.id, payload)}
             onDiscardSet={(setIdx) => onDiscardSet(performance.id, setIdx)}
+            onEditSet={onEditSet
+              ? (setIdx, patch) => onEditSet(performance.id, setIdx, patch)
+              : null}
           />
         ) : (
           <SetRow
@@ -591,6 +601,9 @@ export function PerformanceCard({
             autoWarmupRungs={autoWarmupRungs}
             onLogSet={(payload) => onLogSet(performance.id, payload)}
             onDiscardSet={(setIdx) => onDiscardSet(performance.id, setIdx)}
+            onEditSet={onEditSet
+              ? (setIdx, patch) => onEditSet(performance.id, setIdx, patch)
+              : null}
             prSetIds={prSetIds}
           />
         )}

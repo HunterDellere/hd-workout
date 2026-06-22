@@ -25,6 +25,34 @@ describe('parsePrescription', () => {
     expect(r.repsLow).toBe(4);
     expect(r.repsHigh).toBe(10);
   });
+  it('parses a hold pyramid "10/8/6/4/2s" as a weight-free duration ladder', () => {
+    const r = parsePrescription('10/8/6/4/2s');
+    expect(r.kind).toBe('duration');
+    expect(r.holdSchedule).toEqual([10, 8, 6, 4, 2]);
+    expect(r.setsTotal).toBe(5);
+    expect(r.holdSec).toBe(10);
+    expect(r.perSide).toBe(false);
+  });
+  it('parses a hold pyramid with a descriptive prefix "Descending holds: 10/8/6/4/2s"', () => {
+    expect(parsePrescription('Descending holds: 10/8/6/4/2s')).toMatchObject({
+      kind: 'duration', holdSchedule: [10, 8, 6, 4, 2], setsTotal: 5, holdSec: 10, perSide: false,
+    });
+  });
+  it('doubles a two-sided hold ladder "Descending holds: 10/8/6/4/2s each side"', () => {
+    // Each rung is held on both sides before stepping down, so 5 rungs → 10 holds.
+    expect(parsePrescription('Descending holds: 10/8/6/4/2s each side')).toMatchObject({
+      kind: 'duration', holdSchedule: [10, 8, 6, 4, 2], setsTotal: 10, sets: 10, holdSec: 10, perSide: true,
+    });
+  });
+  it('parses a hold pyramid with spaced unit "10 / 8 / 6 / 4 / 2 sec"', () => {
+    expect(parsePrescription('10 / 8 / 6 / 4 / 2 sec')).toMatchObject({
+      kind: 'duration', holdSchedule: [10, 8, 6, 4, 2],
+    });
+  });
+  it('keeps a unit-less list as a reps pyramid, not a hold ladder', () => {
+    // No trailing time unit → these are reps, not holds.
+    expect(parsePrescription('10/8/6/4').kind).toBe('pyramid');
+  });
   it('accepts ASCII x', () => {
     expect(parsePrescription('4 x 6')).toMatchObject({ kind: 'straight', sets: 4 });
   });

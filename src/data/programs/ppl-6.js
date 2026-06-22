@@ -149,9 +149,9 @@ export const ppl6 = {
         // Spine maintenance is the missing piece in a high-frequency PPL —
         // six pressing/pulling/squatting sessions per week tax the trunk
         // hard. McGill Big 3 once a week is the floor.
-        { id: 'rec-mcgill-curlup',    sets: '3 × 10/8/6/4/2s descending holds', rest: '0:30' },
-        { id: 'rec-mcgill-sideplank', sets: '3 × 10/8/6/4/2s descending each side', rest: '0:30' },
-        { id: 'rec-bird-dog',         sets: '3 × 8 (5s holds) each side',        rest: '0:30' },
+        { id: 'rec-mcgill-curlup',    sets: 'Descending holds: 10/8/6/4/2s each side', rest: '0:10' },
+        { id: 'rec-mcgill-sideplank', sets: 'Descending holds: 10/8/6/4/2s each side', rest: '0:10' },
+        { id: 'rec-bird-dog',         sets: '8 × 5 sec each side',        rest: '0:10' },
       ],
       'healthspan': [
         // Zone 2 first (60-min sustainable walk/cycle) — the aerobic base
