@@ -38,21 +38,30 @@ export async function loadFromStorage(key, fallback = null) {
     const after = await migrateKeyIfNeeded(key, value);
     const resolved = after !== undefined ? after : value;
     return resolved === undefined ? fallback : resolved;
-  } catch {
+  } catch (err) {
+    console.error(`loadFromStorage failed for "${key}":`, err);
     return fallback;
   }
 }
 
+// Returns true on a successful write (or on the SSR no-op path), false if
+// the underlying IDB operation throws (quota exceeded, private-mode block,
+// transaction abort). Callers that hold the only copy of just-logged data
+// must check this before discarding in-memory state. Never rethrows —
+// several callers are fire-and-forget and a rejection would surface as an
+// unhandled promise rejection.
 export async function saveToStorage(key, value) {
-  if (typeof window === 'undefined') return;
+  if (typeof window === 'undefined') return true;
   try {
     if (value === null || value === undefined) {
       await del(key);
     } else {
       await set(key, value);
     }
-  } catch {
-    /* noop */
+    return true;
+  } catch (err) {
+    console.error(`saveToStorage failed for "${key}":`, err);
+    return false;
   }
 }
 

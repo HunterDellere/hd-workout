@@ -12,13 +12,15 @@ import { SessionContext } from './session-context.js';
 import { loadFromStorage, saveToStorage, STORAGE_KEYS } from '../data/storage';
 import { annotatePRs } from '../data/intelligence';
 import { migrate, migrateArray, stampSchemaVersion } from '../data/migrations';
+import { removeAndRenumberSets, nextSetIndex } from './session-sets';
 
 // Stamp every archive entry with the current schemaVersion before writing.
 // Keeps the on-disk shape uniform so the load-path migration is a no-op
-// for fresh data.
+// for fresh data. Returns whether the write succeeded so callers can
+// avoid dropping in-memory state on a failed persist.
 async function saveArchive(arr) {
   const stamped = Array.isArray(arr) ? arr.map(stampSchemaVersion) : arr;
-  await saveToStorage(STORAGE_KEYS.archive, stamped);
+  return saveToStorage(STORAGE_KEYS.archive, stamped);
 }
 
 function buildPerformances(day) {
@@ -101,9 +103,14 @@ export function SessionProvider({ children }) {
         archive,
       );
       // Write archive synchronously then clear the active session so the
-      // /today UI can read PRs off the returned blob.
+      // /today UI can read PRs off the returned blob. If the persist fails
+      // (quota, private-mode IDB block, abort) we must NOT drop the active
+      // session — it holds the only copy of the just-finished workout.
       const next = [...archive, completed];
-      await saveArchive(next);
+      const ok = await saveArchive(next);
+      if (!ok) {
+        return { error: 'persist-failed', completed };
+      }
       setArchive(next);
       setSession(null);
       return completed;
@@ -144,7 +151,7 @@ export function SessionProvider({ children }) {
         if (!s) return s;
         const performances = s.performances.map((p) => {
           if (p.id !== performanceId) return p;
-          const nextIndex = p.sets.length + 1;
+          const nextIndex = nextSetIndex(p.sets);
           // Two payload shapes:
           //   strength: { weight, reps, rpe, unit, isWarmup?, isDrop? }
           //   duration/rounds: { kind: 'duration'|'rounds', durationSec, side? }
@@ -244,7 +251,7 @@ export function SessionProvider({ children }) {
         if (!s) return s;
         const performances = s.performances.map((p) => {
           if (p.id !== performanceId) return p;
-          return { ...p, sets: p.sets.filter((set) => set.index !== setIndex) };
+          return { ...p, sets: removeAndRenumberSets(p.sets, setIndex) };
         });
         return { ...s, performances };
       });

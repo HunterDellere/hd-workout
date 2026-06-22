@@ -296,8 +296,10 @@ function LoggedSet({ set, isLast, onDiscard, unitDisplay, isPR, justLogged }) {
         type="button"
         aria-label={`Discard set ${set.index}`}
         onClick={() => onDiscard(set.index)}
+        data-hit="expand"
         style={{
           all: 'unset',
+          position: 'relative',
           cursor: 'pointer',
           color: 'var(--text-tertiary)',
           fontFamily: 'var(--font-mono)',
