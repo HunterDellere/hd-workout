@@ -91,6 +91,9 @@ export function TodayHero({
   // without leaving Today. Wired by DayPlanner from useSettings.
   location,
   onSetLocation,
+  // Active program name, surfaced quietly in the eyebrow so the user can
+  // see which program shapes today's plan where they actually train.
+  programName,
 }) {
   const patternKey = DAY_PATTERN_KEY[dayKey] ?? 'mobility';
   return (
@@ -163,6 +166,7 @@ export function TodayHero({
         <Stack direction="row" align="center" gap={2}>
           <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase', letterSpacing: '0.14em' }}>
             {labelOverride ?? `Today · ${todayKey}`}
+            {programName ? ` · ${programName}` : ''}
           </Text>
         </Stack>
         <Stack direction="row" align="center" gap={2}>

@@ -230,7 +230,7 @@ export function Bodyweight() {
                 outline: 'none',
               }}
             />
-            <Text as="span" variant="mono-lg" tone="tertiary">{unit}</Text>
+            <Text as="span" variant="mono-sm" tone="tertiary" style={{ textTransform: 'uppercase' }}>{unit}</Text>
             <Button
               type="submit"
               variant="primary"
