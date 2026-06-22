@@ -430,7 +430,7 @@ const recovery = {
           intent: 'finisher',
           categories: ['healthspan', 'grip'],
           equipment: ['Pull-up bar'],
-          primaryMuscles: ['Forearm flexors', 'Lats', 'Shoulder decompressors'],
+          primaryMuscles: ['Forearm flexors', 'Lats', 'Shoulder stabilizers'],
           secondaryMuscles: ['Thoracic extensors'],
           cues: [
             'Pronated grip, shoulder-width',
@@ -443,7 +443,7 @@ const recovery = {
             'Excellent for shoulder healthspan — counteracts decades of arms-down posture.',
           ],
           variants: [
-            { name: 'L-sit hang', note: 'Knees up at 90°; brutal core demand.' },
+            { name: 'L-sit hang', note: 'Knees up at 90°; high core demand.' },
             { name: 'Weighted hang', note: 'Vest or belt-loaded; trained as a max-effort lift.' },
             { name: 'One-arm hang', note: 'Advanced; grip and shoulder strength benchmark.' },
           ],
@@ -577,7 +577,7 @@ const recovery = {
           ],
           variants: [
             { name: '20/40s', note: '20s on, 40s off — more rest, useful early in a training block.' },
-            { name: '40/20s', note: '40s on, 20s off — brutal; do once you have a base.' },
+            { name: '40/20s', note: '40s on, 20s off — demanding; do once you have a base.' },
           ],
           tags: ['healthspan', 'cardio', 'conditioning'],
         },

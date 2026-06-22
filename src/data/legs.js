@@ -201,7 +201,7 @@ export const legs = {
           ],
           variants: [
             { name: 'Goblet box squat', note: 'Sit to a low box — depth control + glute load.' },
-            { name: 'Goblet squat with pulse', note: 'At the bottom, do 2-3 small pulses before standing — quad burner.' },
+            { name: 'Goblet squat with pulse', note: 'At the bottom, do 2-3 small pulses before standing — high quad demand.' },
             { name: 'Tempo goblet squat', note: '3-5 sec descent, 2 sec pause, drive up — beats heavier weight.' },
             { name: 'Heels-elevated goblet squat', note: 'Heels on a 1-2 inch plate — extreme quad bias.' },
           ],
@@ -443,7 +443,7 @@ export const legs = {
           variants: [
             { name: 'Russian swing (to chest)', note: 'Standard; KB stops at chest height. The default.' },
             { name: 'American swing (overhead)', note: 'KB finishes overhead; controversial — shoulder demand is high.' },
-            { name: 'Single-arm KB swing', note: 'Asymmetric load; brutal anti-rotation demand.' },
+            { name: 'Single-arm KB swing', note: 'Asymmetric load; high anti-rotation demand.' },
             { name: 'Heavy swing for 5-10', note: 'Low rep, high load — power application.' },
             { name: 'Light swing for 20+', note: 'Conditioning + glute density — the true workhorse.' },
           ],
@@ -454,7 +454,7 @@ export const legs = {
     {
       key: 'glutes',
       title: 'Glutes',
-      blurb: 'Direct glute work. Hip thrust is the king; carry it across the week.',
+      blurb: 'Direct glute work. The hip thrust is the anchor; carry it across the week.',
       exercises: [
         {
           id: 'legs-hip-thrust',
@@ -523,7 +523,7 @@ export const legs = {
             'Hip thrust > glute bridge for load, but glute bridge is the activation pattern',
           ],
           variants: [
-            { name: 'Single-leg glute bridge', note: 'One foot lifted; brutal unilateral glute work.' },
+            { name: 'Single-leg glute bridge', note: 'One foot lifted; demanding unilateral glute work.' },
             { name: 'Marching glute bridge', note: 'Hold the top, march alternating knees up; anti-rotation bonus.' },
             { name: 'KB glute bridge', note: 'KB across the hip crease; loaded version.' },
             { name: 'Banded glute bridge', note: 'Band around knees; abduction + extension same time.' },

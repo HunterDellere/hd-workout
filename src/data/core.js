@@ -167,7 +167,7 @@ export const core = {
             'Quality over duration — 30 strict seconds beats 2 sloppy minutes',
           ],
           variants: [
-            { name: 'RKC plank', note: 'Max contract everything for 10–20 sec — brutal intensity.' },
+            { name: 'RKC plank', note: 'Max contract everything for 10–20 sec — very high intensity.' },
             { name: 'Plank with hip extension', note: 'Lift one leg; adds glute and anti-rotation.' },
             { name: 'Ring / TRX plank', note: 'Instability multiplies demand.' },
             { name: 'Weighted plank', note: 'Plate on the back — pure progressive overload.' },

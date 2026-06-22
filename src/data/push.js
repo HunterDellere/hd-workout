@@ -146,7 +146,7 @@ export const push = {
           variants: [
             { name: 'Incline push-up', note: 'Hands on bench/counter — easier; rebuild here when form breaks.' },
             { name: 'Decline push-up', note: 'Feet elevated — harder, more upper-chest demand.' },
-            { name: 'Tempo push-up', note: '4-sec down, 2-sec pause at bottom, 1-sec up — brutal.' },
+            { name: 'Tempo push-up', note: '4-sec down, 2-sec pause at bottom, 1-sec up — demanding.' },
             { name: 'Archer push-up', note: 'Weight shifts toward one arm — unilateral progression.' },
             { name: 'Deficit push-up', note: 'Hands on parallettes/blocks — bigger ROM, better chest stretch.' },
           ],

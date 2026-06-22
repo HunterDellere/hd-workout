@@ -45,7 +45,7 @@ export const principles = [
   },
   {
     id: 'p-warm-up',
-    title: 'Warm-Up Like You Mean It',
+    title: 'Warm Up Before You Load',
     body:
       'Five minutes of general movement, then 2–3 ramping sets of the first lift. '
       + 'A cold body lifts smaller and gets hurt more.',
