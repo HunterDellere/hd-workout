@@ -273,9 +273,17 @@ export function PerformanceCard({
       data-performance-id={performance.id}
       data-section-key={performance.sectionKey}
       style={{
-        marginTop: isWarmupSection ? 20 : 40,
-        padding: isWarmupSection ? '14px 0' : '24px 0',
-        borderTop: '1px solid var(--border-hairline)',
+        padding: isWarmupSection ? '14px 16px' : '20px 18px',
+        // Wave 23: each exercise sits on its own gently-raised paper card
+        // with rounded corners + a soft lift, so the focused lift reads as
+        // a distinct surface instead of running into the rows around it.
+        // The warm `surface-raised` is the same idiom the Today hero uses.
+        background: 'var(--surface-raised)',
+        border: '1px solid var(--border-hairline)',
+        borderRadius: 12,
+        // Only the focused working card lifts — warmup cards stay flat so
+        // they read as quieter prep work.
+        boxShadow: isWarmupSection ? 'none' : 'var(--shadow-2)',
         // Wave 6.4 #35: focus ring picks up the day's pattern accent.
         '--focus-color': `var(--accent-${accent}-ink)`,
       }}
@@ -532,11 +540,11 @@ export function PerformanceCard({
             top: STICKY_TOP_PX,
             zIndex: 3,
             marginTop: 16,
-            // Bleed slightly into the page background so the sticky
-            // edge reads as a real layer above content scrolling under it.
+            // Bleed into the card surface so the sticky edge reads as a
+            // real layer above content scrolling under it within the card.
             paddingTop: 4,
             paddingBottom: 4,
-            background: 'var(--surface-page)',
+            background: 'var(--surface-raised)',
           }}
         >
           <RestTimer

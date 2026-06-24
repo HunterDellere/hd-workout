@@ -55,7 +55,7 @@ export function CollapsedPerformanceRow({
 
   const bgStyle = state === 'progress'
     ? `var(--accent-${accent}-soft)`
-    : 'transparent';
+    : 'var(--surface-raised)';
 
   return (
     <button
@@ -71,8 +71,15 @@ export function CollapsedPerformanceRow({
         cursor: 'pointer',
         display: 'block',
         width: '100%',
-        padding: '14px 12px 14px 14px',
-        borderTop: '1px solid var(--border-hairline)',
+        boxSizing: 'border-box',
+        // Wave 23: collapsed lifts become their own contained cards too —
+        // a rounded, bordered paper surface with the focused card's gap
+        // around them — so the list reads as discrete exercises rather
+        // than a single hairline-ruled run. They stay flat (no shadow) so
+        // only the focused card lifts above the stack.
+        padding: '14px 14px 14px 16px',
+        border: '1px solid var(--border-hairline)',
+        borderRadius: 10,
         background: bgStyle,
         position: 'relative',
         outline: 'none',
@@ -89,9 +96,9 @@ export function CollapsedPerformanceRow({
         aria-hidden
         style={{
           position: 'absolute',
-          left: 0,
-          top: 8,
-          bottom: 8,
+          left: 5,
+          top: 10,
+          bottom: 10,
           width: 3,
           borderRadius: 2,
           ...railStyle,
