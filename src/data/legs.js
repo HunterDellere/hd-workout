@@ -69,7 +69,7 @@ export const legs = {
             'Heels stay planted; weight through mid-foot',
           ],
           safetyNotes: [
-            'Lighter than back squat by ~80%; the upright posture is the lift, not the load',
+            'Expect to use roughly 80–85% of your back-squat load; the upright posture is the lift, not the load',
             'Mobility prereq: bar must rest comfortably on front delts — work wrist + thoracic mobility first',
           ],
           variants: [
@@ -417,7 +417,7 @@ export const legs = {
             'Stop the moment the lumbar wants to round',
           ],
           variants: [
-            { name: 'Seated good morning', note: 'Legs forward, seated — pure hamstring isolation.' },
+            { name: 'Seated good morning', note: 'Seated, hips fixed — shifts the load off the hamstrings and onto the spinal erectors.' },
           ],
           tags: ['hinge', 'erector'],
         },

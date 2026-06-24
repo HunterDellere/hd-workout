@@ -304,7 +304,7 @@ export const core = {
             { name: 'Side plank with hip dip', note: 'Lower the hip and drive back up — oblique reps.' },
             { name: 'Star side plank', note: 'Top arm and top leg lifted — full body integration.' },
             { name: 'Side plank reach-through', note: 'Top arm threads under the body — anti-rotation overlap.' },
-            { name: 'Copenhagen plank', note: 'Top leg on bench, bottom leg lifted — adductor + anti-flexion.' },
+            { name: 'Copenhagen plank', note: 'Top leg on bench, bottom leg lifted — adductor + anti-lateral-flexion.' },
           ],
           tags: ['anti-lateral-flexion', 'isometric'],
         },
@@ -352,7 +352,7 @@ export const core = {
           ],
           variants: [
             { name: 'Bottoms-up KB press', note: 'KB held inverted — extreme grip + stability demand.' },
-            { name: 'Half-kneeling SA press', note: 'Removes leg drive; isolates core anti-flexion.' },
+            { name: 'Half-kneeling SA press', note: 'Removes leg drive; isolates core anti-lateral-flexion.' },
           ],
           tags: ['anti-lateral-flexion', 'shoulder', 'integration'],
         },

@@ -385,7 +385,7 @@ const recovery = {
             '4 minutes at ~85–95 % effort — hard but sustainable for the full 4',
             '3 minutes easy recovery between',
             'Repeat 4 times — this is the Norwegian 4×4 protocol',
-            'Heart rate target: top of zone 4 / bottom of zone 5',
+            'Heart rate target: ~90–95% of max — zone 5',
             'Once a week is plenty; once every 10 days is fine',
           ],
           safetyNotes: [
@@ -775,8 +775,8 @@ const recovery = {
           secondaryMuscles: ['Rotator cuff', 'T-spine mobility', 'Core'],
           cues: [
             'Start with the KB pressed overhead, arm locked, eyes on the bell',
-            'Feet wider than shoulder-width; same-side foot turned out 45°',
-            'Hinge sideways toward the opposite foot — KB tracks straight up the whole time',
+            'Feet wider than shoulder-width; both feet turned ~45° away from the loaded arm',
+            'Hinge sideways toward the front (non-loaded) foot — KB tracks straight up the whole time',
             'Free hand slides down the opposite leg as a guide',
             'Reverse: hinge back to standing, arm still locked overhead',
           ],
