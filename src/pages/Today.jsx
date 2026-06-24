@@ -535,6 +535,11 @@ export function Today() {
                 {/* Section blurbs are planning copy — suppressed mid-session
                     to let the work surface dominate. They still appear in the
                     pre-session DayPlanner. */}
+                {/* Wave 23: a flex-gap stack owns the spacing between the
+                    exercise cards, so each lift reads as a discrete paper
+                    surface with real air around it — not a hairline-ruled
+                    run that blurs one exercise into the next. */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 16 }}>
                 {performances.map((perf) => {
                   // Wave 22: focus mode. Only the focused performance
                   // renders the full input card; others collapse to a
@@ -608,6 +613,7 @@ export function Today() {
                     />
                   );
                 })}
+                </div>
                 <div style={{ marginTop: 16 }}>
                   <MonoChipButton
                     variant="dashed"
