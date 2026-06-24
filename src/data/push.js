@@ -43,7 +43,7 @@ export const push = {
           ],
           safetyNotes: [
             'Always set the safety pins at chest height before working up',
-            'Set J-hooks at wrist height with arms locked out',
+            'Set the J-hooks just below your arms-locked-out height — high enough to unrack with a small press, low enough to re-rack when fatigued',
             'Never bench heavy without a spotter OR safeties — both is best',
           ],
           variants: [
@@ -277,7 +277,7 @@ export const push = {
             'Keep the lumbar neutral — do not arch to lift more weight',
           ],
           variants: [
-            { name: 'Landmine press', note: 'Single-arm landmine — upper-pec arc with one tool.' },
+            { name: 'Single-arm low-to-high fly', note: 'One arm at a time — bigger stretch and an anti-rotation core demand.' },
             { name: 'Incline cable fly', note: 'Bench at 30° between the cables for more stretch.' },
           ],
           tags: ['isolation', 'upper-chest'],
@@ -480,7 +480,7 @@ export const push = {
             'Cable on the opposite side of the working arm',
             'Slight lean away from the stack',
             'Lead with the elbow up to shoulder height',
-            'Pinky slightly higher than thumb at the top — internal rotation cue',
+            'Slight pinky-up tilt at the top — but stop short of the hard "pour-the-jug" rotation that pinches the shoulder',
             'Slow eccentric, no momentum',
           ],
           safetyNotes: [
@@ -503,7 +503,7 @@ export const push = {
           secondaryMuscles: ['Upper trapezius', 'Biceps brachii'],
           cues: [
             'Wide grip ONLY — outside shoulder width',
-            'Pull to chin height with elbows leading and flared wide',
+            'Pull to roughly collarbone height, elbows leading and flared wide — never let the elbows rise above shoulder level',
             'Brief peak hold, controlled eccentric',
             'Stop the rep if you feel any shoulder impingement',
           ],
@@ -602,8 +602,8 @@ export const push = {
           name: 'Banded Face Pull',
           role: 'primary-alt',
           equipment: ['Resistance band anchored at face height'],
-          primaryMuscles: ['Rear deltoid', 'External rotators', 'Mid trapezius'],
-          secondaryMuscles: ['Rotator cuff'],
+          primaryMuscles: ['Posterior deltoid', 'External rotators (infraspinatus, teres minor)', 'Mid trapezius'],
+          secondaryMuscles: ['Rhomboids'],
           cues: [
             'Anchor a band at face height; grip with palms-down or palms-in',
             'Pull the band toward your face — hands end up by the ears',
@@ -739,7 +739,7 @@ export const push = {
             'Elbows pointed straight ahead, next to the ears',
             'Full elbow extension overhead with brief peak contraction',
             'Deep stretch at the bottom — hands behind the head',
-            'Long head only fires fully under overhead-stretched conditions',
+            'The long head is preferentially loaded and grows most under overhead stretch — that is the point of this variant',
           ],
           safetyNotes: [
             'Maintain neutral lumbar — do not let the rib cage flare to extend the rep',
@@ -835,7 +835,7 @@ export const push = {
             'Bring the band overhead with both hands; elbows next to the ears',
             'Lower the hands behind the head — deep stretch on the long head',
             'Drive up to full overhead extension; brief peak hold',
-            'Long head only fires fully under overhead-stretched conditions — this is the home version of the cable overhead extension',
+            'The long head is preferentially loaded under overhead stretch — this is the home version of the cable overhead extension',
           ],
           safetyNotes: [
             'Maintain neutral lumbar — do not let the rib cage flare to extend the rep',
