@@ -539,7 +539,7 @@ export function Today() {
                     exercise cards, so each lift reads as a discrete paper
                     surface with real air around it — not a hairline-ruled
                     run that blurs one exercise into the next. */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 16 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 16 }}>
                 {performances.map((perf) => {
                   // Wave 22: focus mode. Only the focused performance
                   // renders the full input card; others collapse to a

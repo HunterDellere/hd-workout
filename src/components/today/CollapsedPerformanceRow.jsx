@@ -73,13 +73,13 @@ export function CollapsedPerformanceRow({
         width: '100%',
         boxSizing: 'border-box',
         // Wave 23: collapsed lifts become their own contained cards too —
-        // a rounded, bordered paper surface with the focused card's gap
-        // around them — so the list reads as discrete exercises rather
-        // than a single hairline-ruled run. They stay flat (no shadow) so
-        // only the focused card lifts above the stack.
+        // a rounded, bordered paper surface that lifts off the page with a
+        // soft shadow, so the list reads as discrete, clearly-separated
+        // exercises rather than a single hairline-ruled run.
         padding: '14px 14px 14px 16px',
         border: '1px solid var(--border-hairline)',
-        borderRadius: 10,
+        borderRadius: 12,
+        boxShadow: 'var(--shadow-2)',
         background: bgStyle,
         position: 'relative',
         outline: 'none',

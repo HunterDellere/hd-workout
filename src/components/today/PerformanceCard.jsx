@@ -281,9 +281,10 @@ export function PerformanceCard({
         background: 'var(--surface-raised)',
         border: '1px solid var(--border-hairline)',
         borderRadius: 12,
-        // Only the focused working card lifts — warmup cards stay flat so
-        // they read as quieter prep work.
-        boxShadow: isWarmupSection ? 'none' : 'var(--shadow-2)',
+        // Every exercise lifts off the page with a soft shadow so cards
+        // never blur into one another. The focused working card reads as
+        // the active one by virtue of its expanded input surface.
+        boxShadow: 'var(--shadow-2)',
         // Wave 6.4 #35: focus ring picks up the day's pattern accent.
         '--focus-color': `var(--accent-${accent}-ink)`,
       }}
