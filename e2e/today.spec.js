@@ -90,6 +90,54 @@ test('start a session and log a set, then reload to confirm persistence', async 
   await expect(reloadedCard).toContainText('5');
 });
 
+test('completing a tapped-into exercise auto-advances focus to the next lift', async ({ page }) => {
+  // Regression: tapping a collapsed row sets a focus override. Finishing
+  // that exercise's last prescribed set used to strand the lifter on the
+  // just-completed card (rest timer running) instead of advancing. Focus
+  // must snap forward to the next incomplete lift once the override target
+  // is complete.
+  await page.goto('./#/today');
+  await page.getByTestId('start-session').click();
+
+  // First collapsed working row (warmup excluded). The first working
+  // exercise is auto-focused, so the collapsed rows are later lifts.
+  const targetRow = page.locator(
+    '[data-testid="section-group"]:not([data-section-key="warmup"]) [data-testid="collapsed-performance-row"]',
+  ).first();
+  await expect(targetRow).toBeVisible();
+
+  const targetPerfId = await targetRow.getAttribute('data-performance-id');
+  const statusText = await targetRow.getByTestId('row-status').textContent();
+  const target = Number.parseInt(statusText.split('/')[1], 10);
+  expect(target).toBeGreaterThan(0);
+
+  // Tap it to focus (this is the override that used to break auto-advance).
+  await targetRow.click();
+  const focusedCard = page.locator(
+    `[data-testid="performance-card"][data-performance-id="${targetPerfId}"]`,
+  );
+  await expect(focusedCard).toBeVisible();
+
+  // Log every prescribed working set into the now-focused card.
+  for (let i = 0; i < target; i += 1) {
+    await focusedCard.getByRole('textbox', { name: 'Load' }).fill('60');
+    await focusedCard.getByRole('textbox', { name: 'Reps' }).fill('8');
+    await focusedCard.getByTestId('log-set-button').click();
+  }
+
+  // The completed exercise has collapsed to a done row...
+  const completedRow = page.locator(
+    `[data-testid="collapsed-performance-row"][data-performance-id="${targetPerfId}"]`,
+  );
+  await expect(completedRow).toBeVisible();
+  await expect(completedRow).toHaveAttribute('data-complete', '1');
+
+  // ...and focus advanced to a DIFFERENT (incomplete) exercise's card.
+  const focusedNow = page.getByTestId('performance-card');
+  await expect(focusedNow).toHaveCount(1);
+  await expect(focusedNow).not.toHaveAttribute('data-performance-id', targetPerfId);
+});
+
 test('session bar appears on other routes when a session is active', async ({ page }) => {
   await page.goto('./#/today');
   await page.getByTestId('start-session').click();

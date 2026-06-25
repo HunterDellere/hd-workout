@@ -159,22 +159,45 @@ export function Today() {
   }, [activeSession]);
 
   // Focus is derived: user-override (from a tap) takes precedence;
-  // otherwise the first incomplete performance is focused. When the
-  // override target becomes complete, the override is auto-cleared so
-  // the lifter snaps forward to the next incomplete exercise.
+  // otherwise the first incomplete performance is focused. A tap is
+  // honoured even on a completed exercise so the lifter can re-open a
+  // finished card to review sets or add an extra without snap-back.
+  // The override is cleared in handleLogSet at the moment the focused
+  // exercise's last prescribed set is logged, so auto-advance to the
+  // next incomplete lift still fires when you simply work through a
+  // card you'd tapped into.
   const [focusOverride, setFocusOverride] = useState(null);
   const focusedPerformanceId = useMemo(() => {
     if (!activeSession) return null;
     if (focusOverride) {
-      // Honour any explicit tap — even on completed exercises — so the
-      // lifter can re-open a finished card to review sets or add an
-      // extra. Auto-snap-forward only kicks in when there's no override.
       const target = activeSession.performances?.find((p) => p.id === focusOverride);
       if (target) return focusOverride;
       // Stale override (swap/remove deleted the target). Fall through.
     }
     return firstIncompleteId;
   }, [activeSession, focusOverride, firstIncompleteId]);
+
+  // Logging wrapper that restores auto-advance. When the set being logged
+  // is the one that completes the currently-overridden (tapped-into)
+  // exercise, drop the override so focus snaps forward to the next
+  // incomplete lift instead of stalling on the just-finished card with
+  // its rest timer running. Guarded on a real incomplete→complete
+  // transition: adding an extra set to a card you deliberately re-opened
+  // (already complete) keeps focus put.
+  const handleLogSet = (performanceId, payload) => {
+    if (focusOverride && performanceId === focusOverride) {
+      const perf = activeSession?.performances.find((p) => p.id === performanceId);
+      if (perf) {
+        const target = parsePrescription(perf.prescription?.sets ?? '').setsTotal ?? 1;
+        const workingDone = (perf.sets ?? []).filter((s) => !s.isWarmup).length;
+        const addsWorkingSet = !payload?.isWarmup;
+        const wasIncomplete = workingDone < target;
+        const nowComplete = workingDone + (addsWorkingSet ? 1 : 0) >= target;
+        if (wasIncomplete && nowComplete) setFocusOverride(null);
+      }
+    }
+    logSet(performanceId, payload);
+  };
 
   const livePRSetIds = useMemo(() => {
     if (!annotatedSession) return new Set();
@@ -599,7 +622,7 @@ export function Today() {
                         })()
                       ))}
                       onCreditManualEntry={creditManualEntry}
-                      onLogSet={logSet}
+                      onLogSet={handleLogSet}
                       onDiscardSet={discardSet}
                       onEditSet={editSet}
                       onSwap={setSwapPerformanceId}
